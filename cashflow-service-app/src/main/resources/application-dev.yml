@@ -1,0 +1,29 @@
+server:
+  port: ${SERVER_PORT:8081}
+
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/eventosdb}
+    username: ${DB_USER:admin}
+    password: ${DB_PASSWORD:secret}
+    driver-class-name: org.postgresql.Driver
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  thymeleaf:
+    cache: false
+
+# Logs detalhados em desenvolvimento: análise de bugs, debug e requisições HTTP (incl. erros)
+logging:
+  level:
+    root: INFO
+    br.com.cashflow: DEBUG
+    # Requisições HTTP (método, URI, status, handlers)
+    web: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.web.servlet.mvc.method.annotation: DEBUG
+    # Exceções e erros tratados pelo Spring (ExceptionHandler, respostas 4xx/5xx)
+    org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolver: DEBUG
+    # SQL (opcional; descomente para ver queries e parâmetros)
+    # org.springframework.jdbc.core: DEBUG
+    # org.springframework.jdbc.core.StatementCreatorUtils: TRACE

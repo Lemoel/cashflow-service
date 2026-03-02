@@ -1,0 +1,141 @@
+<mxfile host="app.diagrams.net" modified="2026-02-24T23:03:38.000Z" agent="FLOW AI" version="21.0.0" etag="DER-Escola-v2-UUID" type="device">
+  <diagram id="DER-Escola" name="DER - Sistema Gestão Escolar (UUID)">
+    <mxGraphModel dx="1434" dy="788" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3300" pageHeight="2339" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        
+        <!-- Legenda -->
+        <mxCell id="legenda" value="LEGENDA:&#xa;PK = Primary Key (UUID)&#xa;FK = Foreign Key (UUID)&#xa;(opc) = Opcional&#xa;enum = Enumeração&#xa;&#xa;✨ TODAS PKs são UUID" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="200" height="120" as="geometry"/>
+        </mxCell>
+
+        <!-- APP_USER -->
+        <mxCell id="usuario" value="&lt;b&gt;APP_USER&lt;/b&gt;&#xa;&#xa;PK id: UUID&#xa;name: VARCHAR(200)&#xa;login: VARCHAR(100) UNIQUE&#xa;password_hash: VARCHAR(255)&#xa;role: VARCHAR(20)&#xa;  [SECRETARIA, TESOURARIA,&#xa;   DIRETOR, PROFESSOR]&#xa;teacher_id: UUID (FK) NULL&#xa;active: BOOLEAN&#xa;created_by: VARCHAR(255)&#xa;created_date: TIMESTAMP&#xa;last_modified_by: VARCHAR(255)&#xa;last_modified_date: TIMESTAMP&#xa;deleted: BOOLEAN DEFAULT FALSE" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;fontSize=10;spacing=5;" vertex="1" parent="1">
+          <mxGeometry x="280" y="40" width="280" height="240" as="geometry"/>
+        </mxCell>
+
+        <!-- TEACHER -->
+        <mxCell id="professor" value="&lt;b&gt;TEACHER&lt;/b&gt;&#xa;&#xa;PK id: UUID&#xa;name: VARCHAR(200) NOT NULL&#xa;phone: VARCHAR(20)&#xa;email: VARCHAR(100)&#xa;birth_date: DATE&#xa;status: VARCHAR(10)&#xa;  [ATIVO, INATIVO]&#xa;created_by: VARCHAR(255)&#xa;created_date: TIMESTAMP&#xa;last_modified_by: VARCHAR(255)&#xa;last_modified_date: TIMESTAMP&#xa;deleted: BOOLEAN DEFAULT FALSE" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;fontSize=10;spacing=5;" vertex="1" parent="1">
+          <mxGeometry x="620" y="40" width="260" height="220" as="geometry"/>
+        </mxCell>
+
+        <!-- STUDENT -->
+        <mxCell id="aluno" value="&lt;b&gt;STUDENT&lt;/b&gt;&#xa;&#xa;PK id: UUID&#xa;name: VARCHAR(200) NOT NULL&#xa;phone: VARCHAR(20)&#xa;birth_date: DATE NOT NULL&#xa;address: VARCHAR(300) NULL (opc)&#xa;documents: VARCHAR(100) NULL (opc)&#xa;notes: TEXT NULL (opc)&#xa;status: VARCHAR(10)&#xa;  [ATIVO, INATIVO]&#xa;school_entry_date: DATE NOT NULL&#xa;created_by: VARCHAR(255)&#xa;created_date: TIMESTAMP&#xa;last_modified_by: VARCHAR(255)&#xa;last_modified_date: TIMESTAMP&#xa;deleted: BOOLEAN DEFAULT FALSE" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;verticalAlign=top;fontSize=10;spacing=5;" vertex="1" parent="1">
+          <mxGeometry x="940" y="40" width="300" height="280" as="geometry"/>
+        </mxCell>
+
+        <!-- AGE_GROUP -->
+        <mxCell id="faixa_etaria" value="&lt;b&gt;AGE_GROUP&lt;/b&gt;&#xa;&#xa;PK id: UUID&#xa;name: VARCHAR(100) NOT NULL&#xa;  Ex: Maternal, Júnior, Juvenil,&#xa;      Adulto, Idoso&#xa;min_age: INTEGER NULL (opc)&#xa;max_age: INTEGER NULL (opc)&#xa;active: BOOLEAN DEFAULT TRUE&#xa;created_by: VARCHAR(255)&#xa;created_date: TIMESTAMP&#xa;last_modified_by: VARCHAR(255)&#xa;last_modified_date: TIMESTAMP&#xa;deleted: BOOLEAN DEFAULT FALSE" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;verticalAlign=top;fontSize=10;spacing=5;" vertex="1" parent="1">
+          <mxGeometry x="280" y="320" width="280" height="220" as="geometry"/>
+        </mxCell>
+
+        <!-- CLASS_GROUP -->
+        <mxCell id="turma" value="&lt;b&gt;CLASS_GROUP&lt;/b&gt;&#xa;&#xa;PK id: UUID&#xa;name: VARCHAR(100) NOT NULL&#xa;  Ex: Juniores A, Adultos B&#xa;age_group_id: UUID (FK) NOT NULL&#xa;notes: TEXT NULL (opc)&#xa;active: BOOLEAN DEFAULT TRUE&#xa;created_by: VARCHAR(255)&#xa;created_date: TIMESTAMP&#xa;last_modified_by: VARCHAR(255)&#xa;last_modified_date: TIMESTAMP&#xa;deleted: BOOLEAN DEFAULT FALSE" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;verticalAlign=top;fontSize=10;spacing=5;" vertex="1" parent="1">
+          <mxGeometry x="620" y="320" width="300" height="200" as="geometry"/>
+        </mxCell>
+
+        <!-- STUDENT_CLASS_HISTORY -->
+        <mxCell id="aluno_turma_historico" value="&lt;b&gt;STUDENT_CLASS_HISTORY&lt;/b&gt;&#xa;&#xa;PK id: UUID&#xa;student_id: UUID (FK) NOT NULL&#xa;class_group_id: UUID (FK) NOT NULL&#xa;entry_date: DATE NOT NULL&#xa;exit_date: DATE NULL&#xa;  (NULL = ainda está na turma)&#xa;transfer_reason: TEXT NULL (opc)&#xa;&#xa;CONSTRAINT: Apenas 1 registro&#xa;  com exit_date NULL por aluno" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;fontSize=10;spacing=5;" vertex="1" parent="1">
+          <mxGeometry x="980" y="340" width="300" height="200" as="geometry"/>
+        </mxCell>
+
+        <!-- TEACHER_CLASS -->
+        <mxCell id="professor_turma" value="&lt;b&gt;TEACHER_CLASS&lt;/b&gt;&#xa;&#xa;PK id: UUID&#xa;teacher_id: UUID (FK) NOT NULL&#xa;class_group_id: UUID (FK) NOT NULL&#xa;start_date: DATE NOT NULL&#xa;end_date: DATE NULL&#xa;  (NULL = vínculo ativo)&#xa;&#xa;Permite múltiplos professores&#xa;por turma (escala de aulas)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;fontSize=10;spacing=5;" vertex="1" parent="1">
+          <mxGeometry x="280" y="580" width="280" height="180" as="geometry"/>
+        </mxCell>
+
+        <!-- QUARTER_CALENDAR -->
+        <mxCell id="calendario_trimestre" value="&lt;b&gt;QUARTER_CALENDAR&lt;/b&gt;&#xa;&#xa;PK id: UUID&#xa;year: INTEGER NOT NULL (ex: 2026)&#xa;quarter_number: INTEGER NOT NULL&#xa;  (1, 2, 3 ou 4)&#xa;start_date: DATE NOT NULL&#xa;  (sempre dia 1 do mês inicial)&#xa;end_date: DATE NOT NULL&#xa;day_of_week: INTEGER NOT NULL&#xa;  (0=Domingo, 1=Segunda, ...6=Sábado)&#xa;active: BOOLEAN DEFAULT TRUE&#xa;created_by: VARCHAR(255)&#xa;created_date: TIMESTAMP&#xa;last_modified_by: VARCHAR(255)&#xa;last_modified_date: TIMESTAMP&#xa;&#xa;UNIQUE(year, quarter_number)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;fontSize=10;spacing=5;" vertex="1" parent="1">
+          <mxGeometry x="620" y="580" width="300" height="280" as="geometry"/>
+        </mxCell>
+
+        <!-- CLASS_LESSON -->
+        <mxCell id="aula_turma" value="&lt;b&gt;CLASS_LESSON&lt;/b&gt;&#xa;&#xa;PK id: UUID&#xa;class_group_id: UUID (FK) NOT NULL&#xa;quarter_calendar_id: UUID (FK)&#xa;lesson_date: DATE NOT NULL&#xa;  (gerada automaticamente com base&#xa;   no day_of_week do trimestre)&#xa;created_by: VARCHAR(255)&#xa;created_date: TIMESTAMP&#xa;&#xa;UNIQUE(class_group_id, lesson_date)&#xa;&#xa;Regenerado se day_of_week mudar" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;verticalAlign=top;fontSize=10;spacing=5;" vertex="1" parent="1">
+          <mxGeometry x="980" y="600" width="300" height="240" as="geometry"/>
+        </mxCell>
+
+        <!-- STUDENT_ATTENDANCE -->
+        <mxCell id="presenca_aluno" value="&lt;b&gt;STUDENT_ATTENDANCE&lt;/b&gt;&#xa;&#xa;PK id: UUID&#xa;class_lesson_id: UUID (FK) NOT NULL&#xa;student_id: UUID (FK) NOT NULL&#xa;present: BOOLEAN NOT NULL&#xa;  (TRUE=Presente, FALSE=Ausente)&#xa;registration_date: TIMESTAMP NOT NULL&#xa;responsible_user_id: UUID (FK)&#xa;&#xa;UNIQUE(class_lesson_id, student_id)&#xa;&#xa;Editável até 1 mês após a aula" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;fontSize=10;spacing=5;" vertex="1" parent="1">
+          <mxGeometry x="1340" y="600" width="300" height="220" as="geometry"/>
+        </mxCell>
+
+        <!-- RELACIONAMENTOS -->
+        
+        <!-- USUARIO -> PROFESSOR -->
+        <mxCell id="rel_usuario_professor" value="0..1" style="endArrow=classic;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" edge="1" parent="1" source="usuario" target="professor">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- FAIXA_ETARIA -> TURMA -->
+        <mxCell id="rel_faixa_turma" value="1:N" style="endArrow=classic;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeWidth=2;fillColor=#e1d5e7;strokeColor=#9673a6;" edge="1" parent="1" source="faixa_etaria" target="turma">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ALUNO -> ALUNO_TURMA_HISTORICO -->
+        <mxCell id="rel_aluno_historico" value="1:N" style="endArrow=classic;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeWidth=2;fillColor=#ffe6cc;strokeColor=#d79b00;" edge="1" parent="1" source="aluno" target="aluno_turma_historico">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- TURMA -> ALUNO_TURMA_HISTORICO -->
+        <mxCell id="rel_turma_historico" value="1:N" style="endArrow=classic;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeWidth=2;fillColor=#f8cecc;strokeColor=#b85450;" edge="1" parent="1" source="turma" target="aluno_turma_historico">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- PROFESSOR -> PROFESSOR_TURMA -->
+        <mxCell id="rel_professor_pt" value="1:N" style="endArrow=classic;html=1;exitX=0;exitY=1;entryX=0.5;entryY=0;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366;" edge="1" parent="1" source="professor" target="professor_turma">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- TURMA -> PROFESSOR_TURMA -->
+        <mxCell id="rel_turma_pt" value="1:N" style="endArrow=classic;html=1;exitX=0;exitY=1;entryX=0.5;entryY=0;strokeWidth=2;fillColor=#f8cecc;strokeColor=#b85450;" edge="1" parent="1" source="turma" target="professor_turma">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- CALENDARIO_TRIMESTRE -> AULA_TURMA -->
+        <mxCell id="rel_calendario_aula" value="1:N" style="endArrow=classic;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" edge="1" parent="1" source="calendario_trimestre" target="aula_turma">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- TURMA -> AULA_TURMA -->
+        <mxCell id="rel_turma_aula" value="1:N" style="endArrow=classic;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeWidth=2;fillColor=#f8cecc;strokeColor=#b85450;" edge="1" parent="1" source="turma" target="aula_turma">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- AULA_TURMA -> PRESENCA_ALUNO -->
+        <mxCell id="rel_aula_presenca" value="1:N" style="endArrow=classic;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeWidth=2;fillColor=#f8cecc;strokeColor=#b85450;" edge="1" parent="1" source="aula_turma" target="presenca_aluno">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ALUNO -> PRESENCA_ALUNO -->
+        <mxCell id="rel_aluno_presenca" value="1:N" style="endArrow=classic;html=1;exitX=1;exitY=1;entryX=0.5;entryY=0;strokeWidth=2;fillColor=#ffe6cc;strokeColor=#d79b00;" edge="1" parent="1" source="aluno" target="presenca_aluno">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- USUARIO -> PRESENCA_ALUNO -->
+        <mxCell id="rel_usuario_presenca" value="1:N&#xa;(registra)" style="endArrow=classic;html=1;exitX=1;exitY=1;entryX=0;entryY=0;strokeWidth=2;strokeColor=#6c8ebf;fillColor=#dae8fc;dashed=1;" edge="1" parent="1" source="usuario" target="presenca_aluno">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- REGRAS DE NEGÓCIO -->
+        <mxCell id="regras_titulo" value="&lt;b&gt;REGRAS DE NEGÓCIO IMPORTANTES&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="200" width="200" height="40" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="regras" value="✓ Aluno não pode estar em mais&#xa;  de 1 turma simultaneamente&#xa;&#xa;✓ Aluno NÃO pode ser cadastrado&#xa;  sem turma&#xa;&#xa;✓ Turma NÃO pode existir sem&#xa;  pelo menos 1 professor ativo&#xa;&#xa;✓ Idade do aluno deve estar&#xa;  dentro da faixa etária da turma&#xa;&#xa;✓ Presença editável por até&#xa;  1 mês após data da aula&#xa;&#xa;✓ Soft delete em todas as tabelas&#xa;&#xa;✓ Ano dividido em 4 trimestres&#xa;  fixos (3 meses cada)&#xa;&#xa;✓ Dia da semana é GLOBAL&#xa;  (vale para todas as turmas)&#xa;&#xa;✓ Alterar dia_semana regenera&#xa;  apenas aulas futuras&#xa;&#xa;✓ PKs são UUID (gen_random_uuid())" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;align=left;verticalAlign=top;fontSize=10;spacing=5;" vertex="1" parent="1">
+          <mxGeometry x="40" y="240" width="200" height="320" as="geometry"/>
+        </mxCell>
+
+        <!-- ÍNDICES SUGERIDOS -->
+        <mxCell id="indices_titulo" value="&lt;b&gt;ÍNDICES SUGERIDOS&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="600" width="200" height="40" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="indices" value="• app_user(login)&#xa;• app_user(teacher_id)&#xa;&#xa;• student(status)&#xa;• student(birth_date)&#xa;&#xa;• teacher(status)&#xa;&#xa;• class_group(age_group_id)&#xa;&#xa;• student_class_history&#xa;  (student_id, exit_date)&#xa;&#xa;• teacher_class&#xa;  (class_group_id, end_date)&#xa;&#xa;• class_lesson&#xa;  (class_group_id, lesson_date)&#xa;&#xa;• student_attendance&#xa;  (class_lesson_id)&#xa;• student_attendance&#xa;  (student_id)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;align=left;verticalAlign=top;fontSize=9;spacing=5;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="40" y="640" width="200" height="240" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
