@@ -10,6 +10,10 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 20260220100005
+    baseline-description: "Legacy migration baseline"
+    validate-on-migrate: false
   thymeleaf:
     cache: false
 

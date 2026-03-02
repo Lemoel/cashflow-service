@@ -1,0 +1,2 @@
+ALTER TABLE eventos.acesso
+ADD COLUMN nome VARCHAR(255);

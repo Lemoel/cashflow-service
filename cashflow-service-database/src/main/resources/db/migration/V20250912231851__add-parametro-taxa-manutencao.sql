@@ -1,0 +1,20 @@
+INSERT INTO eventos.parametro(
+    id,
+    chave,
+    valor_texto,
+    valor_inteiro,
+    valor_decimal,
+    tipo,
+    creation_user_id,
+    ativo
+)
+VALUES(
+    gen_random_uuid(),
+    'TAXA_MANUTENCAO',
+    null,
+    null,
+    5.5,
+    'DOUBLE',
+    'ADMIN',
+    FALSE
+);

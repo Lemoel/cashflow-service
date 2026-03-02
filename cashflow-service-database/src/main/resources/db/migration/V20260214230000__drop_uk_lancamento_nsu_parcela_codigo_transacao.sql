@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS eventos.uk_lancamento_nsu_parcela_codigo_transacao;
