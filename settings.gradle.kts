@@ -3,6 +3,7 @@ rootProject.name = "cashflow-service"
 include(
     "cashflow-service-commons",
     "cashflow-service-database",
+    "cashflow-service-usecase",
     "cashflow-service-app",
     "cashflow-service-tests",
 )

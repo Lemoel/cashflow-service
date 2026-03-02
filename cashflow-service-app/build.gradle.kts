@@ -34,6 +34,7 @@ jib {
 dependencies {
     implementation("tools.jackson.module:jackson-module-kotlin")
     implementation(project(":cashflow-service-commons"))
+    implementation(project(":cashflow-service-usecase"))
     implementation(project(":cashflow-service-database"))
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")

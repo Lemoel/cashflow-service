@@ -8,6 +8,7 @@ tasks.withType<Test>().configureEach {
 
 dependencies {
     testImplementation(project(":cashflow-service-app"))
+    testImplementation(project(":cashflow-service-usecase"))
     testImplementation("org.springframework.boot:spring-boot-starter-jdbc")
     testImplementation(project(":cashflow-service-commons"))
     testImplementation("org.springframework.boot:spring-boot-starter-test") {

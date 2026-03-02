@@ -27,12 +27,15 @@ lint:
 test:
 	./gradlew test
 
+test-unit:
+	./gradlew :cashflow-service-usecase:test
+
 test-integration:
 	./gradlew :cashflow-service-tests:test
 
 coverage:
 	./gradlew jacocoTestReport
-	@echo "Relatorio em: build/reports/jacoco/test/html/index.html"
+	@echo "Relatorio em: cashflow-service-usecase/build/reports/jacoco/test/html/index.html"
 
 # Docker (Jib)
 docker-build:

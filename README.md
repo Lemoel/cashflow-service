@@ -1,6 +1,6 @@
 # Cashflow Service
 
-**Backend-only** REST API microservice in Kotlin + Spring Boot 4 with hexagonal architecture (4 Gradle modules), PostgreSQL and Flyway. APIs are REST/RESTful level 3 (Richardson Maturity Model). All data access uses **Spring Data JDBC**. In development, the server runs on port **8081** (`http://localhost:8081`). All application code (Kotlin, SQL) is in English.
+**Backend-only** REST API microservice in Kotlin + Spring Boot 4 with hexagonal architecture (5 Gradle modules), PostgreSQL and Flyway. APIs are REST/RESTful level 3 (Richardson Maturity Model). All data access uses **Spring Data JDBC**. In development, the server runs on port **8081** (`http://localhost:8081`). All application code (Kotlin, SQL) is in English.
 
 ## Prerequisites
 
@@ -58,6 +58,7 @@ The deploy workflow pushes images to **Artifact Registry** (gcr.io was deprecate
 |--------|------|
 | `cashflow-service-commons` | Shared infrastructure (audit, exceptions, utilities) |
 | `cashflow-service-database` | Flyway SQL migrations |
+| `cashflow-service-usecase` | Domain logic, entities, ports, services, adapters |
 | `cashflow-service-app` | Spring Boot bootstrap, configuration |
 | `cashflow-service-tests` | Integration tests (Testcontainers) |
 

@@ -37,6 +37,7 @@ As regras detalhadas ficam em `.cursor/rules/` (quando existirem). Os arquivos a
 ```
 cashflow-service-commons   → audit, exceções, ErrorResponse, ExceptionAdvice
 cashflow-service-database  → migrations Flyway (SQL)
+cashflow-service-usecase   → CORE: entidades, InputPort, OutputPort, Service, Adapter (driven + external), Repository; controllers e DTOs em (fluxo)/adapter/external/
 cashflow-service-app       → Application.kt, config, application.yml, perfis dev/prod (sem controllers)
 cashflow-service-tests     → testes de integração (PostgresqlBaseTest); regras em `.cursor/rules/08-testes-integracao.md`
 ```
@@ -80,6 +81,7 @@ Ou via Gradle:
 
 ### Testes
 
+- **Unitários:** `./gradlew :cashflow-service-usecase:test` (MockK, sem Spring)
 - **Integração:** `./gradlew :cashflow-service-tests:test` (Testcontainers PostgreSQL) 
 
 ### Idioma
