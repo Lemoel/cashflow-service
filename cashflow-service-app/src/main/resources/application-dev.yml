@@ -1,3 +1,9 @@
+app:
+  security:
+    enabled: ${APP_SECURITY_ENABLED:false}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:8080}
+
 server:
   port: ${SERVER_PORT:8081}
 
