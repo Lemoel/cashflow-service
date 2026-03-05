@@ -9,10 +9,26 @@ import java.util.UUID
 
 interface TenantManagementInputPort {
     fun create(request: TenantCreateRequest): Tenant
-    fun update(id: UUID, request: TenantUpdateRequest): Tenant
+
+    fun update(
+        id: UUID,
+        request: TenantUpdateRequest,
+    ): Tenant
+
     fun findById(id: UUID): Tenant?
-    fun findAll(filter: TenantFilter?, page: Int, size: Int): TenantPage
+
+    fun findAll(
+        filter: TenantFilter?,
+        page: Int,
+        size: Int,
+    ): TenantPage
+
     fun findActiveForList(): List<Tenant>
+
     fun delete(id: UUID)
-    fun isCnpjAvailable(cnpj: String, excludeId: UUID?): Boolean
+
+    fun isCnpjAvailable(
+        cnpj: String,
+        excludeId: UUID?,
+    ): Boolean
 }

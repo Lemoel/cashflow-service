@@ -3,7 +3,6 @@ package br.com.cashflow.usecase.tenant_management.service
 import br.com.cashflow.commons.exception.ConflictException
 import br.com.cashflow.commons.exception.ResourceNotFoundException
 import br.com.cashflow.usecase.tenant.entity.Tenant
-import br.com.cashflow.usecase.tenant.port.TenantFilter
 import br.com.cashflow.usecase.tenant.port.TenantOutputPort
 import br.com.cashflow.usecase.tenant.port.TenantPage
 import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantCreateRequest
@@ -20,7 +19,6 @@ import org.junit.jupiter.api.Test
 import java.util.UUID
 
 class TenantManagementServiceTest {
-
     private val tenantOutputPort: TenantOutputPort = mockk()
     private lateinit var service: TenantManagementService
 
@@ -41,7 +39,17 @@ class TenantManagementServiceTest {
                 state = "SP",
                 zipCode = "01234567",
             )
-        val saved = Tenant(id = UUID.randomUUID(), cnpj = "12345678000190", tradeName = "CHURCH A", street = "STREET", number = "1", city = "CITY", state = "SP", zipCode = "01234567")
+        val saved =
+            Tenant(
+                id = UUID.randomUUID(),
+                cnpj = "12345678000190",
+                tradeName = "CHURCH A",
+                street = "STREET",
+                number = "1",
+                city = "CITY",
+                state = "SP",
+                zipCode = "01234567",
+            )
         every { tenantOutputPort.existsByCnpjExcludingId("12345678000190", null) } returns false
         every { tenantOutputPort.save(match { true }) } returns saved
 
@@ -93,7 +101,8 @@ class TenantManagementServiceTest {
     @Test
     fun `update returns updated tenant when CNPJ is unique`() {
         val id = UUID.randomUUID()
-        val existing = Tenant(id = id, cnpj = "12345678000190", tradeName = "OLD", street = "S", number = "1", city = "C", state = "SP", zipCode = "01234567")
+        val existing =
+            Tenant(id = id, cnpj = "12345678000190", tradeName = "OLD", street = "S", number = "1", city = "C", state = "SP", zipCode = "01234567")
         val request =
             TenantUpdateRequest(
                 tradeName = "New Name",
@@ -132,15 +141,15 @@ class TenantManagementServiceTest {
                     zipCode = "01234567",
                 ),
             )
-        }
-            .isInstanceOf(ResourceNotFoundException::class.java)
+        }.isInstanceOf(ResourceNotFoundException::class.java)
             .hasMessageContaining("not found")
     }
 
     @Test
     fun `update throws ConflictException when CNPJ belongs to another tenant`() {
         val id = UUID.randomUUID()
-        val existing = Tenant(id = id, cnpj = "11111111111111", tradeName = "A", street = "S", number = "1", city = "C", state = "SP", zipCode = "01234567")
+        val existing =
+            Tenant(id = id, cnpj = "11111111111111", tradeName = "A", street = "S", number = "1", city = "C", state = "SP", zipCode = "01234567")
         every { tenantOutputPort.findById(id) } returns existing
         every { tenantOutputPort.existsByCnpjExcludingId("12345678000190", id) } returns true
 
@@ -157,15 +166,15 @@ class TenantManagementServiceTest {
                     zipCode = "01234567",
                 ),
             )
-        }
-            .isInstanceOf(ConflictException::class.java)
+        }.isInstanceOf(ConflictException::class.java)
             .hasMessageContaining("CNPJ already registered")
     }
 
     @Test
     fun `findById returns tenant when found`() {
         val id = UUID.randomUUID()
-        val tenant = Tenant(id = id, cnpj = "12345678000190", tradeName = "A", street = "S", number = "1", city = "C", state = "SP", zipCode = "01234567")
+        val tenant =
+            Tenant(id = id, cnpj = "12345678000190", tradeName = "A", street = "S", number = "1", city = "C", state = "SP", zipCode = "01234567")
         every { tenantOutputPort.findById(id) } returns tenant
 
         val result = service.findById(id)
@@ -196,7 +205,19 @@ class TenantManagementServiceTest {
 
     @Test
     fun `findActiveForList delegates to output port`() {
-        val list = listOf(Tenant(id = UUID.randomUUID(), cnpj = "1", tradeName = "A", street = "S", number = "1", city = "C", state = "SP", zipCode = "01234567"))
+        val list =
+            listOf(
+                Tenant(
+                    id = UUID.randomUUID(),
+                    cnpj = "1",
+                    tradeName = "A",
+                    street = "S",
+                    number = "1",
+                    city = "C",
+                    state = "SP",
+                    zipCode = "01234567",
+                ),
+            )
         every { tenantOutputPort.findActiveOrderByTradeName() } returns list
 
         val result = service.findActiveForList()

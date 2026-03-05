@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired
 @SqlSetUp(value = ["/db/scripts/tenant/load.sql"])
 @SqlTearDown(value = ["/db/scripts/tenant/teardown.sql"])
 class TenantManagementServiceIT : PostgresqlBaseTest() {
-
     @Autowired
     private lateinit var tenantManagementInputPort: TenantManagementInputPort
 

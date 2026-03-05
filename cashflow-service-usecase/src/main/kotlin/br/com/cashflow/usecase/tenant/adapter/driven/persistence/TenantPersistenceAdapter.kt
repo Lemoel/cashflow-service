@@ -12,12 +12,15 @@ import java.util.UUID
 class TenantPersistenceAdapter(
     private val tenantRepository: TenantRepository,
 ) : TenantOutputPort {
-
     override fun save(tenant: Tenant): Tenant = tenantRepository.save(tenant)
 
     override fun findById(id: UUID): Tenant? = tenantRepository.findById(id).orElse(null)
 
-    override fun findAll(filter: TenantFilter?, page: Int, size: Int): TenantPage {
+    override fun findAll(
+        filter: TenantFilter?,
+        page: Int,
+        size: Int,
+    ): TenantPage {
         val pageable = PageRequest.of(page, size)
         val springPage = tenantRepository.findFiltered(filter, pageable)
         return TenantPage(
@@ -28,15 +31,17 @@ class TenantPersistenceAdapter(
         )
     }
 
-    override fun existsByCnpjExcludingId(cnpj: String, excludeId: UUID?): Boolean =
+    override fun existsByCnpjExcludingId(
+        cnpj: String,
+        excludeId: UUID?,
+    ): Boolean =
         if (excludeId != null) {
             tenantRepository.existsByCnpjAndIdNot(cnpj, excludeId)
         } else {
             tenantRepository.existsByCnpj(cnpj)
         }
 
-    override fun findActiveOrderByTradeName(): List<Tenant> =
-        tenantRepository.findByActiveTrueOrderByTradeNameAsc()
+    override fun findActiveOrderByTradeName(): List<Tenant> = tenantRepository.findByActiveTrueOrderByTradeNameAsc()
 
     override fun deleteById(id: UUID) {
         tenantRepository.deleteById(id)

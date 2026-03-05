@@ -12,9 +12,9 @@ import br.com.cashflow.usecase.tenant_management.adapter.external.dto.toListOpti
 import br.com.cashflow.usecase.tenant_management.adapter.external.dto.toResponse
 import br.com.cashflow.usecase.tenant_management.port.TenantManagementInputPort
 import jakarta.validation.Valid
-import java.util.UUID
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.security.access.prepost.PreAuthorize
+import java.util.UUID
 
 @RestController
 @RequestMapping("/api/v1/tenants")
@@ -32,7 +32,6 @@ import org.springframework.security.access.prepost.PreAuthorize
 class TenantController(
     private val tenantManagement: TenantManagementInputPort,
 ) {
-
     @GetMapping
     fun list(
         @RequestParam(defaultValue = "0") page: Int,
@@ -52,8 +51,7 @@ class TenantController(
     }
 
     @GetMapping("/list")
-    fun listForDropdown(): List<TenantListOption> =
-        tenantManagement.findActiveForList().map { it.toListOption() }
+    fun listForDropdown(): List<TenantListOption> = tenantManagement.findActiveForList().map { it.toListOption() }
 
     @GetMapping("/cnpj-unico")
     fun cnpjUnico(
@@ -65,7 +63,9 @@ class TenantController(
     }
 
     @GetMapping("/{id}")
-    fun getById(@PathVariable id: UUID): ResponseEntity<TenantResponse> {
+    fun getById(
+        @PathVariable id: UUID,
+    ): ResponseEntity<TenantResponse> {
         val tenant =
             tenantManagement.findById(id)
                 ?: throw ResourceNotFoundException("Tenant not found: $id")
@@ -94,7 +94,9 @@ class TenantController(
     }
 
     @DeleteMapping("/{id}")
-    fun delete(@PathVariable id: UUID): ResponseEntity<Unit> {
+    fun delete(
+        @PathVariable id: UUID,
+    ): ResponseEntity<Unit> {
         tenantManagement.delete(id)
         return ResponseEntity.noContent().build()
     }

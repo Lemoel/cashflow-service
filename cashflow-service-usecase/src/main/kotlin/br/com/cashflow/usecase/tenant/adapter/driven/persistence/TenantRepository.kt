@@ -7,13 +7,22 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.CrudRepository
 import java.util.UUID
 
-interface TenantRepository : CrudRepository<Tenant, UUID>, TenantRepositoryCustom {
+interface TenantRepository :
+    CrudRepository<Tenant, UUID>,
+    TenantRepositoryCustom {
+    fun existsByCnpjAndIdNot(
+        cnpj: String,
+        id: UUID,
+    ): Boolean
 
-    fun existsByCnpjAndIdNot(cnpj: String, id: UUID): Boolean
     fun existsByCnpj(cnpj: String): Boolean
+
     fun findByActiveTrueOrderByTradeNameAsc(): List<Tenant>
 }
 
 interface TenantRepositoryCustom {
-    fun findFiltered(filter: TenantFilter?, pageable: Pageable): Page<Tenant>
+    fun findFiltered(
+        filter: TenantFilter?,
+        pageable: Pageable,
+    ): Page<Tenant>
 }

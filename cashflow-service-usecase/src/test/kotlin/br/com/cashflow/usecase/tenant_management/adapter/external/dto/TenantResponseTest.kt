@@ -7,7 +7,6 @@ import java.time.Instant
 import java.util.UUID
 
 class TenantResponseTest {
-
     @Test
     fun `toResponse maps all fields correctly`() {
         val id = UUID.randomUUID()

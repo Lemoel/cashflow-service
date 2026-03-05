@@ -11,7 +11,6 @@ import java.util.UUID
 class TenantEntityCallback(
     private val auditorAware: AuditorAware<String>,
 ) : BeforeConvertCallback<Tenant> {
-
     override fun onBeforeConvert(tenant: Tenant): Tenant {
         val now = Instant.now()
         val auditor = auditorAware.currentAuditor.orElse("system")

@@ -22,7 +22,6 @@ private const val CNPJ_DIGITS_LENGTH = 14
 class TenantManagementService(
     private val tenantOutputPort: TenantOutputPort,
 ) : TenantManagementInputPort {
-
     override fun create(request: TenantCreateRequest): Tenant {
         val entity = request.toEntity()
         requireCnpjLength(entity.cnpj)
@@ -32,7 +31,10 @@ class TenantManagementService(
         return tenantOutputPort.save(entity)
     }
 
-    override fun update(id: UUID, request: TenantUpdateRequest): Tenant {
+    override fun update(
+        id: UUID,
+        request: TenantUpdateRequest,
+    ): Tenant {
         val existing =
             tenantOutputPort.findById(id)
                 ?: throw ResourceNotFoundException("Tenant not found: $id")
@@ -44,16 +46,20 @@ class TenantManagementService(
         return tenantOutputPort.save(existing)
     }
 
-    override fun findById(id: UUID): Tenant? =
-        tenantOutputPort.findById(id)
+    override fun findById(id: UUID): Tenant? = tenantOutputPort.findById(id)
 
-    override fun findAll(filter: TenantFilter?, page: Int, size: Int): TenantPage =
-        tenantOutputPort.findAll(filter, page, size)
+    override fun findAll(
+        filter: TenantFilter?,
+        page: Int,
+        size: Int,
+    ): TenantPage = tenantOutputPort.findAll(filter, page, size)
 
-    override fun findActiveForList(): List<Tenant> =
-        tenantOutputPort.findActiveOrderByTradeName()
+    override fun findActiveForList(): List<Tenant> = tenantOutputPort.findActiveOrderByTradeName()
 
-    override fun isCnpjAvailable(cnpj: String, excludeId: UUID?): Boolean {
+    override fun isCnpjAvailable(
+        cnpj: String,
+        excludeId: UUID?,
+    ): Boolean {
         val normalized = cnpj.filter { it.isDigit() }
         requireCnpjLength(normalized)
         return !tenantOutputPort.existsByCnpjExcludingId(normalized, excludeId)

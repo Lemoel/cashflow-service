@@ -1,7 +1,6 @@
 package br.com.cashflow.usecase.tenant.adapter.driven.persistence
 
 import br.com.cashflow.usecase.tenant.entity.Tenant
-import br.com.cashflow.usecase.tenant.port.TenantFilter
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -15,7 +14,6 @@ import java.util.Optional
 import java.util.UUID
 
 class TenantPersistenceAdapterTest {
-
     private val tenantRepository: TenantRepository = mockk()
     private lateinit var adapter: TenantPersistenceAdapter
 
@@ -27,7 +25,8 @@ class TenantPersistenceAdapterTest {
     @Test
     fun `save delegates to repository and returns saved tenant`() {
         val tenant = Tenant(id = null, cnpj = "1", tradeName = "A", street = "S", number = "1", city = "C", state = "SP", zipCode = "01234567")
-        val saved = Tenant(id = UUID.randomUUID(), cnpj = "1", tradeName = "A", street = "S", number = "1", city = "C", state = "SP", zipCode = "01234567")
+        val saved =
+            Tenant(id = UUID.randomUUID(), cnpj = "1", tradeName = "A", street = "S", number = "1", city = "C", state = "SP", zipCode = "01234567")
         every { tenantRepository.save(tenant) } returns saved
 
         val result = adapter.save(tenant)
@@ -62,8 +61,22 @@ class TenantPersistenceAdapterTest {
     @Test
     fun `findAll delegates to findFiltered and returns TenantPage`() {
         val pageable = PageRequest.of(0, 10)
-        val tenants = listOf(Tenant(id = UUID.randomUUID(), cnpj = "1", tradeName = "A", street = "S", number = "1", city = "C", state = "SP", zipCode = "01234567"))
-        val springPage = org.springframework.data.domain.PageImpl(tenants, pageable, 1L)
+        val tenants =
+            listOf(
+                Tenant(
+                    id = UUID.randomUUID(),
+                    cnpj = "1",
+                    tradeName = "A",
+                    street = "S",
+                    number = "1",
+                    city = "C",
+                    state = "SP",
+                    zipCode = "01234567",
+                ),
+            )
+        val springPage =
+            org.springframework.data.domain
+                .PageImpl(tenants, pageable, 1L)
         every { tenantRepository.findFiltered(null, pageable) } returns springPage
 
         val result = adapter.findAll(null, 0, 10)
@@ -98,7 +111,19 @@ class TenantPersistenceAdapterTest {
 
     @Test
     fun `findActiveOrderByTradeName delegates to repository`() {
-        val list = listOf(Tenant(id = UUID.randomUUID(), cnpj = "1", tradeName = "A", street = "S", number = "1", city = "C", state = "SP", zipCode = "01234567"))
+        val list =
+            listOf(
+                Tenant(
+                    id = UUID.randomUUID(),
+                    cnpj = "1",
+                    tradeName = "A",
+                    street = "S",
+                    number = "1",
+                    city = "C",
+                    state = "SP",
+                    zipCode = "01234567",
+                ),
+            )
         every { tenantRepository.findByActiveTrueOrderByTradeNameAsc() } returns list
 
         val result = adapter.findActiveOrderByTradeName()

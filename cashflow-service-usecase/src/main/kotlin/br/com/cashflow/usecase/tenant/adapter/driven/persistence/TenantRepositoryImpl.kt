@@ -14,8 +14,10 @@ import java.util.UUID
 class TenantRepositoryImpl(
     private val jdbcTemplate: JdbcTemplate,
 ) : TenantRepositoryCustom {
-
-    override fun findFiltered(filter: TenantFilter?, pageable: Pageable): Page<Tenant> {
+    override fun findFiltered(
+        filter: TenantFilter?,
+        pageable: Pageable,
+    ): Page<Tenant> {
         val params = mutableListOf<Any>()
         val conditions = mutableListOf<String>()
         filter?.let { f ->
@@ -43,30 +45,34 @@ class TenantRepositoryImpl(
     }
 
     companion object {
-        private val TENANT_ROW_MAPPER = RowMapper<Tenant> { rs: ResultSet, _: Int ->
-            Tenant(
-                id = uuid(rs, "id"),
-                cnpj = rs.getString("cnpj") ?: "",
-                tradeName = rs.getString("nome_fantasia") ?: "",
-                companyName = rs.getString("razao_social"),
-                street = rs.getString("logradouro") ?: "",
-                number = rs.getString("numero") ?: "",
-                complement = rs.getString("complemento"),
-                neighborhood = rs.getString("bairro"),
-                city = rs.getString("cidade") ?: "",
-                state = rs.getString("uf") ?: "",
-                zipCode = rs.getString("cep") ?: "",
-                phone = rs.getString("telefone"),
-                email = rs.getString("email"),
-                active = rs.getBoolean("ativo"),
-                creationUserId = rs.getString("creation_user_id") ?: "",
-                modUserId = rs.getString("mod_user_id"),
-                createdAt = timestamp(rs, "created_at"),
-                updatedAt = timestamp(rs, "updated_at"),
-            )
-        }
+        private val TENANT_ROW_MAPPER =
+            RowMapper<Tenant> { rs: ResultSet, _: Int ->
+                Tenant(
+                    id = uuid(rs, "id"),
+                    cnpj = rs.getString("cnpj") ?: "",
+                    tradeName = rs.getString("nome_fantasia") ?: "",
+                    companyName = rs.getString("razao_social"),
+                    street = rs.getString("logradouro") ?: "",
+                    number = rs.getString("numero") ?: "",
+                    complement = rs.getString("complemento"),
+                    neighborhood = rs.getString("bairro"),
+                    city = rs.getString("cidade") ?: "",
+                    state = rs.getString("uf") ?: "",
+                    zipCode = rs.getString("cep") ?: "",
+                    phone = rs.getString("telefone"),
+                    email = rs.getString("email"),
+                    active = rs.getBoolean("ativo"),
+                    creationUserId = rs.getString("creation_user_id") ?: "",
+                    modUserId = rs.getString("mod_user_id"),
+                    createdAt = timestamp(rs, "created_at"),
+                    updatedAt = timestamp(rs, "updated_at"),
+                )
+            }
 
-        private fun uuid(rs: ResultSet, column: String): UUID? {
+        private fun uuid(
+            rs: ResultSet,
+            column: String,
+        ): UUID? {
             val s = rs.getString(column) ?: return null
             return try {
                 UUID.fromString(s)
@@ -75,7 +81,10 @@ class TenantRepositoryImpl(
             }
         }
 
-        private fun timestamp(rs: ResultSet, column: String): Instant? {
+        private fun timestamp(
+            rs: ResultSet,
+            column: String,
+        ): Instant? {
             val ts = rs.getTimestamp(column) ?: return null
             return ts.toInstant()
         }
