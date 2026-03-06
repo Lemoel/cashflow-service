@@ -75,4 +75,15 @@ class AcessoPersistenceAdapterTest {
 
         assertThat(result).isNull()
     }
+
+    @Test
+    fun `updatePassword does nothing when user not found`() {
+        val email = "notfound@test.com"
+        every { acessoRepository.findById(email) } returns Optional.empty()
+
+        adapter.updatePassword(email, "new-hash")
+
+        verify(exactly = 1) { acessoRepository.findById(email) }
+        verify(exactly = 0) { acessoRepository.save(any<Acesso>()) }
+    }
 }

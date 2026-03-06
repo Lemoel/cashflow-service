@@ -1,5 +1,5 @@
 # Cashflow Service
-.PHONY: run build test quality format lint coverage clean docker-build docker-push docker-run native-build native-run setup-hooks
+.PHONY: run build test quality format lint coverage coverage-check pre-push clean docker-build docker-push docker-run native-build native-run setup-hooks
 
 # Desenvolvimento
 run:
@@ -15,7 +15,10 @@ clean:
 quality:
 	./gradlew ktlintCheck test jacocoTestReport
 
-pre-push: format lint build
+coverage-check:
+	./gradlew jacocoTestCoverageVerification
+
+pre-push: format lint build coverage-check
 
 format:
 	./gradlew ktlintFormat

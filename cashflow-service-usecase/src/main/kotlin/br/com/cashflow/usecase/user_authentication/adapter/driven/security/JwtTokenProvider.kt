@@ -92,7 +92,8 @@ class JwtTokenProvider(
                     .build()
                     .parseSignedClaims(token)
                     .payload
-            if (payload.get(CLAIM_REFRESH, Boolean::class.java) != true) return null
+            val refreshClaim = payload.get(CLAIM_REFRESH)
+            if (refreshClaim != true && refreshClaim != java.lang.Boolean.TRUE) return null
             val tenantIdStr = payload.get(CLAIM_TENANT_ID, String::class.java)
             val tenantId = tenantIdStr?.let { UUID.fromString(it) }
             TokenClaims(
