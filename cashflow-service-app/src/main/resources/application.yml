@@ -2,6 +2,8 @@
 app:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:8080}
+  security:
+    enabled: ${APP_SECURITY_ENABLED:true}
 
 spring:
   application:

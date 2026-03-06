@@ -1,0 +1,49 @@
+package br.com.cashflow.usecase.tenant.adapter.driven.persistence
+
+import br.com.cashflow.usecase.tenant.entity.Tenant
+import br.com.cashflow.usecase.tenant.port.TenantFilter
+import br.com.cashflow.usecase.tenant.port.TenantOutputPort
+import br.com.cashflow.usecase.tenant.port.TenantPage
+import org.springframework.data.domain.PageRequest
+import org.springframework.stereotype.Component
+import java.util.UUID
+
+@Component
+class TenantPersistenceAdapter(
+    private val tenantRepository: TenantRepository,
+) : TenantOutputPort {
+    override fun save(tenant: Tenant): Tenant = tenantRepository.save(tenant)
+
+    override fun findById(id: UUID): Tenant? = tenantRepository.findById(id).orElse(null)
+
+    override fun findAll(
+        filter: TenantFilter?,
+        page: Int,
+        size: Int,
+    ): TenantPage {
+        val pageable = PageRequest.of(page, size)
+        val springPage = tenantRepository.findFiltered(filter, pageable)
+        return TenantPage(
+            items = springPage.content,
+            total = springPage.totalElements,
+            page = springPage.number,
+            pageSize = springPage.size,
+        )
+    }
+
+    override fun existsByCnpjExcludingId(
+        cnpj: String,
+        excludeId: UUID?,
+    ): Boolean =
+        if (excludeId != null) {
+            tenantRepository.existsByCnpjAndIdNot(cnpj, excludeId)
+        } else {
+            tenantRepository.existsByCnpj(cnpj)
+        }
+
+    override fun findActiveOrderByTradeName(): List<Tenant> = tenantRepository.findByActiveTrueOrderByTradeNameAsc()
+
+    override fun deleteById(id: UUID) {
+        tenantRepository.deleteById(id)
+    }
+}

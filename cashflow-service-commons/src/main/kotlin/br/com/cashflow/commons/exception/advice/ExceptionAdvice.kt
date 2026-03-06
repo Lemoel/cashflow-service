@@ -1,6 +1,7 @@
 package br.com.cashflow.commons.exception.advice
 
 import br.com.cashflow.commons.exception.BusinessException
+import br.com.cashflow.commons.exception.ConflictException
 import br.com.cashflow.commons.exception.ResourceNotFoundException
 import br.com.cashflow.commons.exception.model.ErrorResponse
 import br.com.cashflow.commons.exception.model.FieldError
@@ -30,6 +31,22 @@ class ExceptionAdvice {
                 error = "Not Found",
             )
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response)
+    }
+
+    @ExceptionHandler(ConflictException::class)
+    fun handleConflictException(
+        exception: ConflictException,
+        request: HttpServletRequest,
+    ): ResponseEntity<ErrorResponse> {
+        val response =
+            ErrorResponse(
+                timestamp = Instant.now().toString(),
+                status = HttpStatus.CONFLICT.value(),
+                message = exception.message ?: "Conflict",
+                path = request.requestURI,
+                error = "Conflict",
+            )
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response)
     }
 
     @ExceptionHandler(BusinessException::class)
