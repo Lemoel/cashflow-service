@@ -12,15 +12,17 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import java.util.UUID
 
 @SqlSetUp(value = ["/db/scripts/tenant/load.sql"])
 @SqlTearDown(value = ["/db/scripts/tenant/teardown.sql"])
-class TenantManagementServiceIT : PostgresqlBaseTest() {
+class TenantManagementServiceITCase : PostgresqlBaseTest() {
     @Autowired
     private lateinit var tenantManagementInputPort: TenantManagementInputPort
 
     @Test
-    fun `create findById update findAll findActiveForList delete full CRUD`() {
+    fun should_CreateFindUpdateFindAllFindActiveForListAndDelete_When_FullCrud() {
+        // prepare
         val createRequest =
             TenantCreateRequest(
                 tradeName = "Church CRUD",
@@ -38,8 +40,10 @@ class TenantManagementServiceIT : PostgresqlBaseTest() {
                 active = true,
             )
 
+        // call
         val created = tenantManagementInputPort.create(createRequest)
 
+        // assert
         assertThat(created.id).isNotNull()
         assertThat(created.cnpj).isEqualTo("12345678000190")
         assertThat(created.tradeName).isEqualTo("CHURCH CRUD")
@@ -50,11 +54,15 @@ class TenantManagementServiceIT : PostgresqlBaseTest() {
         assertThat(created.state).isEqualTo("SP")
         assertThat(created.active).isTrue()
 
+        // call
         val found = tenantManagementInputPort.findById(created.id!!)
+
+        // assert
         assertThat(found).isNotNull()
         assertThat(found!!.id).isEqualTo(created.id)
         assertThat(found.tradeName).isEqualTo("CHURCH CRUD")
 
+        // prepare
         val updateRequest =
             TenantUpdateRequest(
                 tradeName = "Church CRUD Updated",
@@ -72,28 +80,41 @@ class TenantManagementServiceIT : PostgresqlBaseTest() {
                 active = false,
             )
 
+        // call
         val updated = tenantManagementInputPort.update(created.id!!, updateRequest)
 
+        // assert
         assertThat(updated.tradeName).isEqualTo("CHURCH CRUD UPDATED")
         assertThat(updated.state).isEqualTo("RJ")
         assertThat(updated.active).isFalse()
 
+        // call
         val page = tenantManagementInputPort.findAll(null, 0, 10)
+
+        // assert
         assertThat(page.items).isNotEmpty
         assertThat(page.total).isGreaterThanOrEqualTo(1)
 
+        // call
         val listActive = tenantManagementInputPort.findActiveForList()
         val createdInList = listActive.find { it.id == created.id }
+
+        // assert (inactive tenant must not appear in list for dropdown)
         assertThat(createdInList).isNull()
 
+        // call
         tenantManagementInputPort.delete(created.id!!)
 
+        // call
         val afterDelete = tenantManagementInputPort.findById(created.id!!)
+
+        // assert
         assertThat(afterDelete).isNull()
     }
 
     @Test
-    fun `create with duplicate CNPJ throws ConflictException`() {
+    fun should_ThrowConflictException_When_CreateWithDuplicateCnpj() {
+        // prepare
         val request =
             TenantCreateRequest(
                 tradeName = "First",
@@ -106,19 +127,27 @@ class TenantManagementServiceIT : PostgresqlBaseTest() {
             )
         tenantManagementInputPort.create(request)
 
+        // call & assert
         assertThatThrownBy { tenantManagementInputPort.create(request) }
             .isInstanceOf(ConflictException::class.java)
             .hasMessageContaining("CNPJ already registered")
     }
 
     @Test
-    fun `findById returns null when not found`() {
-        val result = tenantManagementInputPort.findById(java.util.UUID.randomUUID())
+    fun should_ReturnNull_When_FindByIdAndTenantNotFound() {
+        // prepare
+        val id = UUID.randomUUID()
+
+        // call
+        val result = tenantManagementInputPort.findById(id)
+
+        // assert
         assertThat(result).isNull()
     }
 
     @Test
-    fun `update when tenant not found throws ResourceNotFoundException`() {
+    fun should_ThrowResourceNotFoundException_When_UpdateAndTenantNotFound() {
+        // prepare
         val request =
             TenantUpdateRequest(
                 tradeName = "A",
@@ -130,20 +159,23 @@ class TenantManagementServiceIT : PostgresqlBaseTest() {
                 zipCode = "01234567",
             )
 
-        assertThatThrownBy { tenantManagementInputPort.update(java.util.UUID.randomUUID(), request) }
+        // call & assert
+        assertThatThrownBy { tenantManagementInputPort.update(UUID.randomUUID(), request) }
             .isInstanceOf(ResourceNotFoundException::class.java)
             .hasMessageContaining("not found")
     }
 
     @Test
-    fun `delete when tenant not found throws ResourceNotFoundException`() {
-        assertThatThrownBy { tenantManagementInputPort.delete(java.util.UUID.randomUUID()) }
+    fun should_ThrowResourceNotFoundException_When_DeleteAndTenantNotFound() {
+        // call & assert
+        assertThatThrownBy { tenantManagementInputPort.delete(UUID.randomUUID()) }
             .isInstanceOf(ResourceNotFoundException::class.java)
             .hasMessageContaining("not found")
     }
 
     @Test
-    fun `findActiveForList returns only active tenants ordered by tradeName`() {
+    fun should_ReturnOnlyActiveTenantsOrderedByTradeName_When_FindActiveForList() {
+        // prepare
         val a =
             TenantCreateRequest(
                 tradeName = "Zebra Church",
@@ -169,21 +201,27 @@ class TenantManagementServiceIT : PostgresqlBaseTest() {
         tenantManagementInputPort.create(a)
         tenantManagementInputPort.create(b)
 
+        // call
         val list = tenantManagementInputPort.findActiveForList()
 
+        // assert
         assertThat(list).isNotEmpty
         val names = list.map { it.tradeName }
         assertThat(names.indexOf("ALPHA CHURCH")).isLessThan(names.indexOf("ZEBRA CHURCH"))
     }
 
     @Test
-    fun `isCnpjAvailable returns true when CNPJ is not registered`() {
+    fun should_ReturnTrue_When_IsCnpjAvailableAndCnpjNotRegistered() {
+        // call
         val result = tenantManagementInputPort.isCnpjAvailable("99999999000199", null)
+
+        // assert
         assertThat(result).isTrue()
     }
 
     @Test
-    fun `isCnpjAvailable returns false when CNPJ is already registered`() {
+    fun should_ReturnFalse_When_IsCnpjAvailableAndCnpjAlreadyRegistered() {
+        // prepare
         val createRequest =
             TenantCreateRequest(
                 tradeName = "Unique Check",
@@ -196,13 +234,16 @@ class TenantManagementServiceIT : PostgresqlBaseTest() {
             )
         tenantManagementInputPort.create(createRequest)
 
+        // call
         val result = tenantManagementInputPort.isCnpjAvailable("12345678000190", null)
 
+        // assert
         assertThat(result).isFalse()
     }
 
     @Test
-    fun `isCnpjAvailable returns true when CNPJ exists but excludeId is that tenant`() {
+    fun should_ReturnTrue_When_IsCnpjAvailableAndExcludeIdIsThatTenant() {
+        // prepare
         val createRequest =
             TenantCreateRequest(
                 tradeName = "Exclude Self",
@@ -215,13 +256,16 @@ class TenantManagementServiceIT : PostgresqlBaseTest() {
             )
         val created = tenantManagementInputPort.create(createRequest)
 
+        // call
         val result = tenantManagementInputPort.isCnpjAvailable("12345678000190", created.id)
 
+        // assert
         assertThat(result).isTrue()
     }
 
     @Test
-    fun `isCnpjAvailable normalizes masked CNPJ`() {
+    fun should_NormalizeMaskedCnpj_When_IsCnpjAvailable() {
+        // prepare
         val createRequest =
             TenantCreateRequest(
                 tradeName = "Masked",
@@ -234,8 +278,10 @@ class TenantManagementServiceIT : PostgresqlBaseTest() {
             )
         tenantManagementInputPort.create(createRequest)
 
+        // call
         val result = tenantManagementInputPort.isCnpjAvailable("12.345.678/0001-90", null)
 
+        // assert
         assertThat(result).isFalse()
     }
 }
