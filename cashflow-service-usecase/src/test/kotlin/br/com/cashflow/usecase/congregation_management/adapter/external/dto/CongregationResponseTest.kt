@@ -7,7 +7,6 @@ import java.time.Instant
 import java.util.UUID
 
 class CongregationResponseTest {
-
     @Test
     fun `toResponse maps all fields correctly`() {
         val id = UUID.randomUUID()
@@ -15,26 +14,27 @@ class CongregationResponseTest {
         val setorialId = UUID.randomUUID()
         val createdAt = Instant.parse("2025-01-15T10:00:00Z")
         val updatedAt = Instant.parse("2025-01-16T12:00:00Z")
-        val congregation = Congregation(
-            id = id,
-            tenantId = tenantId,
-            setorialId = setorialId,
-            nome = "Cong A",
-            cnpj = "12345678000199",
-            logradouro = "Rua X",
-            bairro = "Centro",
-            numero = "1",
-            cidade = "São Paulo",
-            uf = "SP",
-            cep = "01234567",
-            email = "a@b.com",
-            telefone = "11999999999",
-            ativo = true,
-            creationUserId = "user1",
-            modUserId = "user2",
-            createdAt = createdAt,
-            updatedAt = updatedAt,
-        )
+        val congregation =
+            Congregation(
+                id = id,
+                tenantId = tenantId,
+                setorialId = setorialId,
+                nome = "Cong A",
+                cnpj = "12345678000199",
+                logradouro = "Rua X",
+                bairro = "Centro",
+                numero = "1",
+                cidade = "São Paulo",
+                uf = "SP",
+                cep = "01234567",
+                email = "a@b.com",
+                telefone = "11999999999",
+                ativo = true,
+                creationUserId = "user1",
+                modUserId = "user2",
+                createdAt = createdAt,
+                updatedAt = updatedAt,
+            )
 
         val result = congregation.toResponse()
 
@@ -71,21 +71,22 @@ class CongregationResponseTest {
     fun `CongregationCreateRequest toEntity maps fields and normalizes strings`() {
         val tenantId = UUID.randomUUID()
         val setorialId = UUID.randomUUID()
-        val request = CongregationCreateRequest(
-            tenantId = tenantId,
-            setorialId = setorialId,
-            nome = "  cong c  ",
-            cnpj = "12.345.678/0001-99",
-            logradouro = " Rua Y ",
-            bairro = " centro ",
-            numero = " 2 ",
-            cidade = " sp ",
-            uf = "sp",
-            cep = " 01234-567 ",
-            email = " C@D.COM ",
-            telefone = " 11888887777 ",
-            ativo = false,
-        )
+        val request =
+            CongregationCreateRequest(
+                tenantId = tenantId,
+                setorialId = setorialId,
+                nome = "  cong c  ",
+                cnpj = "12.345.678/0001-99",
+                logradouro = " Rua Y ",
+                bairro = " centro ",
+                numero = " 2 ",
+                cidade = " sp ",
+                uf = "sp",
+                cep = " 01234-567 ",
+                email = " C@D.COM ",
+                telefone = " 11888887777 ",
+                ativo = false,
+            )
 
         val result = request.toEntity()
 
@@ -107,33 +108,35 @@ class CongregationResponseTest {
     @Test
     fun `CongregationUpdateRequest applyTo updates congregation fields`() {
         val setorialId = UUID.randomUUID()
-        val congregation = Congregation(
-            id = UUID.randomUUID(),
-            tenantId = UUID.randomUUID(),
-            setorialId = null,
-            nome = "Old",
-            logradouro = "Old St",
-            bairro = "Old B",
-            numero = "0",
-            cidade = "Old City",
-            uf = "RJ",
-            cep = "20000000",
-            ativo = true,
-        )
-        val request = CongregationUpdateRequest(
-            setorialId = setorialId,
-            nome = "  new name  ",
-            cnpj = "11.222.333/0001-81",
-            logradouro = " New St ",
-            bairro = " new b ",
-            numero = " 10 ",
-            cidade = " new city ",
-            uf = "sp",
-            cep = " 01234-567 ",
-            email = " new@e.com ",
-            telefone = " 11999998888 ",
-            ativo = false,
-        )
+        val congregation =
+            Congregation(
+                id = UUID.randomUUID(),
+                tenantId = UUID.randomUUID(),
+                setorialId = null,
+                nome = "Old",
+                logradouro = "Old St",
+                bairro = "Old B",
+                numero = "0",
+                cidade = "Old City",
+                uf = "RJ",
+                cep = "20000000",
+                ativo = true,
+            )
+        val request =
+            CongregationUpdateRequest(
+                setorialId = setorialId,
+                nome = "  new name  ",
+                cnpj = "11.222.333/0001-81",
+                logradouro = " New St ",
+                bairro = " new b ",
+                numero = " 10 ",
+                cidade = " new city ",
+                uf = "sp",
+                cep = " 01234-567 ",
+                email = " new@e.com ",
+                telefone = " 11999998888 ",
+                ativo = false,
+            )
 
         request.applyTo(congregation)
 

@@ -80,7 +80,8 @@ class TenantRepositoryImplTest {
 
     @Test
     fun `findFiltered returns PageImpl with content from query`() {
-        val tenant = Tenant(id = UUID.randomUUID(), cnpj = "1", tradeName = "T", street = "S", number = "1", city = "C", state = "SP", zipCode = "01234567")
+        val tenant =
+            Tenant(id = UUID.randomUUID(), cnpj = "1", tradeName = "T", street = "S", number = "1", city = "C", state = "SP", zipCode = "01234567")
         every { jdbcTemplate.queryForObject(any(), Long::class.java, *anyVararg()) } returns 1L
         every { jdbcTemplate.query(any(), any<RowMapper<Tenant>>(), *anyVararg()) } returns listOf(tenant)
 

@@ -26,8 +26,28 @@ class CongregationPersistenceAdapterTest {
 
     @Test
     fun `save delegates to repository and returns saved congregation`() {
-        val congregation = Congregation(id = null, nome = "Cong A", logradouro = "Rua X", bairro = "Centro", numero = "1", cidade = "SP", uf = "SP", cep = "01234567")
-        val saved = Congregation(id = UUID.randomUUID(), nome = "Cong A", logradouro = "Rua X", bairro = "Centro", numero = "1", cidade = "SP", uf = "SP", cep = "01234567")
+        val congregation =
+            Congregation(
+                id = null,
+                nome = "Cong A",
+                logradouro = "Rua X",
+                bairro = "Centro",
+                numero = "1",
+                cidade = "SP",
+                uf = "SP",
+                cep = "01234567",
+            )
+        val saved =
+            Congregation(
+                id = UUID.randomUUID(),
+                nome = "Cong A",
+                logradouro = "Rua X",
+                bairro = "Centro",
+                numero = "1",
+                cidade = "SP",
+                uf = "SP",
+                cep = "01234567",
+            )
         every { congregationRepository.save(congregation) } returns saved
 
         val result = adapter.save(congregation)
@@ -39,7 +59,8 @@ class CongregationPersistenceAdapterTest {
     @Test
     fun `findById delegates to repository and returns entity when found`() {
         val id = UUID.randomUUID()
-        val congregation = Congregation(id = id, nome = "Cong A", logradouro = "Rua X", bairro = "Centro", numero = "1", cidade = "SP", uf = "SP", cep = "01234567")
+        val congregation =
+            Congregation(id = id, nome = "Cong A", logradouro = "Rua X", bairro = "Centro", numero = "1", cidade = "SP", uf = "SP", cep = "01234567")
         every { congregationRepository.findById(id) } returns Optional.of(congregation)
 
         val result = adapter.findById(id)
@@ -62,9 +83,19 @@ class CongregationPersistenceAdapterTest {
     @Test
     fun `findAll delegates to findFiltered and returns CongregationPage`() {
         val pageable = PageRequest.of(0, 10)
-        val congregations = listOf(
-            Congregation(id = UUID.randomUUID(), nome = "Cong A", logradouro = "Rua X", bairro = "Centro", numero = "1", cidade = "SP", uf = "SP", cep = "01234567"),
-        )
+        val congregations =
+            listOf(
+                Congregation(
+                    id = UUID.randomUUID(),
+                    nome = "Cong A",
+                    logradouro = "Rua X",
+                    bairro = "Centro",
+                    numero = "1",
+                    cidade = "SP",
+                    uf = "SP",
+                    cep = "01234567",
+                ),
+            )
         val springPage = PageImpl(congregations, pageable, 1L)
         every { congregationRepository.findFiltered(null, pageable) } returns springPage
 
@@ -96,9 +127,19 @@ class CongregationPersistenceAdapterTest {
 
     @Test
     fun `findAllOrderByNome delegates to findAllByOrderByNomeAsc`() {
-        val list = listOf(
-            Congregation(id = UUID.randomUUID(), nome = "Cong A", logradouro = "Rua X", bairro = "Centro", numero = "1", cidade = "SP", uf = "SP", cep = "01234567"),
-        )
+        val list =
+            listOf(
+                Congregation(
+                    id = UUID.randomUUID(),
+                    nome = "Cong A",
+                    logradouro = "Rua X",
+                    bairro = "Centro",
+                    numero = "1",
+                    cidade = "SP",
+                    uf = "SP",
+                    cep = "01234567",
+                ),
+            )
         every { congregationRepository.findAllByOrderByNomeAsc() } returns list
 
         val result = adapter.findAllOrderByNome()
@@ -109,9 +150,19 @@ class CongregationPersistenceAdapterTest {
 
     @Test
     fun `findSetoriais delegates to findBySetorialIdIsNullAndAtivoTrueOrderByNomeAsc`() {
-        val list = listOf(
-            Congregation(id = UUID.randomUUID(), nome = "Setorial", logradouro = "Rua X", bairro = "Centro", numero = "1", cidade = "SP", uf = "SP", cep = "01234567"),
-        )
+        val list =
+            listOf(
+                Congregation(
+                    id = UUID.randomUUID(),
+                    nome = "Setorial",
+                    logradouro = "Rua X",
+                    bairro = "Centro",
+                    numero = "1",
+                    cidade = "SP",
+                    uf = "SP",
+                    cep = "01234567",
+                ),
+            )
         every { congregationRepository.findBySetorialIdIsNullAndAtivoTrueOrderByNomeAsc() } returns list
 
         val result = adapter.findSetoriais()

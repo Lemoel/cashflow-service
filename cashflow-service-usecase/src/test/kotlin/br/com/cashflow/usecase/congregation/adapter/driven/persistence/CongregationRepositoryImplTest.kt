@@ -51,10 +51,11 @@ class CongregationRepositoryImplTest {
         val countSqlSlot = slot<String>()
         val selectSqlSlot = slot<String>()
         every { jdbcTemplate.queryForObject(capture(countSqlSlot), Long::class.java, *anyVararg()) } returns 2L
-        val congregations = listOf(
-            Congregation(nome = "Cong A", logradouro = "", bairro = "", numero = "", cidade = "", uf = "", cep = ""),
-            Congregation(nome = "Cong A", logradouro = "", bairro = "", numero = "", cidade = "", uf = "", cep = ""),
-        )
+        val congregations =
+            listOf(
+                Congregation(nome = "Cong A", logradouro = "", bairro = "", numero = "", cidade = "", uf = "", cep = ""),
+                Congregation(nome = "Cong A", logradouro = "", bairro = "", numero = "", cidade = "", uf = "", cep = ""),
+            )
         every { jdbcTemplate.query(capture(selectSqlSlot), any<RowMapper<Congregation>>(), *anyVararg()) } returns congregations
 
         val pageable = PageRequest.of(0, 10)
@@ -95,9 +96,10 @@ class CongregationRepositoryImplTest {
 
     @Test
     fun `findFiltered returns PageImpl with content from query and total from queryForObject`() {
-        val singleCongregation = listOf(
-            Congregation(id = UUID.randomUUID(), nome = "Only", logradouro = "", bairro = "", numero = "", cidade = "", uf = "", cep = ""),
-        )
+        val singleCongregation =
+            listOf(
+                Congregation(id = UUID.randomUUID(), nome = "Only", logradouro = "", bairro = "", numero = "", cidade = "", uf = "", cep = ""),
+            )
         every { jdbcTemplate.queryForObject(any(), Long::class.java, *anyVararg()) } returns 1L
         every { jdbcTemplate.query(any(), any<RowMapper<Congregation>>(), *anyVararg()) } returns singleCongregation
 

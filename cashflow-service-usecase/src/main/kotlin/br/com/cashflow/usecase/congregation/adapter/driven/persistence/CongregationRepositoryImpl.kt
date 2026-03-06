@@ -18,7 +18,6 @@ class CongregationRepositoryImpl(
         filter: CongregationFilter?,
         pageable: Pageable,
     ): Page<Congregation> {
-
         val params = mutableListOf<Any>()
         val conditions = mutableListOf<String>()
 
@@ -37,7 +36,6 @@ class CongregationRepositoryImpl(
                 conditions.add("c.ativo = ?")
                 params.add(it)
             }
-
         }
         val whereClause = if (conditions.isEmpty()) "" else " WHERE " + conditions.joinToString(" AND ")
         val countSql = "SELECT COUNT(*) FROM eventos.congregacao c$whereClause"

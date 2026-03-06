@@ -10,7 +10,6 @@ import java.util.UUID
 interface CongregationRepository :
     CrudRepository<Congregation, UUID>,
     CongregationRepositoryCustom {
-
     fun existsByCnpj(cnpj: String): Boolean
 
     fun existsByCnpjAndIdNot(
