@@ -333,4 +333,49 @@ class CongregationManagementServiceTest {
 
         assertThat(result).isFalse()
     }
+
+    @Test
+    fun `isCnpjAvailable returns true when CNPJ is blank`() {
+        val result = service.isCnpjAvailable("  ", null)
+
+        assertThat(result).isTrue()
+        verify(exactly = 0) { congregationOutputPort.existsByCnpjExcludingId(any(), any()) }
+    }
+
+    @Test
+    fun `isCnpjAvailable throws when CNPJ has wrong length`() {
+        assertThatThrownBy { service.isCnpjAvailable("123", null) }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("14 dígitos")
+    }
+
+    @Test
+    fun `isCnpjAvailable throws when CNPJ digest invalid`() {
+        assertThatThrownBy { service.isCnpjAvailable("11111111111111", null) }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("inválido")
+    }
+
+    @Test
+    fun `delete throws ConflictException when DataIntegrityViolationException`() {
+        val id = UUID.randomUUID()
+        val cong =
+            Congregation(
+                id = id,
+                tenantId = UUID.randomUUID(),
+                nome = "A",
+                logradouro = "R",
+                bairro = "B",
+                numero = "1",
+                cidade = "C",
+                uf = "SP",
+                cep = "01234567",
+            )
+        every { congregationOutputPort.findById(id) } returns cong
+        every { congregationOutputPort.deleteById(id) } throws org.springframework.dao.DataIntegrityViolationException("fk")
+
+        assertThatThrownBy { service.delete(id) }
+            .isInstanceOf(ConflictException::class.java)
+            .hasMessageContaining("registros dependentes")
+    }
 }

@@ -2,7 +2,9 @@ package br.com.cashflow.commons.exception.advice
 
 import br.com.cashflow.commons.exception.BusinessException
 import br.com.cashflow.commons.exception.ConflictException
+import br.com.cashflow.commons.exception.InactiveUserException
 import br.com.cashflow.commons.exception.ResourceNotFoundException
+import br.com.cashflow.commons.exception.WrongPasswordException
 import br.com.cashflow.commons.exception.model.ErrorResponse
 import br.com.cashflow.commons.exception.model.FieldError
 import jakarta.servlet.http.HttpServletRequest
@@ -95,6 +97,35 @@ class ExceptionAdvice {
                 error = "Forbidden",
             )
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response)
+    }
+
+    @ExceptionHandler(InactiveUserException::class)
+    fun handleInactiveUserException(request: HttpServletRequest): ResponseEntity<ErrorResponse> {
+        val response =
+            ErrorResponse(
+                timestamp = Instant.now().toString(),
+                status = HttpStatus.FORBIDDEN.value(),
+                message = "Usuário inativo. Entre em contato com o administrador.",
+                path = request.requestURI,
+                error = "Forbidden",
+            )
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response)
+    }
+
+    @ExceptionHandler(WrongPasswordException::class)
+    fun handleWrongPasswordException(
+        exception: WrongPasswordException,
+        request: HttpServletRequest,
+    ): ResponseEntity<ErrorResponse> {
+        val response =
+            ErrorResponse(
+                timestamp = Instant.now().toString(),
+                status = HttpStatus.BAD_REQUEST.value(),
+                message = exception.message ?: "A senha atual está incorreta.",
+                path = request.requestURI,
+                error = "Bad Request",
+            )
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response)
     }
 
     @ExceptionHandler(IllegalArgumentException::class)

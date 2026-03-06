@@ -1,5 +1,9 @@
 package br.com.cashflow.app.config
 
+import br.com.cashflow.app.security.JwtAuthenticationFilter
+import br.com.cashflow.commons.auth.CurrentUser
+import br.com.cashflow.usecase.acesso.port.AcessoOutputPort
+import br.com.cashflow.usecase.user_authentication.port.TokenProvider
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Value
@@ -24,6 +28,7 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.provisioning.InMemoryUserDetailsManager
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 import org.springframework.security.web.context.DelegatingSecurityContextRepository
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository
@@ -39,18 +44,26 @@ import tools.jackson.databind.json.JsonMapper
 class SecurityConfig(
     private val corsConfigurationSource: CorsConfigurationSource,
     private val jsonMapper: JsonMapper,
+    private val tokenProvider: TokenProvider,
+    private val acessoOutputPort: AcessoOutputPort,
     @param:Value("\${app.security.enabled:true}")
     private val securityEnabled: Boolean,
+    @param:Value("\${app.security.dev-default-tenant-id:}")
+    private val devDefaultTenantId: String,
 ) {
+    @Bean
+    fun jwtAuthenticationFilter(): JwtAuthenticationFilter = JwtAuthenticationFilter(tokenProvider, acessoOutputPort, jsonMapper)
+
     @Bean
     fun securityFilterChain(
         http: HttpSecurity,
         securityContextRepository: SecurityContextRepository,
+        jwtAuthenticationFilter: JwtAuthenticationFilter,
     ): SecurityFilterChain {
         http.csrf { it.disable() }
         http.cors { it.configurationSource(corsConfigurationSource) }
         http.sessionManagement {
-            it.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+            it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         }
         http.securityContext {
             it.securityContextRepository(securityContextRepository)
@@ -59,9 +72,11 @@ class SecurityConfig(
         if (securityEnabled) {
             http.authorizeHttpRequests {
                 it.requestMatchers("/actuator/**").permitAll()
+                it.requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/auth/login").permitAll()
+                it.requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/auth/refresh").permitAll()
                 it.anyRequest().authenticated()
             }
-            http.httpBasic { }
+            http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
             http.exceptionHandling {
                 it.authenticationEntryPoint(json401EntryPoint())
             }
@@ -82,9 +97,14 @@ class SecurityConfig(
                 response: jakarta.servlet.http.HttpServletResponse,
                 filterChain: jakarta.servlet.FilterChain,
             ) {
+                val tenantId =
+                    devDefaultTenantId
+                        .takeIf { it.isNotBlank() }
+                        ?.let { runCatching { java.util.UUID.fromString(it) }.getOrNull() }
+                val adminUser = CurrentUser(email = "admin", perfil = "ADMIN", tenantId = tenantId)
                 val auth =
                     UsernamePasswordAuthenticationToken(
-                        "admin",
+                        adminUser,
                         null,
                         listOf(SimpleGrantedAuthority("ROLE_ADMIN")),
                     )
