@@ -34,7 +34,7 @@
 
 ## Entidade Spring Data JDBC
 
-- **Todas as entidades** que representam dados persistidos devem herdar de `Auditable` (obrigatório). Import: `br.com.cashflow.commons.audit.Auditable`.
+- **Todas as entidades** que representam dados persistidos devem herdar de `Auditable` (obrigatório). Import: `br.com.cashflow.commons.audit.Auditable`. Exceção: entidades que mapeiam tabelas legadas sem colunas de auditoria (created_by, created_date, last_modified_by, last_modified_date) não precisam estender Auditable — exemplo: `Acesso` (tabela `eventos.acesso` com `data`, `mod_date_time`).
 - Entidades que estendem `Auditable` devem ser `class` (não data class) — mutabilidade necessária para auditoria.
 - Usar `@Table("example")`, `@Id`, `@Column("coluna")` de `org.springframework.data.relational.core.mapping`.
 - UUID: implementar `BeforeConvertCallback<T>` para gerar `UUID.randomUUID()` quando `id == null`; registrar como `@Component`.
