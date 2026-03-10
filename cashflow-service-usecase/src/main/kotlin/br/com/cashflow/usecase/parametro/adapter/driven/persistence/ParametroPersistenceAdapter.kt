@@ -1,0 +1,51 @@
+package br.com.cashflow.usecase.parametro.adapter.driven.persistence
+
+import br.com.cashflow.usecase.parametro.entity.Parametro
+import br.com.cashflow.usecase.parametro.model.ParametroFilter
+import br.com.cashflow.usecase.parametro.model.ParametroPage
+import br.com.cashflow.usecase.parametro.port.ParametroOutputPort
+import org.springframework.data.domain.PageRequest
+import org.springframework.stereotype.Component
+import java.util.UUID
+
+@Component
+class ParametroPersistenceAdapter(
+    private val parametroRepository: ParametroRepository,
+) : ParametroOutputPort {
+    override fun save(parametro: Parametro): Parametro = parametroRepository.save(parametro)
+
+    override fun findById(id: UUID): Parametro? = parametroRepository.findById(id).orElse(null)
+
+    override fun findWithFilters(
+        filter: ParametroFilter?,
+        page: Int,
+        size: Int,
+    ): ParametroPage {
+        val pageable = PageRequest.of(page, size)
+        val springPage = parametroRepository.findWithFilters(filter, pageable)
+        return ParametroPage(
+            items = springPage.content,
+            total = springPage.totalElements,
+            page = springPage.number,
+            pageSize = springPage.size,
+        )
+    }
+
+    override fun findAllOrderByChave(): List<Parametro> = parametroRepository.findAllByOrderByChaveAsc()
+
+    override fun existsByChave(chave: String): Boolean = parametroRepository.existsByChave(chave)
+
+    override fun existsByChaveExcludingId(
+        chave: String,
+        excludeId: UUID?,
+    ): Boolean =
+        if (excludeId != null) {
+            parametroRepository.existsByChaveAndIdNot(chave, excludeId)
+        } else {
+            parametroRepository.existsByChave(chave)
+        }
+
+    override fun deleteById(id: UUID) {
+        parametroRepository.deleteById(id)
+    }
+}

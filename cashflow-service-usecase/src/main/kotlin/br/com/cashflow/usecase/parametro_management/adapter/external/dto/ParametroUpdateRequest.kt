@@ -1,0 +1,19 @@
+package br.com.cashflow.usecase.parametro_management.adapter.external.dto
+
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
+import jakarta.validation.constraints.Size
+
+data class ParametroUpdateRequest(
+    @field:NotBlank(message = "A chave é obrigatória")
+    @field:Size(max = 100)
+    val chave: String = "",
+
+    @field:NotBlank(message = "O valor é obrigatório")
+    val valor: String = "",
+
+    @field:NotNull(message = "O tipo é obrigatório")
+    val tipo: TipoParametro = TipoParametro.TEXTO,
+
+    val ativo: Boolean = true,
+)
