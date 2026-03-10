@@ -1,7 +1,7 @@
 package br.com.cashflow.usecase.tenant.adapter.driven.persistence
 
 import br.com.cashflow.usecase.tenant.entity.Tenant
-import br.com.cashflow.usecase.tenant.port.TenantFilter
+import br.com.cashflow.usecase.tenant.model.TenantFilter
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot

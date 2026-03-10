@@ -10,7 +10,7 @@ import br.com.cashflow.usecase.acesso.entity.PerfilUsuario
 import br.com.cashflow.usecase.acesso.port.AcessoOutputPort
 import br.com.cashflow.usecase.tenant.port.TenantOutputPort
 import br.com.cashflow.usecase.user_authentication.legacy.LegacyPasswordSupport
-import br.com.cashflow.usecase.user_authentication.port.TokenClaims
+import br.com.cashflow.usecase.user_authentication.model.TokenClaims
 import br.com.cashflow.usecase.user_authentication.port.TokenProvider
 import io.mockk.every
 import io.mockk.mockk

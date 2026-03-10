@@ -9,10 +9,10 @@ import br.com.cashflow.usecase.acesso.entity.Acesso
 import br.com.cashflow.usecase.acesso.port.AcessoOutputPort
 import br.com.cashflow.usecase.tenant.port.TenantOutputPort
 import br.com.cashflow.usecase.user_authentication.legacy.LegacyPasswordSupport
+import br.com.cashflow.usecase.user_authentication.model.LoginResponse
+import br.com.cashflow.usecase.user_authentication.model.UsuarioResponse
 import br.com.cashflow.usecase.user_authentication.port.AuthInputPort
-import br.com.cashflow.usecase.user_authentication.port.LoginResponse
 import br.com.cashflow.usecase.user_authentication.port.TokenProvider
-import br.com.cashflow.usecase.user_authentication.port.UsuarioResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service

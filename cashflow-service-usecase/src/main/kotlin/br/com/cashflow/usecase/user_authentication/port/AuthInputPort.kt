@@ -1,5 +1,8 @@
 package br.com.cashflow.usecase.user_authentication.port
 
+import br.com.cashflow.usecase.user_authentication.model.LoginResponse
+import br.com.cashflow.usecase.user_authentication.model.UsuarioResponse
+
 interface AuthInputPort {
     fun login(
         email: String,

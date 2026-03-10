@@ -1,9 +1,9 @@
 package br.com.cashflow.usecase.congregation.adapter.driven.persistence
 
 import br.com.cashflow.usecase.congregation.entity.Congregation
-import br.com.cashflow.usecase.congregation.port.CongregationFilter
+import br.com.cashflow.usecase.congregation.model.CongregationFilter
+import br.com.cashflow.usecase.congregation.model.CongregationPage
 import br.com.cashflow.usecase.congregation.port.CongregationOutputPort
-import br.com.cashflow.usecase.congregation.port.CongregationPage
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
 import java.util.UUID

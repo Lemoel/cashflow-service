@@ -1,7 +1,7 @@
 package br.com.cashflow.usecase.tenant_management.adapter.external.controller
 
 import br.com.cashflow.commons.exception.ResourceNotFoundException
-import br.com.cashflow.usecase.tenant.port.TenantFilter
+import br.com.cashflow.usecase.tenant.model.TenantFilter
 import br.com.cashflow.usecase.tenant_management.adapter.external.dto.CnpjUnicoResponse
 import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantCreateRequest
 import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantListOption

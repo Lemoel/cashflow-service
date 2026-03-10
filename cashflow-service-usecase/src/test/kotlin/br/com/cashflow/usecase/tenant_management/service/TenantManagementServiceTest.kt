@@ -3,8 +3,8 @@ package br.com.cashflow.usecase.tenant_management.service
 import br.com.cashflow.commons.exception.ConflictException
 import br.com.cashflow.commons.exception.ResourceNotFoundException
 import br.com.cashflow.usecase.tenant.entity.Tenant
+import br.com.cashflow.usecase.tenant.model.TenantPage
 import br.com.cashflow.usecase.tenant.port.TenantOutputPort
-import br.com.cashflow.usecase.tenant.port.TenantPage
 import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantCreateRequest
 import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantUpdateRequest
 import io.mockk.every

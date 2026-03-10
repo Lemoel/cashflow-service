@@ -1,9 +1,9 @@
 package br.com.cashflow.usecase.tenant.adapter.driven.persistence
 
 import br.com.cashflow.usecase.tenant.entity.Tenant
-import br.com.cashflow.usecase.tenant.port.TenantFilter
+import br.com.cashflow.usecase.tenant.model.TenantFilter
+import br.com.cashflow.usecase.tenant.model.TenantPage
 import br.com.cashflow.usecase.tenant.port.TenantOutputPort
-import br.com.cashflow.usecase.tenant.port.TenantPage
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
 import java.util.UUID

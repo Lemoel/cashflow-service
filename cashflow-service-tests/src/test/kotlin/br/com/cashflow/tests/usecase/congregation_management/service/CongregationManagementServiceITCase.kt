@@ -6,7 +6,7 @@ import br.com.cashflow.commons.exception.ResourceNotFoundException
 import br.com.cashflow.tests.base.postgresql.PostgresqlBaseTest
 import br.com.cashflow.tests.base.postgresql.annotations.SqlSetUp
 import br.com.cashflow.tests.base.postgresql.annotations.SqlTearDown
-import br.com.cashflow.usecase.congregation.port.CongregationFilter
+import br.com.cashflow.usecase.congregation.model.CongregationFilter
 import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationCreateRequest
 import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationUpdateRequest
 import br.com.cashflow.usecase.congregation_management.port.CongregationManagementInputPort

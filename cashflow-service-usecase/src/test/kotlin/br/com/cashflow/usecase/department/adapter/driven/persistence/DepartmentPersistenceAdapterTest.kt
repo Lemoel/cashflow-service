@@ -1,7 +1,7 @@
 package br.com.cashflow.usecase.department.adapter.driven.persistence
 
 import br.com.cashflow.usecase.department.entity.Department
-import br.com.cashflow.usecase.department.port.DepartmentFilter
+import br.com.cashflow.usecase.department.model.DepartmentFilter
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk

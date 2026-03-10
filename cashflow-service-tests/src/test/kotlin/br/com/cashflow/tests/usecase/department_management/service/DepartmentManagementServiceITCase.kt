@@ -8,7 +8,7 @@ import br.com.cashflow.tests.base.postgresql.annotations.SqlSetUp
 import br.com.cashflow.tests.base.postgresql.annotations.SqlTearDown
 import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationCreateRequest
 import br.com.cashflow.usecase.congregation_management.port.CongregationManagementInputPort
-import br.com.cashflow.usecase.department.port.DepartmentFilter
+import br.com.cashflow.usecase.department.model.DepartmentFilter
 import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentCreateRequest
 import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentUpdateRequest
 import br.com.cashflow.usecase.department_management.port.DepartmentManagementInputPort

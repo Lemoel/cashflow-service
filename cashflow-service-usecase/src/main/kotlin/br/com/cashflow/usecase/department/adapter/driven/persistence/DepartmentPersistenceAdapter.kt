@@ -1,9 +1,9 @@
 package br.com.cashflow.usecase.department.adapter.driven.persistence
 
 import br.com.cashflow.usecase.department.entity.Department
-import br.com.cashflow.usecase.department.port.DepartmentFilter
+import br.com.cashflow.usecase.department.model.DepartmentFilter
+import br.com.cashflow.usecase.department.model.DepartmentPage
 import br.com.cashflow.usecase.department.port.DepartmentOutputPort
-import br.com.cashflow.usecase.department.port.DepartmentPage
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
 import java.util.UUID

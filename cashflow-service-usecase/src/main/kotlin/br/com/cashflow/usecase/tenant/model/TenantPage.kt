@@ -1,4 +1,4 @@
-package br.com.cashflow.usecase.tenant.port
+package br.com.cashflow.usecase.tenant.model
 
 import br.com.cashflow.usecase.tenant.entity.Tenant
 

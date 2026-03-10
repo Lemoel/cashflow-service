@@ -1,8 +1,8 @@
 package br.com.cashflow.usecase.department_management.port
 
 import br.com.cashflow.usecase.department.entity.Department
-import br.com.cashflow.usecase.department.port.DepartmentFilter
-import br.com.cashflow.usecase.department.port.DepartmentPage
+import br.com.cashflow.usecase.department.model.DepartmentFilter
+import br.com.cashflow.usecase.department.model.DepartmentPage
 import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentCreateRequest
 import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentUpdateRequest
 import java.util.UUID
