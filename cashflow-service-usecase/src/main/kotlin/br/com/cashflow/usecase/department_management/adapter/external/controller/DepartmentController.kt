@@ -3,7 +3,7 @@ package br.com.cashflow.usecase.department_management.adapter.external.controlle
 import br.com.cashflow.commons.auth.CurrentUser
 import br.com.cashflow.commons.exception.BusinessException
 import br.com.cashflow.commons.exception.ResourceNotFoundException
-import br.com.cashflow.usecase.department.port.DepartmentFilter
+import br.com.cashflow.usecase.department.model.DepartmentFilter
 import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentCreateRequest
 import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentListResponse
 import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentResponse

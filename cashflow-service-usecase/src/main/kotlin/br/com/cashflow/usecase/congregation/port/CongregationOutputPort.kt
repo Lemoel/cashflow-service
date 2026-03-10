@@ -1,6 +1,8 @@
 package br.com.cashflow.usecase.congregation.port
 
 import br.com.cashflow.usecase.congregation.entity.Congregation
+import br.com.cashflow.usecase.congregation.model.CongregationFilter
+import br.com.cashflow.usecase.congregation.model.CongregationPage
 import java.util.UUID
 
 interface CongregationOutputPort {

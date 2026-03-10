@@ -1,6 +1,8 @@
 package br.com.cashflow.usecase.department.port
 
 import br.com.cashflow.usecase.department.entity.Department
+import br.com.cashflow.usecase.department.model.DepartmentFilter
+import br.com.cashflow.usecase.department.model.DepartmentPage
 import java.util.UUID
 
 interface DepartmentOutputPort {

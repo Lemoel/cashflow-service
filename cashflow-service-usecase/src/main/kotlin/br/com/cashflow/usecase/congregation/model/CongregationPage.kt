@@ -1,4 +1,4 @@
-package br.com.cashflow.usecase.congregation.port
+package br.com.cashflow.usecase.congregation.model
 
 import br.com.cashflow.usecase.congregation.entity.Congregation
 

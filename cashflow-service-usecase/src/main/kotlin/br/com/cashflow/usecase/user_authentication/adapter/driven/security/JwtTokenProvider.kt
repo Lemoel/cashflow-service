@@ -1,7 +1,7 @@
 package br.com.cashflow.usecase.user_authentication.adapter.driven.security
 
 import br.com.cashflow.usecase.acesso.entity.Acesso
-import br.com.cashflow.usecase.user_authentication.port.TokenClaims
+import br.com.cashflow.usecase.user_authentication.model.TokenClaims
 import br.com.cashflow.usecase.user_authentication.port.TokenProvider
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys

@@ -1,8 +1,8 @@
 package br.com.cashflow.usecase.congregation_management.port
 
 import br.com.cashflow.usecase.congregation.entity.Congregation
-import br.com.cashflow.usecase.congregation.port.CongregationFilter
-import br.com.cashflow.usecase.congregation.port.CongregationPage
+import br.com.cashflow.usecase.congregation.model.CongregationFilter
+import br.com.cashflow.usecase.congregation.model.CongregationPage
 import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationCreateRequest
 import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationUpdateRequest
 import java.util.UUID

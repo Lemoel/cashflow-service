@@ -1,6 +1,8 @@
 package br.com.cashflow.usecase.tenant.port
 
 import br.com.cashflow.usecase.tenant.entity.Tenant
+import br.com.cashflow.usecase.tenant.model.TenantFilter
+import br.com.cashflow.usecase.tenant.model.TenantPage
 import java.util.UUID
 
 interface TenantOutputPort {

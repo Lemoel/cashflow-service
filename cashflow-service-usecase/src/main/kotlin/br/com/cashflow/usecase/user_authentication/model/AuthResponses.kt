@@ -1,4 +1,4 @@
-package br.com.cashflow.usecase.user_authentication.port
+package br.com.cashflow.usecase.user_authentication.model
 
 import java.util.UUID
 

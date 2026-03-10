@@ -1,4 +1,4 @@
-package br.com.cashflow.usecase.department.port
+package br.com.cashflow.usecase.department.model
 
 import java.util.UUID
 

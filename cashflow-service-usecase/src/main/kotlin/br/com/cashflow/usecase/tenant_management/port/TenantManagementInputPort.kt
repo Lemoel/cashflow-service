@@ -1,8 +1,8 @@
 package br.com.cashflow.usecase.tenant_management.port
 
 import br.com.cashflow.usecase.tenant.entity.Tenant
-import br.com.cashflow.usecase.tenant.port.TenantFilter
-import br.com.cashflow.usecase.tenant.port.TenantPage
+import br.com.cashflow.usecase.tenant.model.TenantFilter
+import br.com.cashflow.usecase.tenant.model.TenantPage
 import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantCreateRequest
 import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantUpdateRequest
 import java.util.UUID
