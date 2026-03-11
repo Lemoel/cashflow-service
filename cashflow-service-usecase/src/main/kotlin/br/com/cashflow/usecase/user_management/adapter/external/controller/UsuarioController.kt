@@ -26,7 +26,7 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/api/v1/usuarios")
-@PreAuthorize("hasAnyAuthority('ADMIN', 'ADMIN_MATRIZ')")
+@PreAuthorize("hasAnyRole('ADMIN', 'ADMIN_MATRIZ')")
 class UsuarioController(
     private val userManagementInputPort: UserManagementInputPort,
 ) {
