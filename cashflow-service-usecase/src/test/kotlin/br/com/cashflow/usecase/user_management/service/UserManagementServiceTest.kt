@@ -10,8 +10,7 @@ import br.com.cashflow.usecase.acesso.model.AcessoPage
 import br.com.cashflow.usecase.acesso.port.AcessoOutputPort
 import br.com.cashflow.usecase.congregation.entity.Congregation
 import br.com.cashflow.usecase.congregation.port.CongregationOutputPort
-import br.com.cashflow.usecase.user_management.adapter.external.dto.UsuarioCreateRequestDto
-import br.com.cashflow.usecase.user_management.adapter.external.dto.UsuarioUpdateRequestDto
+import br.com.cashflow.usecase.user_management.port.UsuarioCommand
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -62,12 +61,13 @@ class UserManagementServiceTest {
             congregacaoNome = "SEDE",
         )
 
-    private fun buildCreateRequest(
+    private fun buildCommand(
         email: String = "User@Test.com",
         perfil: String = "ADMIN",
-    ): UsuarioCreateRequestDto =
-        UsuarioCreateRequestDto(
-            nome = "  Usuario Teste  ",
+        nome: String = "  Usuario Teste  ",
+    ): UsuarioCommand =
+        UsuarioCommand(
+            nome = nome,
             email = email,
             telefone = "11999990000",
             perfil = perfil,
@@ -75,11 +75,11 @@ class UserManagementServiceTest {
             ativo = true,
         )
 
-    private fun buildUpdateRequest(
+    private fun buildUpdateCommand(
         email: String = "user@test.com",
         perfil: String = "ADMIN",
-    ): UsuarioUpdateRequestDto =
-        UsuarioUpdateRequestDto(
+    ): UsuarioCommand =
+        UsuarioCommand(
             nome = "  Usuario Atualizado  ",
             email = email,
             telefone = "11999991111",
@@ -104,8 +104,8 @@ class UserManagementServiceTest {
     }
 
     @Test
-    fun `create returns usuario when email is unique`() {
-        val request = buildCreateRequest()
+    fun `create returns UsuarioCriadoResult when email is unique`() {
+        val command = buildCommand()
         val expected = buildListItem()
 
         every { acessoOutputPort.existsByEmailExcluding("user@test.com", null) } returns false
@@ -115,9 +115,10 @@ class UserManagementServiceTest {
         every { acessoOutputPort.setCongregacaoForEmail("user@test.com", congregacaoId) } just runs
         every { acessoOutputPort.findListItemByEmail("user@test.com") } returns expected
 
-        val result = service.create(request)
+        val result = service.create(command)
 
-        assertThat(result).isEqualTo(expected)
+        assertThat(result.usuario).isEqualTo(expected)
+        assertThat(result.senhaTemporaria).isNotBlank()
         verify(exactly = 1) { passwordEncoder.encode(any()) }
         verify(exactly = 1) { acessoOutputPort.save(any()) }
         verify(exactly = 1) { acessoOutputPort.setCongregacaoForEmail("user@test.com", congregacaoId) }
@@ -125,7 +126,7 @@ class UserManagementServiceTest {
 
     @Test
     fun `create stores nome in uppercase and email in lowercase`() {
-        val request = buildCreateRequest(email = "  User@Test.COM  ")
+        val command = buildCommand(email = "  User@Test.COM  ")
         val acessoSlot = slot<Acesso>()
 
         every { acessoOutputPort.existsByEmailExcluding("user@test.com", null) } returns false
@@ -135,7 +136,7 @@ class UserManagementServiceTest {
         every { acessoOutputPort.setCongregacaoForEmail(any(), any()) } just runs
         every { acessoOutputPort.findListItemByEmail(any()) } returns buildListItem()
 
-        service.create(request)
+        service.create(command)
 
         assertThat(acessoSlot.captured.nome).isEqualTo("USUARIO TESTE")
         assertThat(acessoSlot.captured.email).isEqualTo("user@test.com")
@@ -143,11 +144,11 @@ class UserManagementServiceTest {
 
     @Test
     fun `create throws ConflictException when email already exists`() {
-        val request = buildCreateRequest()
+        val command = buildCommand()
 
         every { acessoOutputPort.existsByEmailExcluding("user@test.com", null) } returns true
 
-        assertThatThrownBy { service.create(request) }
+        assertThatThrownBy { service.create(command) }
             .isInstanceOf(ConflictException::class.java)
             .hasMessageContaining("Já existe um usuário com este e-mail.")
         verify(exactly = 0) { acessoOutputPort.save(any()) }
@@ -155,31 +156,31 @@ class UserManagementServiceTest {
 
     @Test
     fun `create throws BusinessException when congregacao not found`() {
-        val request = buildCreateRequest()
+        val command = buildCommand()
 
         every { acessoOutputPort.existsByEmailExcluding("user@test.com", null) } returns false
         every { congregationOutputPort.findById(congregacaoId) } returns null
 
-        assertThatThrownBy { service.create(request) }
+        assertThatThrownBy { service.create(command) }
             .isInstanceOf(BusinessException::class.java)
             .hasMessageContaining("Congregação não encontrada.")
     }
 
     @Test
     fun `create throws BusinessException when perfil is invalid`() {
-        val request = buildCreateRequest(perfil = "INVALIDO")
+        val command = buildCommand(perfil = "INVALIDO")
 
         every { acessoOutputPort.existsByEmailExcluding("user@test.com", null) } returns false
         stubCongregationExists()
 
-        assertThatThrownBy { service.create(request) }
+        assertThatThrownBy { service.create(command) }
             .isInstanceOf(BusinessException::class.java)
             .hasMessageContaining("Perfil inválido.")
     }
 
     @Test
     fun `create generates temporary password hashed with BCrypt`() {
-        val request = buildCreateRequest()
+        val command = buildCommand()
         val acessoSlot = slot<Acesso>()
 
         every { acessoOutputPort.existsByEmailExcluding(any(), any()) } returns false
@@ -189,16 +190,17 @@ class UserManagementServiceTest {
         every { acessoOutputPort.setCongregacaoForEmail(any(), any()) } just runs
         every { acessoOutputPort.findListItemByEmail(any()) } returns buildListItem()
 
-        service.create(request)
+        val result = service.create(command)
 
         assertThat(acessoSlot.captured.password).isEqualTo("\$2a\$12\$bcryptHashResult")
+        assertThat(result.senhaTemporaria).hasSize(12)
         verify(exactly = 1) { passwordEncoder.encode(match { it.length == 12 }) }
     }
 
     @Test
     fun `update returns updated usuario when same email`() {
         val email = "user@test.com"
-        val request = buildUpdateRequest(email = email)
+        val command = buildUpdateCommand(email = email)
         val existing = buildAcesso(email)
         val expected = buildListItem(email = email, nome = "USUARIO ATUALIZADO")
 
@@ -209,7 +211,7 @@ class UserManagementServiceTest {
         every { acessoOutputPort.setCongregacaoForEmail(email, congregacaoId) } just runs
         every { acessoOutputPort.findListItemByEmail(email) } returns expected
 
-        val result = service.update(email, request)
+        val result = service.update(email, command)
 
         assertThat(result).isEqualTo(expected)
         verify(exactly = 1) { acessoOutputPort.save(any()) }
@@ -220,7 +222,7 @@ class UserManagementServiceTest {
     fun `update with email change deletes old and creates new`() {
         val oldEmail = "old@test.com"
         val newEmail = "new@test.com"
-        val request = buildUpdateRequest(email = newEmail)
+        val command = buildUpdateCommand(email = newEmail)
         val existing = buildAcesso(oldEmail)
         val expected = buildListItem(email = newEmail)
 
@@ -232,7 +234,7 @@ class UserManagementServiceTest {
         every { acessoOutputPort.deleteByEmail(oldEmail) } just runs
         every { acessoOutputPort.findListItemByEmail(newEmail) } returns expected
 
-        val result = service.update(oldEmail, request)
+        val result = service.update(oldEmail, command)
 
         assertThat(result.email).isEqualTo(newEmail)
         verify(exactly = 1) { acessoOutputPort.deleteByEmail(oldEmail) }
@@ -242,7 +244,7 @@ class UserManagementServiceTest {
     @Test
     fun `update does not change password`() {
         val email = "user@test.com"
-        val request = buildUpdateRequest(email = email)
+        val command = buildUpdateCommand(email = email)
         val existing = buildAcesso(email)
         val acessoSlot = slot<Acesso>()
 
@@ -253,7 +255,7 @@ class UserManagementServiceTest {
         every { acessoOutputPort.setCongregacaoForEmail(any(), any()) } just runs
         every { acessoOutputPort.findListItemByEmail(any()) } returns buildListItem()
 
-        service.update(email, request)
+        service.update(email, command)
 
         assertThat(acessoSlot.captured.password).isEqualTo(existing.password)
         verify(exactly = 0) { passwordEncoder.encode(any()) }
@@ -263,7 +265,7 @@ class UserManagementServiceTest {
     fun `update throws ResourceNotFoundException when user not found`() {
         every { acessoOutputPort.findByEmail("unknown@test.com") } returns null
 
-        assertThatThrownBy { service.update("unknown@test.com", buildUpdateRequest()) }
+        assertThatThrownBy { service.update("unknown@test.com", buildUpdateCommand()) }
             .isInstanceOf(ResourceNotFoundException::class.java)
             .hasMessageContaining("Usuário não encontrado.")
     }
@@ -271,12 +273,12 @@ class UserManagementServiceTest {
     @Test
     fun `update throws ConflictException when new email belongs to another user`() {
         val email = "user@test.com"
-        val request = buildUpdateRequest(email = "taken@test.com")
+        val command = buildUpdateCommand(email = "taken@test.com")
 
         every { acessoOutputPort.findByEmail(email) } returns buildAcesso(email)
         every { acessoOutputPort.existsByEmailExcluding("taken@test.com", email) } returns true
 
-        assertThatThrownBy { service.update(email, request) }
+        assertThatThrownBy { service.update(email, command) }
             .isInstanceOf(ConflictException::class.java)
             .hasMessageContaining("Já existe um usuário com este e-mail.")
     }

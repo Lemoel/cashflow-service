@@ -1,6 +1,7 @@
 package br.com.cashflow.usecase.user_management.adapter.external.dto
 
 import br.com.cashflow.usecase.acesso.model.AcessoListItem
+import br.com.cashflow.usecase.user_management.port.UsuarioCriadoResult
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.time.Instant
@@ -64,5 +65,62 @@ class UsuarioResponseDtoTest {
         assertThat(result.ativo).isFalse()
         assertThat(result.createdAt).isNull()
         assertThat(result.updatedAt).isNull()
+    }
+
+    @Test
+    fun `toUsuarioCriadoResponseDto maps all fields including senhaTemporaria`() {
+        val congId = UUID.randomUUID()
+        val createdAt = Instant.parse("2025-01-15T10:00:00Z")
+        val item =
+            AcessoListItem(
+                email = "novo@test.com",
+                nome = "NOVO USUARIO",
+                telefone = "11988887777",
+                tipoAcesso = "GESTOR_CONGREGACAO",
+                ativo = true,
+                data = createdAt,
+                modDateTime = null,
+                congregacaoId = congId,
+                congregacaoNome = "Sede",
+            )
+        val resultado = UsuarioCriadoResult(usuario = item, senhaTemporaria = "abc123xyz456")
+
+        val dto = resultado.toUsuarioCriadoResponseDto()
+
+        assertThat(dto.id).isEqualTo("novo@test.com")
+        assertThat(dto.email).isEqualTo("novo@test.com")
+        assertThat(dto.nome).isEqualTo("NOVO USUARIO")
+        assertThat(dto.telefone).isEqualTo("11988887777")
+        assertThat(dto.perfil).isEqualTo("GESTOR_CONGREGACAO")
+        assertThat(dto.congregacaoId).isEqualTo(congId.toString())
+        assertThat(dto.congregacaoNome).isEqualTo("Sede")
+        assertThat(dto.ativo).isTrue()
+        assertThat(dto.createdAt).isEqualTo(createdAt.toString())
+        assertThat(dto.updatedAt).isNull()
+        assertThat(dto.senhaTemporaria).isEqualTo("abc123xyz456")
+    }
+
+    @Test
+    fun `toUsuarioCriadoResponseDto handles null congregation`() {
+        val item =
+            AcessoListItem(
+                email = "user@test.com",
+                nome = null,
+                telefone = null,
+                tipoAcesso = "ADMIN",
+                ativo = true,
+                data = null,
+                modDateTime = null,
+                congregacaoId = null,
+                congregacaoNome = null,
+            )
+        val resultado = UsuarioCriadoResult(usuario = item, senhaTemporaria = "tempPass123")
+
+        val dto = resultado.toUsuarioCriadoResponseDto()
+
+        assertThat(dto.congregacaoId).isNull()
+        assertThat(dto.congregacaoNome).isNull()
+        assertThat(dto.nome).isEmpty()
+        assertThat(dto.senhaTemporaria).isEqualTo("tempPass123")
     }
 }

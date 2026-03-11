@@ -10,9 +10,9 @@ import br.com.cashflow.usecase.acesso.model.AcessoListItem
 import br.com.cashflow.usecase.acesso.model.AcessoPage
 import br.com.cashflow.usecase.acesso.port.AcessoOutputPort
 import br.com.cashflow.usecase.congregation.port.CongregationOutputPort
-import br.com.cashflow.usecase.user_management.adapter.external.dto.UsuarioCreateRequestDto
-import br.com.cashflow.usecase.user_management.adapter.external.dto.UsuarioUpdateRequestDto
 import br.com.cashflow.usecase.user_management.port.UserManagementInputPort
+import br.com.cashflow.usecase.user_management.port.UsuarioCommand
+import br.com.cashflow.usecase.user_management.port.UsuarioCriadoResult
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -26,21 +26,21 @@ class UserManagementService(
     private val congregationOutputPort: CongregationOutputPort,
     private val passwordEncoder: PasswordEncoder,
 ) : UserManagementInputPort {
-    override fun create(request: UsuarioCreateRequestDto): AcessoListItem {
-        val email = request.email.trim().lowercase()
+    @Transactional
+    override fun create(command: UsuarioCommand): UsuarioCriadoResult {
+        val email = command.email.trim().lowercase()
         if (acessoOutputPort.existsByEmailExcluding(email, null)) {
             throw ConflictException("Já existe um usuário com este e-mail.")
         }
-        validateCongregacaoExists(request.congregacaoId)
-        validatePerfil(request.perfil)
+        validateCongregacaoExists(command.congregacaoId)
+        validatePerfil(command.perfil)
         val senhaTemporaria =
             UUID
                 .randomUUID()
                 .toString()
                 .replace("-", "")
                 .take(12)
-        val passwordHash =
-            requireNotNull(passwordEncoder.encode(senhaTemporaria)) { "Password encoding failed" }
+        val passwordHash = checkNotNull(passwordEncoder.encode(senhaTemporaria)) { "Falha ao codificar senha" }
         val now = Instant.now()
         val acesso =
             Acesso(
@@ -48,41 +48,43 @@ class UserManagementService(
                 password = passwordHash,
                 data = now,
                 modDateTime = null,
-                nome = request.nome.trim().uppercase(),
-                telefone = request.telefone?.trim()?.takeIf { it.isNotBlank() },
-                ativo = request.ativo,
-                tipoAcesso = request.perfil.trim().uppercase(),
+                nome = command.nome.trim().uppercase(),
+                telefone = command.telefone?.trim()?.takeIf { it.isNotBlank() },
+                ativo = command.ativo,
+                tipoAcesso = command.perfil.trim().uppercase(),
             )
         acessoOutputPort.save(acesso)
-        acessoOutputPort.setCongregacaoForEmail(email, request.congregacaoId)
-        return requireNotNull(acessoOutputPort.findListItemByEmail(email)) {
-            "Usuário criado mas não encontrado"
-        }
+        acessoOutputPort.setCongregacaoForEmail(email, command.congregacaoId)
+        val usuario =
+            requireNotNull(acessoOutputPort.findListItemByEmail(email)) {
+                "Usuário criado mas não encontrado"
+            }
+        return UsuarioCriadoResult(usuario = usuario, senhaTemporaria = senhaTemporaria)
     }
 
     @Transactional
     override fun update(
         id: String,
-        request: UsuarioUpdateRequestDto,
+        command: UsuarioCommand,
     ): AcessoListItem {
         val existing =
             acessoOutputPort.findByEmail(id)
                 ?: throw ResourceNotFoundException("Usuário não encontrado.")
-        val newEmail = request.email.trim().lowercase()
+        val newEmail = command.email.trim().lowercase()
         if (acessoOutputPort.existsByEmailExcluding(newEmail, id)) {
             throw ConflictException("Já existe um usuário com este e-mail.")
         }
-        validateCongregacaoExists(request.congregacaoId)
-        validatePerfil(request.perfil)
+        validateCongregacaoExists(command.congregacaoId)
+        validatePerfil(command.perfil)
         val now = Instant.now()
         if (id == newEmail) {
-            existing.nome = request.nome.trim().uppercase()
-            existing.telefone = request.telefone?.trim()?.takeIf { it.isNotBlank() }
-            existing.tipoAcesso = request.perfil.trim().uppercase()
-            existing.ativo = request.ativo
+            existing.nome = command.nome.trim().uppercase()
+            existing.telefone = command.telefone?.trim()?.takeIf { it.isNotBlank() }
+            existing.tipoAcesso = command.perfil.trim().uppercase()
+            existing.ativo = command.ativo
             existing.modDateTime = now
             acessoOutputPort.save(existing)
-            acessoOutputPort.setCongregacaoForEmail(newEmail, request.congregacaoId)
+            acessoOutputPort.setCongregacaoForEmail(newEmail, command.congregacaoId)
         } else {
             val newAcesso =
                 Acesso(
@@ -90,13 +92,13 @@ class UserManagementService(
                     password = existing.password,
                     data = existing.data,
                     modDateTime = now,
-                    nome = request.nome.trim().uppercase(),
-                    telefone = request.telefone?.trim()?.takeIf { it.isNotBlank() },
-                    ativo = request.ativo,
-                    tipoAcesso = request.perfil.trim().uppercase(),
+                    nome = command.nome.trim().uppercase(),
+                    telefone = command.telefone?.trim()?.takeIf { it.isNotBlank() },
+                    ativo = command.ativo,
+                    tipoAcesso = command.perfil.trim().uppercase(),
                 )
             acessoOutputPort.save(newAcesso)
-            acessoOutputPort.setCongregacaoForEmail(newEmail, request.congregacaoId)
+            acessoOutputPort.setCongregacaoForEmail(newEmail, command.congregacaoId)
             acessoOutputPort.deleteByEmail(id)
         }
         return requireNotNull(acessoOutputPort.findListItemByEmail(newEmail)) {
@@ -140,10 +142,7 @@ class UserManagementService(
     override fun isEmailAvailable(
         email: String,
         excludeId: String?,
-    ): Boolean {
-        val takenByOther = acessoOutputPort.existsByEmailExcluding(email, excludeId)
-        return !takenByOther
-    }
+    ): Boolean = !acessoOutputPort.existsByEmailExcluding(email, excludeId)
 
     private fun validateCongregacaoExists(congregacaoId: UUID) {
         if (congregationOutputPort.findById(congregacaoId) == null) {
@@ -152,9 +151,7 @@ class UserManagementService(
     }
 
     private fun validatePerfil(perfil: String) {
-        val value = perfil.trim().uppercase()
-        if (!PerfilUsuario.entries.any { it.name == value }) {
-            throw BusinessException("Perfil inválido.")
-        }
+        runCatching { PerfilUsuario.valueOf(perfil.trim().uppercase()) }
+            .onFailure { throw BusinessException("Perfil inválido.") }
     }
 }

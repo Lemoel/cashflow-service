@@ -5,6 +5,7 @@ import br.com.cashflow.usecase.acesso.model.AcessoFilter
 import br.com.cashflow.usecase.acesso.model.AcessoListItem
 import br.com.cashflow.usecase.acesso.model.AcessoPage
 import br.com.cashflow.usecase.acesso.port.AcessoOutputPort
+import org.springframework.dao.DuplicateKeyException
 import org.springframework.data.domain.PageRequest
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Component
@@ -32,20 +33,27 @@ class AcessoPersistenceAdapter(
     override fun save(acesso: Acesso): Acesso {
         val email = requireNotNull(acesso.email) { "Email não pode ser nulo" }
         return if (!acessoRepository.existsById(email)) {
-            jdbcTemplate.update(
-                """
-                INSERT INTO eventos.acesso (email, password, nome, telefone, ativo, tipo_acesso, data, mod_date_time)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                """.trimIndent(),
-                email,
-                acesso.password,
-                acesso.nome,
-                acesso.telefone,
-                acesso.ativo,
-                acesso.tipoAcesso,
-                acesso.data?.let { Timestamp.from(it) },
-                acesso.modDateTime?.let { Timestamp.from(it) },
-            )
+            try {
+                jdbcTemplate.update(
+                    """
+                    INSERT INTO eventos.acesso (email, password, nome, telefone, ativo, tipo_acesso, data, mod_date_time)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """.trimIndent(),
+                    email,
+                    acesso.password,
+                    acesso.nome,
+                    acesso.telefone,
+                    acesso.ativo,
+                    acesso.tipoAcesso,
+                    acesso.data?.let { Timestamp.from(it) },
+                    acesso.modDateTime?.let { Timestamp.from(it) },
+                )
+            } catch (error: DuplicateKeyException) {
+                throw org.springframework.dao.DataIntegrityViolationException(
+                    "Já existe um usuário com o e-mail '$email'.",
+                    error,
+                )
+            }
             acessoRepository.findById(email).orElseThrow {
                 IllegalStateException("Falha ao recuperar acesso após inserção")
             }

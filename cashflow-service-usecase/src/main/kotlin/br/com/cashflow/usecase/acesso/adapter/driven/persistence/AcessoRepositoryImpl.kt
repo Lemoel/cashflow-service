@@ -4,10 +4,11 @@ import br.com.cashflow.usecase.acesso.model.AcessoFilter
 import br.com.cashflow.usecase.acesso.model.AcessoListItem
 import org.springframework.data.domain.Pageable
 import org.springframework.jdbc.core.JdbcTemplate
-import org.springframework.jdbc.core.RowMapper
-import java.sql.ResultSet
-import java.time.Instant
-import java.util.UUID
+
+private data class WherePart(
+    val clause: String,
+    val params: List<Any>,
+)
 
 class AcessoRepositoryImpl(
     private val jdbcTemplate: JdbcTemplate,
@@ -16,7 +17,7 @@ class AcessoRepositoryImpl(
         filter: AcessoFilter?,
         pageable: Pageable,
     ): List<AcessoListItem> {
-        val (whereClause, params) = buildWhereAndParams(filter)
+        val where = buildWhere(filter)
         val sql =
             """
             SELECT a.email, a.nome, a.telefone, a.tipo_acesso, a.ativo, a.data, a.mod_date_time,
@@ -24,27 +25,27 @@ class AcessoRepositoryImpl(
             FROM eventos.acesso a
             LEFT JOIN eventos.acesso_congregacao ac ON a.email = ac.email
             LEFT JOIN eventos.congregacao c ON c.id = ac.congregacao_id
-            $whereClause
+            ${where.clause}
             ORDER BY a.nome ASC
             LIMIT ? OFFSET ?
             """.trimIndent()
-        val pageParams = params + pageable.pageSize + pageable.offset
-        return jdbcTemplate.query(sql, ACESSO_LIST_ITEM_ROW_MAPPER, *pageParams.toTypedArray())
+        val pageParams = where.params + pageable.pageSize + pageable.offset
+        return jdbcTemplate.query(sql, AcessoListItemRowMapper(), *pageParams.toTypedArray())
     }
 
     override fun countFiltered(filter: AcessoFilter?): Long {
-        val (whereClause, params) = buildWhereAndParams(filter)
+        val where = buildWhere(filter)
         val sql =
             """
             SELECT COUNT(DISTINCT a.email)
             FROM eventos.acesso a
             LEFT JOIN eventos.acesso_congregacao ac ON a.email = ac.email
-            $whereClause
+            ${where.clause}
             """.trimIndent()
-        return jdbcTemplate.queryForObject(sql, Long::class.java, *params.toTypedArray()) ?: 0L
+        return jdbcTemplate.queryForObject(sql, Long::class.java, *where.params.toTypedArray()) ?: 0L
     }
 
-    private fun buildWhereAndParams(filter: AcessoFilter?): Pair<String, List<Any>> {
+    private fun buildWhere(filter: AcessoFilter?): WherePart {
         val params = mutableListOf<Any>()
         val conditions = mutableListOf<String>()
         filter?.let { f ->
@@ -65,45 +66,7 @@ class AcessoRepositoryImpl(
                 params.add(it)
             }
         }
-        val whereClause =
-            if (conditions.isEmpty()) "" else " WHERE " + conditions.joinToString(" AND ")
-        return Pair(whereClause, params)
-    }
-
-    companion object {
-        private val ACESSO_LIST_ITEM_ROW_MAPPER =
-            RowMapper<AcessoListItem> { rs: ResultSet, _: Int ->
-                AcessoListItem(
-                    email = rs.getString("email") ?: "",
-                    nome = rs.getString("nome"),
-                    telefone = rs.getString("telefone"),
-                    tipoAcesso = rs.getString("tipo_acesso") ?: "",
-                    ativo = rs.getBoolean("ativo"),
-                    data = timestamp(rs, "data"),
-                    modDateTime = timestamp(rs, "mod_date_time"),
-                    congregacaoId = uuid(rs, "congregacao_id"),
-                    congregacaoNome = rs.getString("congregacao_nome"),
-                )
-            }
-
-        private fun uuid(
-            rs: ResultSet,
-            column: String,
-        ): UUID? {
-            val s = rs.getString(column) ?: return null
-            return try {
-                UUID.fromString(s)
-            } catch (_: IllegalArgumentException) {
-                null
-            }
-        }
-
-        private fun timestamp(
-            rs: ResultSet,
-            column: String,
-        ): Instant? {
-            val ts = rs.getTimestamp(column) ?: return null
-            return ts.toInstant()
-        }
+        val clause = if (conditions.isEmpty()) "" else "WHERE " + conditions.joinToString(" AND ")
+        return WherePart(clause = clause, params = params)
     }
 }

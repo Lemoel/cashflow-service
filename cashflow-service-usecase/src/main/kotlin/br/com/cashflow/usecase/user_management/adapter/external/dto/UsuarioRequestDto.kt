@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
 import java.util.UUID
 
-data class UsuarioCreateRequestDto(
+data class UsuarioRequestDto(
     @field:NotBlank(message = "Nome é obrigatório.")
     @field:Size(max = 200)
     val nome: String,
