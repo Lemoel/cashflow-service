@@ -1,8 +1,8 @@
 package br.com.cashflow.usecase.congregation.port
 
 import br.com.cashflow.usecase.congregation.entity.Congregation
-import br.com.cashflow.usecase.congregation.model.CongregationFilter
-import br.com.cashflow.usecase.congregation.model.CongregationPage
+import br.com.cashflow.usecase.congregation.model.CongregationFilterModel
+import br.com.cashflow.usecase.congregation.model.CongregationPageModel
 import java.util.UUID
 
 interface CongregationOutputPort {
@@ -11,10 +11,10 @@ interface CongregationOutputPort {
     fun findById(id: UUID): Congregation?
 
     fun findAll(
-        filter: CongregationFilter?,
+        filter: CongregationFilterModel?,
         page: Int,
         size: Int,
-    ): CongregationPage
+    ): CongregationPageModel
 
     fun findAllOrderByNome(): List<Congregation>
 

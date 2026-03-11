@@ -5,10 +5,10 @@ import br.com.cashflow.commons.exception.ConflictException
 import br.com.cashflow.commons.exception.ResourceNotFoundException
 import br.com.cashflow.tests.base.postgresql.PostgresqlBaseTest
 import br.com.cashflow.tests.base.postgresql.annotations.SqlTearDown
-import br.com.cashflow.usecase.parametro.model.ParametroFilter
-import br.com.cashflow.usecase.parametro_management.adapter.external.dto.ParametroCreateRequest
-import br.com.cashflow.usecase.parametro_management.adapter.external.dto.ParametroUpdateRequest
-import br.com.cashflow.usecase.parametro_management.adapter.external.dto.TipoParametro
+import br.com.cashflow.usecase.parametro.model.ParametroFilterModel
+import br.com.cashflow.usecase.parametro_management.adapter.external.dto.EnumTipoParametro
+import br.com.cashflow.usecase.parametro_management.adapter.external.dto.ParametroCreateRequestDto
+import br.com.cashflow.usecase.parametro_management.adapter.external.dto.ParametroUpdateRequestDto
 import br.com.cashflow.usecase.parametro_management.port.ParametroManagementInputPort
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -24,10 +24,10 @@ class ParametroManagementServiceITCase : PostgresqlBaseTest() {
     @Test
     fun should_CreateFindUpdateFindAllFindChavesAndDelete_When_FullCrud() {
         val createRequest =
-            ParametroCreateRequest(
+            ParametroCreateRequestDto(
                 chave = "CHAVE_CRUD",
                 valor = "valor texto",
-                tipo = TipoParametro.TEXTO,
+                tipo = EnumTipoParametro.TEXTO,
                 ativo = true,
             )
 
@@ -45,10 +45,10 @@ class ParametroManagementServiceITCase : PostgresqlBaseTest() {
         assertThat(found.chave).isEqualTo("CHAVE_CRUD")
 
         val updateRequest =
-            ParametroUpdateRequest(
+            ParametroUpdateRequestDto(
                 chave = "CHAVE_CRUD_ATUALIZADA",
                 valor = "novo valor",
-                tipo = TipoParametro.TEXTO,
+                tipo = EnumTipoParametro.TEXTO,
                 ativo = false,
             )
         val updated = parametroManagement.update(created.id!!, updateRequest)
@@ -71,10 +71,10 @@ class ParametroManagementServiceITCase : PostgresqlBaseTest() {
     @Test
     fun should_ThrowConflictException_When_CreateWithDuplicateChave() {
         val request =
-            ParametroCreateRequest(
+            ParametroCreateRequestDto(
                 chave = "CHAVE_DUP",
                 valor = "v",
-                tipo = TipoParametro.TEXTO,
+                tipo = EnumTipoParametro.TEXTO,
             )
         parametroManagement.create(request)
 
@@ -86,10 +86,10 @@ class ParametroManagementServiceITCase : PostgresqlBaseTest() {
     @Test
     fun should_ThrowBusinessException_When_CreateWithBlankChave() {
         val request =
-            ParametroCreateRequest(
+            ParametroCreateRequestDto(
                 chave = "  ",
                 valor = "v",
-                tipo = TipoParametro.TEXTO,
+                tipo = EnumTipoParametro.TEXTO,
             )
 
         assertThatThrownBy { parametroManagement.create(request) }
@@ -100,10 +100,10 @@ class ParametroManagementServiceITCase : PostgresqlBaseTest() {
     @Test
     fun should_ThrowBusinessException_When_CreateTipoInteiroAndValorNotNumeric() {
         val request =
-            ParametroCreateRequest(
+            ParametroCreateRequestDto(
                 chave = "K_INT",
                 valor = "abc",
-                tipo = TipoParametro.INTEIRO,
+                tipo = EnumTipoParametro.INTEIRO,
             )
 
         assertThatThrownBy { parametroManagement.create(request) }
@@ -114,10 +114,10 @@ class ParametroManagementServiceITCase : PostgresqlBaseTest() {
     @Test
     fun should_CreateAndFind_When_TipoDecimalWithNumericValor() {
         val request =
-            ParametroCreateRequest(
+            ParametroCreateRequestDto(
                 chave = "K_DECIMAL",
                 valor = "10.5",
-                tipo = TipoParametro.DECIMAL,
+                tipo = EnumTipoParametro.DECIMAL,
                 ativo = true,
             )
         val created = parametroManagement.create(request)
@@ -137,10 +137,10 @@ class ParametroManagementServiceITCase : PostgresqlBaseTest() {
     @Test
     fun should_ThrowResourceNotFoundException_When_UpdateNotFound() {
         val request =
-            ParametroUpdateRequest(
+            ParametroUpdateRequestDto(
                 chave = "K",
                 valor = "v",
-                tipo = TipoParametro.TEXTO,
+                tipo = EnumTipoParametro.TEXTO,
             )
 
         assertThatThrownBy { parametroManagement.update(UUID.randomUUID(), request) }
@@ -158,13 +158,26 @@ class ParametroManagementServiceITCase : PostgresqlBaseTest() {
     @Test
     fun should_ReturnMatchingItems_When_FindAllWithChaveFilter() {
         parametroManagement.create(
-            ParametroCreateRequest(chave = "FILTRO_A", valor = "1", tipo = TipoParametro.TEXTO),
+            ParametroCreateRequestDto(
+                chave = "FILTRO_A",
+                valor = "1",
+                tipo = EnumTipoParametro.TEXTO,
+            ),
         )
         parametroManagement.create(
-            ParametroCreateRequest(chave = "FILTRO_B", valor = "2", tipo = TipoParametro.TEXTO),
+            ParametroCreateRequestDto(
+                chave = "FILTRO_B",
+                valor = "2",
+                tipo = EnumTipoParametro.TEXTO,
+            ),
         )
 
-        val page = parametroManagement.findAll(ParametroFilter(chave = "FILTRO_A", ativo = null), 0, 10)
+        val page =
+            parametroManagement.findAll(
+                ParametroFilterModel(chave = "FILTRO_A", ativo = null),
+                0,
+                10,
+            )
 
         assertThat(page.items).isNotEmpty
         assertThat(page.items.all { it.chave.contains("FILTRO_A") }).isTrue()

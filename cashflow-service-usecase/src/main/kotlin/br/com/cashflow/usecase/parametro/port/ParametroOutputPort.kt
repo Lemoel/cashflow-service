@@ -1,8 +1,8 @@
 package br.com.cashflow.usecase.parametro.port
 
 import br.com.cashflow.usecase.parametro.entity.Parametro
-import br.com.cashflow.usecase.parametro.model.ParametroFilter
-import br.com.cashflow.usecase.parametro.model.ParametroPage
+import br.com.cashflow.usecase.parametro.model.ParametroFilterModel
+import br.com.cashflow.usecase.parametro.model.ParametroPageModel
 import java.util.UUID
 
 interface ParametroOutputPort {
@@ -11,10 +11,10 @@ interface ParametroOutputPort {
     fun findById(id: UUID): Parametro?
 
     fun findWithFilters(
-        filter: ParametroFilter?,
+        filter: ParametroFilterModel?,
         page: Int,
         size: Int,
-    ): ParametroPage
+    ): ParametroPageModel
 
     fun findAllOrderByChave(): List<Parametro>
 

@@ -19,8 +19,14 @@ abstract class PostgresqlBaseTest : CashflowDataSource() {
         @DynamicPropertySource
         fun setupProperties(registry: DynamicPropertyRegistry) {
             registry.add("spring.datasource.url", CashflowDataSource.POSTGRES_CONTAINER::getJdbcUrl)
-            registry.add("spring.datasource.username", CashflowDataSource.POSTGRES_CONTAINER::getUsername)
-            registry.add("spring.datasource.password", CashflowDataSource.POSTGRES_CONTAINER::getPassword)
+            registry.add(
+                "spring.datasource.username",
+                CashflowDataSource.POSTGRES_CONTAINER::getUsername,
+            )
+            registry.add(
+                "spring.datasource.password",
+                CashflowDataSource.POSTGRES_CONTAINER::getPassword,
+            )
             registry.add("spring.flyway.enabled") { true }
         }
     }

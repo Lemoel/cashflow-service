@@ -1,8 +1,8 @@
 package br.com.cashflow.usecase.parametro.adapter.driven.persistence
 
 import br.com.cashflow.usecase.parametro.entity.Parametro
-import br.com.cashflow.usecase.parametro.model.ParametroFilter
-import br.com.cashflow.usecase.parametro.model.ParametroPage
+import br.com.cashflow.usecase.parametro.model.ParametroFilterModel
+import br.com.cashflow.usecase.parametro.model.ParametroPageModel
 import br.com.cashflow.usecase.parametro.port.ParametroOutputPort
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
@@ -17,13 +17,13 @@ class ParametroPersistenceAdapter(
     override fun findById(id: UUID): Parametro? = parametroRepository.findById(id).orElse(null)
 
     override fun findWithFilters(
-        filter: ParametroFilter?,
+        filter: ParametroFilterModel?,
         page: Int,
         size: Int,
-    ): ParametroPage {
+    ): ParametroPageModel {
         val pageable = PageRequest.of(page, size)
         val springPage = parametroRepository.findWithFilters(filter, pageable)
-        return ParametroPage(
+        return ParametroPageModel(
             items = springPage.content,
             total = springPage.totalElements,
             page = springPage.number,

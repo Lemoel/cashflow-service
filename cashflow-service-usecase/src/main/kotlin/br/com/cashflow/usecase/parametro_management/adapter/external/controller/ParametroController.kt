@@ -1,12 +1,12 @@
 package br.com.cashflow.usecase.parametro_management.adapter.external.controller
 
 import br.com.cashflow.commons.exception.ResourceNotFoundException
-import br.com.cashflow.usecase.parametro.model.ParametroFilter
+import br.com.cashflow.usecase.parametro.model.ParametroFilterModel
 import br.com.cashflow.usecase.parametro_management.adapter.external.dto.ParametroChaveOption
-import br.com.cashflow.usecase.parametro_management.adapter.external.dto.ParametroCreateRequest
+import br.com.cashflow.usecase.parametro_management.adapter.external.dto.ParametroCreateRequestDto
 import br.com.cashflow.usecase.parametro_management.adapter.external.dto.ParametroListResponse
-import br.com.cashflow.usecase.parametro_management.adapter.external.dto.ParametroResponse
-import br.com.cashflow.usecase.parametro_management.adapter.external.dto.ParametroUpdateRequest
+import br.com.cashflow.usecase.parametro_management.adapter.external.dto.ParametroResponseDto
+import br.com.cashflow.usecase.parametro_management.adapter.external.dto.ParametroUpdateRequestDto
 import br.com.cashflow.usecase.parametro_management.adapter.external.dto.toResponse
 import br.com.cashflow.usecase.parametro_management.port.ParametroManagementInputPort
 import jakarta.validation.Valid
@@ -28,7 +28,7 @@ import java.util.UUID
 @RequestMapping("/api/v1/parametros")
 @PreAuthorize("hasAnyRole('ADMIN','ADMIN_MATRIZ')")
 class ParametroController(
-    private val parametroManagement: ParametroManagementInputPort,
+    private val inputPort: ParametroManagementInputPort,
 ) {
     @GetMapping
     fun list(
@@ -38,11 +38,11 @@ class ParametroController(
         @RequestParam(required = false) ativo: Boolean?,
     ): ParametroListResponse {
         val filter =
-            ParametroFilter(
+            ParametroFilterModel(
                 chave = chave?.takeIf { it.isNotBlank() },
                 ativo = ativo,
             )
-        val pageResult = parametroManagement.findAll(filter, page, size)
+        val pageResult = inputPort.findAll(filter, page, size)
         return ParametroListResponse(
             items = pageResult.items.map { it.toResponse() },
             total = pageResult.total,
@@ -53,25 +53,25 @@ class ParametroController(
 
     @GetMapping("/chaves")
     fun listChaves(): List<ParametroChaveOption> =
-        parametroManagement.findChavesForDropdown().map { (id, nome) ->
+        inputPort.findChavesForDropdown().map { (id, nome) ->
             ParametroChaveOption(id = id, nome = nome)
         }
 
     @GetMapping("/{id}")
     fun getById(
         @PathVariable id: UUID,
-    ): ResponseEntity<ParametroResponse> {
+    ): ResponseEntity<ParametroResponseDto> {
         val parametro =
-            parametroManagement.findById(id)
+            inputPort.findById(id)
                 ?: throw ResourceNotFoundException("Parâmetro não encontrado")
         return ResponseEntity.ok(parametro.toResponse())
     }
 
     @PostMapping
     fun create(
-        @Valid @RequestBody request: ParametroCreateRequest,
-    ): ResponseEntity<ParametroResponse> {
-        val created = parametroManagement.create(request)
+        @Valid @RequestBody request: ParametroCreateRequestDto,
+    ): ResponseEntity<ParametroResponseDto> {
+        val created = inputPort.create(request)
         val body = created.toResponse()
         return ResponseEntity
             .status(HttpStatus.CREATED)
@@ -82,9 +82,9 @@ class ParametroController(
     @PutMapping("/{id}")
     fun update(
         @PathVariable id: UUID,
-        @Valid @RequestBody request: ParametroUpdateRequest,
-    ): ResponseEntity<ParametroResponse> {
-        val updated = parametroManagement.update(id, request)
+        @Valid @RequestBody request: ParametroUpdateRequestDto,
+    ): ResponseEntity<ParametroResponseDto> {
+        val updated = inputPort.update(id, request)
         return ResponseEntity.ok(updated.toResponse())
     }
 
@@ -92,7 +92,7 @@ class ParametroController(
     fun delete(
         @PathVariable id: UUID,
     ): ResponseEntity<Unit> {
-        parametroManagement.delete(id)
+        inputPort.delete(id)
         return ResponseEntity.noContent().build()
     }
 }

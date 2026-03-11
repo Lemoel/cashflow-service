@@ -43,3 +43,13 @@ management:
   info:
     env:
       enabled: true
+
+pagbank:
+  api:
+    url: https://edi.api.pagbank.com.br
+    username: ${PAGBANK_USERNAME:}
+    password: ${PAGBANK_PASSWORD:}
+    page-size: ${PAGBANK_PAGE_SIZE:1000}
+    inicio: ${PAGBANK_DATA_INICIO:2025-01-01}
+  encryption:
+    key: ${PAGBANK_ENCRYPTION_KEY:}

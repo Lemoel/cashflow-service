@@ -10,10 +10,10 @@ import br.com.cashflow.usecase.maquina.entity.Maquina
 import br.com.cashflow.usecase.maquina.model.MaquinaComCongregacao
 import br.com.cashflow.usecase.maquina.model.MaquinaPage
 import br.com.cashflow.usecase.maquina.port.MaquinaOutputPort
-import br.com.cashflow.usecase.maquina_historico.model.MaquinaHistoricoItem
+import br.com.cashflow.usecase.maquina_historico.model.MaquinaHistoricoItemModel
 import br.com.cashflow.usecase.maquina_historico.port.MaquinaHistoricoOutputPort
-import br.com.cashflow.usecase.maquina_management.adapter.external.dto.MaquinaCreateRequest
-import br.com.cashflow.usecase.maquina_management.adapter.external.dto.MaquinaUpdateRequest
+import br.com.cashflow.usecase.maquina_management.adapter.external.dto.MaquinaCreateRequestDto
+import br.com.cashflow.usecase.maquina_management.adapter.external.dto.MaquinaUpdateRequestDto
 import br.com.cashflow.usecase.maquina_management.port.MaquinaManagementInputPort
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
@@ -30,11 +30,13 @@ class MaquinaManagementService(
     private val bankOutputPort: BankOutputPort,
 ) : MaquinaManagementInputPort {
     @Transactional
-    override fun create(request: MaquinaCreateRequest): MaquinaComCongregacao {
+    override fun create(request: MaquinaCreateRequestDto): MaquinaComCongregacao {
         validarMaquinaIdObrigatorio(request.maquinaId)
         validarCongregacaoObrigatoria(request.congregacaoId)
         validarBancoObrigatorio(request.bancoId)
-        request.departamentoId?.let { validarDepartamentoMesmoTenantDaCongregacao(request.congregacaoId, it) }
+        request.departamentoId?.let {
+            validarDepartamentoMesmoTenantDaCongregacao(request.congregacaoId, it)
+        }
         val numeroSerieNormalizado = request.maquinaId.trim().uppercase(Locale.ROOT)
         if (maquinaOutputPort.existsByNumeroSerieLeitor(numeroSerieNormalizado)) {
             throw ConflictException("Já existe uma máquina com este ID")
@@ -48,19 +50,27 @@ class MaquinaManagementService(
                 ativo = request.ativo,
             )
         val saved = maquinaOutputPort.save(entity)
-        maquinaHistoricoOutputPort.inserirPeriodo(saved.id!!, saved.congregacaoId, saved.departamentoId)
+        maquinaHistoricoOutputPort.inserirPeriodo(
+            saved.id!!,
+            saved.congregacaoId,
+            saved.departamentoId,
+        )
         return maquinaOutputPort.findByIdWithDetalhes(saved.id!!)!!
     }
 
     @Transactional
     override fun update(
         id: UUID,
-        request: MaquinaUpdateRequest,
+        request: MaquinaUpdateRequestDto,
     ): MaquinaComCongregacao {
-        val existing = maquinaOutputPort.findById(id) ?: throw ResourceNotFoundException("Máquina não encontrada")
+        val existing =
+            maquinaOutputPort.findById(id)
+                ?: throw ResourceNotFoundException("Máquina não encontrada")
         validarCongregacaoObrigatoria(request.congregacaoId)
         validarBancoObrigatorio(request.bancoId)
-        request.departamentoId?.let { validarDepartamentoMesmoTenantDaCongregacao(request.congregacaoId, it) }
+        request.departamentoId?.let {
+            validarDepartamentoMesmoTenantDaCongregacao(request.congregacaoId, it)
+        }
         val congregacaoMudou = existing.congregacaoId != request.congregacaoId
         val departamentoMudou = existing.departamentoId != request.departamentoId
         if (congregacaoMudou || departamentoMudou) {
@@ -72,7 +82,11 @@ class MaquinaManagementService(
         existing.ativo = request.ativo
         maquinaOutputPort.save(existing)
         if (congregacaoMudou || departamentoMudou) {
-            maquinaHistoricoOutputPort.inserirPeriodo(existing.id!!, existing.congregacaoId, existing.departamentoId)
+            maquinaHistoricoOutputPort.inserirPeriodo(
+                existing.id!!,
+                existing.congregacaoId,
+                existing.departamentoId,
+            )
         }
         return maquinaOutputPort.findByIdWithDetalhes(id)!!
     }
@@ -111,7 +125,7 @@ class MaquinaManagementService(
             size,
         )
 
-    override fun listHistoricoByMaquinaId(maquinaId: UUID): List<MaquinaHistoricoItem> = maquinaHistoricoOutputPort.listarPorMaquinaId(maquinaId)
+    override fun listHistoricoByMaquinaId(maquinaId: UUID): List<MaquinaHistoricoItemModel> = maquinaHistoricoOutputPort.listarPorMaquinaId(maquinaId)
 
     @Transactional
     override fun delete(id: UUID) {
@@ -162,7 +176,9 @@ class MaquinaManagementService(
             departmentOutputPort.findById(departamentoId)
                 ?: throw BusinessException("Departamento não encontrado")
         if (departamento.tenantId != congregacao.tenantId) {
-            throw BusinessException("O departamento deve pertencer ao mesmo tenant da congregação da máquina")
+            throw BusinessException(
+                "O departamento deve pertencer ao mesmo tenant da congregação da máquina",
+            )
         }
     }
 }

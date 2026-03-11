@@ -102,9 +102,16 @@ class MaquinaRepositoryImpl(
         page: Int,
         size: Int,
     ): MaquinaQueryResult {
-        val whereClause = if (conditions.isEmpty()) "" else " WHERE " + conditions.joinToString(" AND ")
+        val whereClause =
+            if (conditions.isEmpty()) {
+                ""
+            } else {
+                " WHERE " +
+                    conditions.joinToString(" AND ")
+            }
         val countSql = "SELECT COUNT(*) $MAQUINA_FROM_CLAUSE$whereClause"
-        val total = jdbcTemplate.queryForObject(countSql, Long::class.java, *params.toTypedArray()) ?: 0L
+        val total =
+            jdbcTemplate.queryForObject(countSql, Long::class.java, *params.toTypedArray()) ?: 0L
         params.add(size)
         params.add(page * size)
         val selectSql =
@@ -115,7 +122,12 @@ class MaquinaRepositoryImpl(
             ORDER BY m.numero_serie_leitor
             LIMIT ? OFFSET ?
             """.trimIndent()
-        val items = jdbcTemplate.query(selectSql, MAQUINA_COM_CONGREGACAO_ROW_MAPPER, *params.toTypedArray())
+        val items =
+            jdbcTemplate.query(
+                selectSql,
+                MAQUINA_COM_CONGREGACAO_ROW_MAPPER,
+                *params.toTypedArray(),
+            )
         return MaquinaQueryResult(items = items, total = total)
     }
 

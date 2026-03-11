@@ -51,7 +51,8 @@ class DepartmentResponseTest {
     @Test
     fun `toListOption maps id and nome`() {
         val id = UUID.randomUUID()
-        val department = Department(id = id, tenantId = UUID.randomUUID(), nome = "Financeiro", ativo = true)
+        val department =
+            Department(id = id, tenantId = UUID.randomUUID(), nome = "Financeiro", ativo = true)
 
         val result = department.toListOption()
 
@@ -101,7 +102,7 @@ class DepartmentResponseTest {
     @Test
     fun `DepartmentCreateRequest toEntity maps fields and normalizes nome`() {
         val tenantId = UUID.randomUUID()
-        val request = DepartmentCreateRequest(nome = "  departamento ti  ", ativo = false)
+        val request = DepartmentCreateRequestDto(nome = "  departamento ti  ", ativo = false)
 
         val result = request.toEntity(tenantId)
 
@@ -114,7 +115,7 @@ class DepartmentResponseTest {
     @Test
     fun `DepartmentCreateRequest toEntity with ativo true`() {
         val tenantId = UUID.randomUUID()
-        val request = DepartmentCreateRequest(nome = "Vendas", ativo = true)
+        val request = DepartmentCreateRequestDto(nome = "Vendas", ativo = true)
 
         val result = request.toEntity(tenantId)
 
@@ -125,7 +126,7 @@ class DepartmentResponseTest {
     @Test
     fun `DepartmentCreateRequest toEntity throws when nome is blank`() {
         val tenantId = UUID.randomUUID()
-        val request = DepartmentCreateRequest(nome = "   ", ativo = true)
+        val request = DepartmentCreateRequestDto(nome = "   ", ativo = true)
 
         assertThatThrownBy { request.toEntity(tenantId) }
             .isInstanceOf(IllegalArgumentException::class.java)
@@ -134,8 +135,14 @@ class DepartmentResponseTest {
 
     @Test
     fun `DepartmentUpdateRequest applyTo updates department nome and ativo`() {
-        val department = Department(id = UUID.randomUUID(), tenantId = UUID.randomUUID(), nome = "Antigo", ativo = true)
-        val request = DepartmentUpdateRequest(nome = "  novo nome  ", ativo = false)
+        val department =
+            Department(
+                id = UUID.randomUUID(),
+                tenantId = UUID.randomUUID(),
+                nome = "Antigo",
+                ativo = true,
+            )
+        val request = DepartmentUpdateRequestDto(nome = "  novo nome  ", ativo = false)
 
         request.applyTo(department)
 
@@ -146,7 +153,7 @@ class DepartmentResponseTest {
     @Test
     fun `DepartmentUpdateRequest applyTo throws when nome is blank`() {
         val department = Department(nome = "X")
-        val request = DepartmentUpdateRequest(nome = "", ativo = true)
+        val request = DepartmentUpdateRequestDto(nome = "", ativo = true)
 
         assertThatThrownBy { request.applyTo(department) }
             .isInstanceOf(IllegalArgumentException::class.java)
@@ -155,16 +162,16 @@ class DepartmentResponseTest {
 
     @Test
     fun `DepartmentCreateRequest data class holds values`() {
-        val request = DepartmentCreateRequest(nome = "RH", ativo = false)
+        val request = DepartmentCreateRequestDto(nome = "RH", ativo = false)
         assertThat(request.nome).isEqualTo("RH")
         assertThat(request.ativo).isFalse()
-        val withDefault = DepartmentCreateRequest(nome = "TI")
+        val withDefault = DepartmentCreateRequestDto(nome = "TI")
         assertThat(withDefault.ativo).isTrue()
     }
 
     @Test
     fun `DepartmentUpdateRequest data class holds values`() {
-        val request = DepartmentUpdateRequest(nome = "Financeiro", ativo = true)
+        val request = DepartmentUpdateRequestDto(nome = "Financeiro", ativo = true)
         assertThat(request.nome).isEqualTo("Financeiro")
         assertThat(request.ativo).isTrue()
     }

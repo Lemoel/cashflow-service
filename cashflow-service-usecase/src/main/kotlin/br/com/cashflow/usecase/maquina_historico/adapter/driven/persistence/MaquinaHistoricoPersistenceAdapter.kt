@@ -1,7 +1,7 @@
 package br.com.cashflow.usecase.maquina_historico.adapter.driven.persistence
 
 import br.com.cashflow.usecase.maquina_historico.entity.MaquinaHistorico
-import br.com.cashflow.usecase.maquina_historico.model.MaquinaHistoricoItem
+import br.com.cashflow.usecase.maquina_historico.model.MaquinaHistoricoItemModel
 import br.com.cashflow.usecase.maquina_historico.port.MaquinaHistoricoOutputPort
 import org.springframework.stereotype.Component
 import java.time.Instant
@@ -11,7 +11,7 @@ import java.util.UUID
 class MaquinaHistoricoPersistenceAdapter(
     private val maquinaHistoricoRepository: MaquinaHistoricoRepository,
 ) : MaquinaHistoricoOutputPort {
-    override fun listarPorMaquinaId(maquinaId: UUID): List<MaquinaHistoricoItem> =
+    override fun listarPorMaquinaId(maquinaId: UUID): List<MaquinaHistoricoItemModel> =
         maquinaHistoricoRepository
             .findByMaquinaIdOrderByDataInicioDesc(maquinaId)
             .map { it.toItem() }
@@ -38,8 +38,8 @@ class MaquinaHistoricoPersistenceAdapter(
     }
 }
 
-private fun MaquinaHistoricoItemRow.toItem(): MaquinaHistoricoItem =
-    MaquinaHistoricoItem(
+private fun MaquinaHistoricoItemRow.toItem(): MaquinaHistoricoItemModel =
+    MaquinaHistoricoItemModel(
         id = id,
         maquinaId = maquinaId,
         congregacaoId = congregacaoId,

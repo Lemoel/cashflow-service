@@ -1,7 +1,7 @@
 package br.com.cashflow.usecase.congregation.adapter.driven.persistence
 
 import br.com.cashflow.usecase.congregation.entity.Congregation
-import br.com.cashflow.usecase.congregation.model.CongregationFilter
+import br.com.cashflow.usecase.congregation.model.CongregationFilterModel
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -60,7 +60,16 @@ class CongregationPersistenceAdapterTest {
     fun `findById delegates to repository and returns entity when found`() {
         val id = UUID.randomUUID()
         val congregation =
-            Congregation(id = id, nome = "Cong A", logradouro = "Rua X", bairro = "Centro", numero = "1", cidade = "SP", uf = "SP", cep = "01234567")
+            Congregation(
+                id = id,
+                nome = "Cong A",
+                logradouro = "Rua X",
+                bairro = "Centro",
+                numero = "1",
+                cidade = "SP",
+                uf = "SP",
+                cep = "01234567",
+            )
         every { congregationRepository.findById(id) } returns Optional.of(congregation)
 
         val result = adapter.findById(id)
@@ -111,7 +120,7 @@ class CongregationPersistenceAdapterTest {
     @Test
     fun `findAll with filter delegates to findFiltered with filter`() {
         val pageable = PageRequest.of(1, 5)
-        val filter = CongregationFilter(nome = "Cong A", cnpj = null, ativo = true)
+        val filter = CongregationFilterModel(nome = "Cong A", cnpj = null, ativo = true)
         val congregations = emptyList<Congregation>()
         val springPage = PageImpl(congregations, pageable, 0L)
         every { congregationRepository.findFiltered(filter, pageable) } returns springPage
@@ -163,12 +172,15 @@ class CongregationPersistenceAdapterTest {
                     cep = "01234567",
                 ),
             )
-        every { congregationRepository.findBySetorialIdIsNullAndAtivoTrueOrderByNomeAsc() } returns list
+        every { congregationRepository.findBySetorialIdIsNullAndAtivoTrueOrderByNomeAsc() } returns
+            list
 
         val result = adapter.findSetoriais()
 
         assertThat(result).isEqualTo(list)
-        verify(exactly = 1) { congregationRepository.findBySetorialIdIsNullAndAtivoTrueOrderByNomeAsc() }
+        verify(
+            exactly = 1,
+        ) { congregationRepository.findBySetorialIdIsNullAndAtivoTrueOrderByNomeAsc() }
     }
 
     @Test

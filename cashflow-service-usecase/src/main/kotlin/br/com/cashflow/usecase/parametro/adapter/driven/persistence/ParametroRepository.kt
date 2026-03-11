@@ -1,7 +1,7 @@
 package br.com.cashflow.usecase.parametro.adapter.driven.persistence
 
 import br.com.cashflow.usecase.parametro.entity.Parametro
-import br.com.cashflow.usecase.parametro.model.ParametroFilter
+import br.com.cashflow.usecase.parametro.model.ParametroFilterModel
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.CrudRepository
@@ -22,7 +22,7 @@ interface ParametroRepository :
 
 interface ParametroRepositoryCustom {
     fun findWithFilters(
-        filter: ParametroFilter?,
+        filter: ParametroFilterModel?,
         pageable: Pageable,
     ): Page<Parametro>
 }

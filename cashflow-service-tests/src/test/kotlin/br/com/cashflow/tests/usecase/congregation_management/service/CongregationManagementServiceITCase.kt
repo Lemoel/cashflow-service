@@ -6,11 +6,11 @@ import br.com.cashflow.commons.exception.ResourceNotFoundException
 import br.com.cashflow.tests.base.postgresql.PostgresqlBaseTest
 import br.com.cashflow.tests.base.postgresql.annotations.SqlSetUp
 import br.com.cashflow.tests.base.postgresql.annotations.SqlTearDown
-import br.com.cashflow.usecase.congregation.model.CongregationFilter
-import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationCreateRequest
-import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationUpdateRequest
+import br.com.cashflow.usecase.congregation.model.CongregationFilterModel
+import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationCreateRequestDto
+import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationUpdateRequestDto
 import br.com.cashflow.usecase.congregation_management.port.CongregationManagementInputPort
-import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantCreateRequest
+import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantCreateRequestDto
 import br.com.cashflow.usecase.tenant_management.port.TenantManagementInputPort
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -29,7 +29,7 @@ class CongregationManagementServiceITCase : PostgresqlBaseTest() {
 
     private fun createTenant(): UUID {
         val request =
-            TenantCreateRequest(
+            TenantCreateRequestDto(
                 tradeName = "Tenant Cong IT",
                 cnpj = "12345678000190",
                 street = "Rua",
@@ -47,7 +47,7 @@ class CongregationManagementServiceITCase : PostgresqlBaseTest() {
         // prepare
         val tenantId = createTenant()
         val createRequest =
-            CongregationCreateRequest(
+            CongregationCreateRequestDto(
                 tenantId = tenantId,
                 nome = "Congregação CRUD",
                 logradouro = "Rua X",
@@ -82,7 +82,7 @@ class CongregationManagementServiceITCase : PostgresqlBaseTest() {
 
         // prepare
         val updateRequest =
-            CongregationUpdateRequest(
+            CongregationUpdateRequestDto(
                 nome = "Congregação CRUD Atualizada",
                 logradouro = "Rua Y",
                 bairro = "Bairro",
@@ -128,7 +128,7 @@ class CongregationManagementServiceITCase : PostgresqlBaseTest() {
     fun should_ThrowBusinessException_When_CreateAndTenantNotFound() {
         // prepare
         val request =
-            CongregationCreateRequest(
+            CongregationCreateRequestDto(
                 tenantId = UUID.randomUUID(),
                 nome = "Cong",
                 logradouro = "Rua",
@@ -150,7 +150,7 @@ class CongregationManagementServiceITCase : PostgresqlBaseTest() {
         // prepare
         val tenantId = createTenant()
         val request =
-            CongregationCreateRequest(
+            CongregationCreateRequestDto(
                 tenantId = tenantId,
                 nome = "Cong 1",
                 cnpj = "11222333000181",
@@ -182,7 +182,7 @@ class CongregationManagementServiceITCase : PostgresqlBaseTest() {
     fun should_ThrowResourceNotFoundException_When_UpdateAndCongregationNotFound() {
         // prepare
         val request =
-            CongregationUpdateRequest(
+            CongregationUpdateRequestDto(
                 nome = "A",
                 logradouro = "R",
                 bairro = "B",
@@ -211,7 +211,7 @@ class CongregationManagementServiceITCase : PostgresqlBaseTest() {
         // prepare
         val tenantId = createTenant()
         val request =
-            CongregationCreateRequest(
+            CongregationCreateRequestDto(
                 tenantId = tenantId,
                 nome = "Cong Filtro",
                 logradouro = "Rua",
@@ -224,7 +224,7 @@ class CongregationManagementServiceITCase : PostgresqlBaseTest() {
         congregationManagement.create(request)
 
         // call
-        val page = congregationManagement.findAll(CongregationFilter(nome = "CONG FILTRO"), 0, 10)
+        val page = congregationManagement.findAll(CongregationFilterModel(nome = "CONG FILTRO"), 0, 10)
 
         // assert
         assertThat(page.items).isNotEmpty
@@ -236,7 +236,7 @@ class CongregationManagementServiceITCase : PostgresqlBaseTest() {
         // prepare
         val tenantId = createTenant()
         val setorialRequest =
-            CongregationCreateRequest(
+            CongregationCreateRequestDto(
                 tenantId = tenantId,
                 nome = "Setorial A",
                 logradouro = "Rua",
@@ -250,7 +250,7 @@ class CongregationManagementServiceITCase : PostgresqlBaseTest() {
         val setorial = congregationManagement.create(setorialRequest)
 
         val filhaRequest =
-            CongregationCreateRequest(
+            CongregationCreateRequestDto(
                 tenantId = tenantId,
                 setorialId = setorial.id,
                 nome = "Cong Filha",

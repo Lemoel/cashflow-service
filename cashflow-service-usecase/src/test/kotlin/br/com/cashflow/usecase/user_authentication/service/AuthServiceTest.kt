@@ -10,7 +10,7 @@ import br.com.cashflow.usecase.acesso.entity.PerfilUsuario
 import br.com.cashflow.usecase.acesso.port.AcessoOutputPort
 import br.com.cashflow.usecase.tenant.port.TenantOutputPort
 import br.com.cashflow.usecase.user_authentication.legacy.LegacyPasswordSupport
-import br.com.cashflow.usecase.user_authentication.model.TokenClaims
+import br.com.cashflow.usecase.user_authentication.model.TokenClaimsModel
 import br.com.cashflow.usecase.user_authentication.port.TokenProvider
 import io.mockk.every
 import io.mockk.mockk
@@ -91,7 +91,8 @@ class AuthServiceTest {
                 tipoAcesso = PerfilUsuario.USER.name,
             )
         every { acessoOutputPort.findByEmail(email) } returns acesso
-        every { passwordEncoder.encode(senha) } returns "\$2a\$12\$migratedBcryptHashPlaceholder1234567890123456789012"
+        every { passwordEncoder.encode(senha) } returns
+            "\$2a\$12\$migratedBcryptHashPlaceholder1234567890123456789012"
         every { acessoOutputPort.updatePassword(email, any()) } returns Unit
         every { acessoOutputPort.findTenantIdByEmail(email) } returns null
         every { tokenProvider.generateToken(acesso, null) } returns "jwt-token"
@@ -101,7 +102,12 @@ class AuthServiceTest {
 
         assertThat(result.token).isEqualTo("jwt-token")
         assertThat(result.usuario.email).isEqualTo(email)
-        verify(exactly = 1) { acessoOutputPort.updatePassword(email, "\$2a\$12\$migratedBcryptHashPlaceholder1234567890123456789012") }
+        verify(exactly = 1) {
+            acessoOutputPort.updatePassword(
+                email,
+                "\$2a\$12\$migratedBcryptHashPlaceholder1234567890123456789012",
+            )
+        }
     }
 
     @Test
@@ -134,7 +140,13 @@ class AuthServiceTest {
     fun `login throws InvalidCredentialsException when password does not match`() {
         val email = "user@test.com"
         val storedSha256 = LegacyPasswordSupport.sha256Hex("correct")!!
-        val acesso = Acesso(email = email, password = storedSha256, ativo = true, tipoAcesso = PerfilUsuario.USER.name)
+        val acesso =
+            Acesso(
+                email = email,
+                password = storedSha256,
+                ativo = true,
+                tipoAcesso = PerfilUsuario.USER.name,
+            )
         every { acessoOutputPort.findByEmail(email) } returns acesso
 
         assertThatThrownBy { service.login(email, "wrong") }
@@ -146,7 +158,13 @@ class AuthServiceTest {
     fun `login throws InactiveUserException when user is inactive`() {
         val email = "user@test.com"
         val bcryptHash = "\$2a\$12\$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.VTtP2o1eR1qK2u"
-        val acesso = Acesso(email = email, password = bcryptHash, ativo = false, tipoAcesso = PerfilUsuario.USER.name)
+        val acesso =
+            Acesso(
+                email = email,
+                password = bcryptHash,
+                ativo = false,
+                tipoAcesso = PerfilUsuario.USER.name,
+            )
         every { acessoOutputPort.findByEmail(email) } returns acesso
 
         assertThatThrownBy { service.login(email, "password") }
@@ -156,8 +174,14 @@ class AuthServiceTest {
     @Test
     fun `refresh returns LoginResponse when token is valid`() {
         val email = "user@test.com"
-        val claims = TokenClaims(sub = email, email = email, perfil = "ADMIN", tenantId = null)
-        val acesso = Acesso(email = email, password = "hash", ativo = true, tipoAcesso = PerfilUsuario.ADMIN.name)
+        val claims = TokenClaimsModel(sub = email, email = email, perfil = "ADMIN", tenantId = null)
+        val acesso =
+            Acesso(
+                email = email,
+                password = "hash",
+                ativo = true,
+                tipoAcesso = PerfilUsuario.ADMIN.name,
+            )
         every { tokenProvider.validateRefreshToken("valid-refresh") } returns claims
         every { acessoOutputPort.findByEmail(email) } returns acesso
         every { acessoOutputPort.findTenantIdByEmail(email) } returns null
@@ -181,8 +205,14 @@ class AuthServiceTest {
     @Test
     fun `refresh throws InactiveUserException when user is inactive`() {
         val email = "user@test.com"
-        val claims = TokenClaims(sub = email, email = email, perfil = "ADMIN", tenantId = null)
-        val acesso = Acesso(email = email, password = "hash", ativo = false, tipoAcesso = PerfilUsuario.ADMIN.name)
+        val claims = TokenClaimsModel(sub = email, email = email, perfil = "ADMIN", tenantId = null)
+        val acesso =
+            Acesso(
+                email = email,
+                password = "hash",
+                ativo = false,
+                tipoAcesso = PerfilUsuario.ADMIN.name,
+            )
         every { tokenProvider.validateRefreshToken("valid-refresh") } returns claims
         every { acessoOutputPort.findByEmail(email) } returns acesso
 
@@ -193,7 +223,13 @@ class AuthServiceTest {
     @Test
     fun `getCurrentUser returns UsuarioResponse when user exists`() {
         val email = "user@test.com"
-        val acesso = Acesso(email = email, nome = "User", ativo = true, tipoAcesso = PerfilUsuario.FISCAL.name)
+        val acesso =
+            Acesso(
+                email = email,
+                nome = "User",
+                ativo = true,
+                tipoAcesso = PerfilUsuario.FISCAL.name,
+            )
         every { acessoOutputPort.findByEmail(email) } returns acesso
         every { acessoOutputPort.findTenantIdByEmail(email) } returns null
 
@@ -216,7 +252,13 @@ class AuthServiceTest {
     fun `changePassword updates password when current password is correct with BCrypt`() {
         val email = "user@test.com"
         val bcryptHash = "\$2a\$12\$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.VTtP2o1eR1qK2u"
-        val acesso = Acesso(email = email, password = bcryptHash, ativo = true, tipoAcesso = PerfilUsuario.USER.name)
+        val acesso =
+            Acesso(
+                email = email,
+                password = bcryptHash,
+                ativo = true,
+                tipoAcesso = PerfilUsuario.USER.name,
+            )
         every { acessoOutputPort.findByEmail(email) } returns acesso
         every { passwordEncoder.matches("current", acesso.password) } returns true
         every { passwordEncoder.encode("newpass123") } returns "new-hash"
@@ -231,7 +273,13 @@ class AuthServiceTest {
     fun `changePassword updates password when current password is stored as SHA-256`() {
         val email = "user@test.com"
         val currentSha256 = LegacyPasswordSupport.sha256Hex("current")!!
-        val acesso = Acesso(email = email, password = currentSha256, ativo = true, tipoAcesso = PerfilUsuario.USER.name)
+        val acesso =
+            Acesso(
+                email = email,
+                password = currentSha256,
+                ativo = true,
+                tipoAcesso = PerfilUsuario.USER.name,
+            )
         every { acessoOutputPort.findByEmail(email) } returns acesso
         every { passwordEncoder.encode("newpass123") } returns "new-bcrypt-hash"
         every { acessoOutputPort.updatePassword(email, "new-bcrypt-hash") } returns Unit
@@ -245,7 +293,13 @@ class AuthServiceTest {
     fun `changePassword throws WrongPasswordException when current password is wrong`() {
         val email = "user@test.com"
         val storedSha256 = LegacyPasswordSupport.sha256Hex("correct")!!
-        val acesso = Acesso(email = email, password = storedSha256, ativo = true, tipoAcesso = PerfilUsuario.USER.name)
+        val acesso =
+            Acesso(
+                email = email,
+                password = storedSha256,
+                ativo = true,
+                tipoAcesso = PerfilUsuario.USER.name,
+            )
         every { acessoOutputPort.findByEmail(email) } returns acesso
 
         assertThatThrownBy { service.changePassword(email, "wrong", "newpass123") }
@@ -264,7 +318,13 @@ class AuthServiceTest {
     fun `changePassword throws BusinessException when new password is too short`() {
         val email = "user@test.com"
         val bcryptHash = "\$2a\$12\$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.VTtP2o1eR1qK2u"
-        val acesso = Acesso(email = email, password = bcryptHash, ativo = true, tipoAcesso = PerfilUsuario.USER.name)
+        val acesso =
+            Acesso(
+                email = email,
+                password = bcryptHash,
+                ativo = true,
+                tipoAcesso = PerfilUsuario.USER.name,
+            )
         every { acessoOutputPort.findByEmail(email) } returns acesso
         every { passwordEncoder.matches("current", any()) } returns true
 

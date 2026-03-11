@@ -5,11 +5,11 @@ import br.com.cashflow.commons.exception.ConflictException
 import br.com.cashflow.commons.exception.ResourceNotFoundException
 import br.com.cashflow.commons.util.CnpjValidator
 import br.com.cashflow.usecase.congregation.entity.Congregation
-import br.com.cashflow.usecase.congregation.model.CongregationFilter
-import br.com.cashflow.usecase.congregation.model.CongregationPage
+import br.com.cashflow.usecase.congregation.model.CongregationFilterModel
+import br.com.cashflow.usecase.congregation.model.CongregationPageModel
 import br.com.cashflow.usecase.congregation.port.CongregationOutputPort
-import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationCreateRequest
-import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationUpdateRequest
+import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationCreateRequestDto
+import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationUpdateRequestDto
 import br.com.cashflow.usecase.congregation_management.adapter.external.dto.applyTo
 import br.com.cashflow.usecase.congregation_management.adapter.external.dto.toEntity
 import br.com.cashflow.usecase.congregation_management.port.CongregationManagementInputPort
@@ -26,7 +26,7 @@ class CongregationManagementService(
     private val congregationOutputPort: CongregationOutputPort,
     private val tenantOutputPort: TenantOutputPort,
 ) : CongregationManagementInputPort {
-    override fun create(request: CongregationCreateRequest): Congregation {
+    override fun create(request: CongregationCreateRequestDto): Congregation {
         if (tenantOutputPort.findById(request.tenantId) == null) {
             throw BusinessException("Usuário não possui congregação vinculada!")
         }
@@ -44,7 +44,7 @@ class CongregationManagementService(
 
     override fun update(
         id: UUID,
-        request: CongregationUpdateRequest,
+        request: CongregationUpdateRequestDto,
     ): Congregation {
         val existing =
             congregationOutputPort.findById(id)
@@ -64,14 +64,22 @@ class CongregationManagementService(
     override fun findById(id: UUID): Congregation? = congregationOutputPort.findById(id)
 
     override fun findAll(
-        filter: CongregationFilter?,
+        filter: CongregationFilterModel?,
         page: Int,
         size: Int,
-    ): CongregationPage = congregationOutputPort.findAll(filter, page, size)
+    ): CongregationPageModel = congregationOutputPort.findAll(filter, page, size)
 
-    override fun findListForDropdown(): List<Pair<UUID, String>> = congregationOutputPort.findAllOrderByNome().map { it.id!! to it.nome }
+    override fun findListForDropdown(): List<Pair<UUID, String>> =
+        congregationOutputPort.findAllOrderByNome().map {
+            it.id!! to
+                it.nome
+        }
 
-    override fun findSetoriais(): List<Pair<UUID, String>> = congregationOutputPort.findSetoriais().map { it.id!! to it.nome }
+    override fun findSetoriais(): List<Pair<UUID, String>> =
+        congregationOutputPort.findSetoriais().map {
+            it.id!! to
+                it.nome
+        }
 
     @Transactional
     override fun delete(id: UUID) {

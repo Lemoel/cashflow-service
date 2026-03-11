@@ -1,7 +1,7 @@
 package br.com.cashflow.usecase.maquina_management.adapter.external.dto
 
 import br.com.cashflow.usecase.maquina.model.MaquinaComCongregacao
-import br.com.cashflow.usecase.maquina_historico.model.MaquinaHistoricoItem
+import br.com.cashflow.usecase.maquina_historico.model.MaquinaHistoricoItemModel
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.time.Instant
@@ -83,7 +83,7 @@ class MaquinaResponseTest {
         val dataInicio = Instant.EPOCH
         val dataFim = Instant.now()
         val item =
-            MaquinaHistoricoItem(
+            MaquinaHistoricoItemModel(
                 id = id,
                 maquinaId = maquinaId,
                 congregacaoId = congregacaoId,

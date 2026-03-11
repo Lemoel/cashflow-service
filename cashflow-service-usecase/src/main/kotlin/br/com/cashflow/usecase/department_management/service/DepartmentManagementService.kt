@@ -8,8 +8,8 @@ import br.com.cashflow.usecase.department.entity.Department
 import br.com.cashflow.usecase.department.model.DepartmentFilter
 import br.com.cashflow.usecase.department.model.DepartmentPage
 import br.com.cashflow.usecase.department.port.DepartmentOutputPort
-import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentCreateRequest
-import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentUpdateRequest
+import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentCreateRequestDto
+import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentUpdateRequestDto
 import br.com.cashflow.usecase.department_management.adapter.external.dto.applyTo
 import br.com.cashflow.usecase.department_management.adapter.external.dto.toEntity
 import br.com.cashflow.usecase.department_management.port.DepartmentManagementInputPort
@@ -25,7 +25,7 @@ class DepartmentManagementService(
 ) : DepartmentManagementInputPort {
     override fun create(
         tenantId: UUID,
-        request: DepartmentCreateRequest,
+        request: DepartmentCreateRequestDto,
     ): Department {
         if (request.nome.isBlank()) {
             throw BusinessException("Nome do departamento é obrigatório.")
@@ -40,7 +40,7 @@ class DepartmentManagementService(
 
     override fun update(
         id: UUID,
-        request: DepartmentUpdateRequest,
+        request: DepartmentUpdateRequestDto,
     ): Department {
         val existing =
             departmentOutputPort.findById(id)

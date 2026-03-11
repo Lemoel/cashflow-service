@@ -9,8 +9,8 @@ import br.com.cashflow.usecase.department.entity.Department
 import br.com.cashflow.usecase.department.model.DepartmentFilter
 import br.com.cashflow.usecase.department.model.DepartmentPage
 import br.com.cashflow.usecase.department.port.DepartmentOutputPort
-import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentCreateRequest
-import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentUpdateRequest
+import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentCreateRequestDto
+import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentUpdateRequestDto
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -37,7 +37,7 @@ class DepartmentManagementServiceTest {
     fun `create returns saved department when valid`() {
         val tenantId = UUID.randomUUID()
         val request =
-            DepartmentCreateRequest(
+            DepartmentCreateRequestDto(
                 nome = " Financeiro ",
                 ativo = true,
             )
@@ -48,7 +48,9 @@ class DepartmentManagementServiceTest {
                 nome = "FINANCEIRO",
                 ativo = true,
             )
-        every { departmentOutputPort.save(match { it.nome == "FINANCEIRO" && it.tenantId == tenantId }) } returns saved
+        every {
+            departmentOutputPort.save(match { it.nome == "FINANCEIRO" && it.tenantId == tenantId })
+        } returns saved
 
         val result = service.create(tenantId, request)
 
@@ -61,7 +63,7 @@ class DepartmentManagementServiceTest {
     fun `create throws BusinessException when nome is blank`() {
         val tenantId = UUID.randomUUID()
         val request =
-            DepartmentCreateRequest(
+            DepartmentCreateRequestDto(
                 nome = "   ",
                 ativo = true,
             )
@@ -76,11 +78,12 @@ class DepartmentManagementServiceTest {
     fun `create throws ConflictException when duplicate nome per tenant`() {
         val tenantId = UUID.randomUUID()
         val request =
-            DepartmentCreateRequest(
+            DepartmentCreateRequestDto(
                 nome = "Financeiro",
                 ativo = true,
             )
-        every { departmentOutputPort.save(any()) } throws DataIntegrityViolationException("uk_departamento_tenant_nome")
+        every { departmentOutputPort.save(any()) } throws
+            DataIntegrityViolationException("uk_departamento_tenant_nome")
 
         assertThatThrownBy { service.create(tenantId, request) }
             .isInstanceOf(ConflictException::class.java)
@@ -99,12 +102,13 @@ class DepartmentManagementServiceTest {
                 ativo = true,
             )
         val request =
-            DepartmentUpdateRequest(
+            DepartmentUpdateRequestDto(
                 nome = " Novo Nome ",
                 ativo = false,
             )
         every { departmentOutputPort.findById(id) } returns existing
-        every { departmentOutputPort.save(match { it.nome == "NOVO NOME" && !it.ativo }) } answers { firstArg() }
+        every { departmentOutputPort.save(match { it.nome == "NOVO NOME" && !it.ativo }) } answers
+            { firstArg() }
 
         val result = service.update(id, request)
 
@@ -121,7 +125,7 @@ class DepartmentManagementServiceTest {
         assertThatThrownBy {
             service.update(
                 id,
-                DepartmentUpdateRequest(nome = "Nome", ativo = true),
+                DepartmentUpdateRequestDto(nome = "Nome", ativo = true),
             )
         }.isInstanceOf(ResourceNotFoundException::class.java)
             .hasMessageContaining("Departamento não encontrado")
@@ -135,7 +139,7 @@ class DepartmentManagementServiceTest {
         every { departmentOutputPort.findById(id) } returns existing
 
         assertThatThrownBy {
-            service.update(id, DepartmentUpdateRequest(nome = "  ", ativo = true))
+            service.update(id, DepartmentUpdateRequestDto(nome = "  ", ativo = true))
         }.isInstanceOf(BusinessException::class.java)
             .hasMessageContaining("Nome do departamento é obrigatório")
     }
@@ -176,13 +180,22 @@ class DepartmentManagementServiceTest {
     fun `findAll delegates to output port when filter has tenantId`() {
         val tenantId = UUID.randomUUID()
         val filter = DepartmentFilter(tenantId = tenantId, nome = "FIN", ativo = true)
-        val page = DepartmentPage(listOf(Department(tenantId = tenantId, nome = "FINANCEIRO", ativo = true)), 1L, 0, 10)
-        every { departmentOutputPort.findAll(match { it?.tenantId == tenantId }, 0, 10) } returns page
+        val page =
+            DepartmentPage(
+                listOf(Department(tenantId = tenantId, nome = "FINANCEIRO", ativo = true)),
+                1L,
+                0,
+                10,
+            )
+        every { departmentOutputPort.findAll(match { it?.tenantId == tenantId }, 0, 10) } returns
+            page
 
         val result = service.findAll(filter, 0, 10)
 
         assertThat(result).isEqualTo(page)
-        verify(exactly = 1) { departmentOutputPort.findAll(match { it?.tenantId == tenantId }, 0, 10) }
+        verify(
+            exactly = 1,
+        ) { departmentOutputPort.findAll(match { it?.tenantId == tenantId }, 0, 10) }
     }
 
     @Test
@@ -254,7 +267,8 @@ class DepartmentManagementServiceTest {
         val id = UUID.randomUUID()
         val department = Department(id = id, tenantId = UUID.randomUUID(), nome = "A", ativo = true)
         every { departmentOutputPort.findById(id) } returns department
-        every { departmentOutputPort.deleteById(id) } throws DataIntegrityViolationException("fk_lancamento_departamento")
+        every { departmentOutputPort.deleteById(id) } throws
+            DataIntegrityViolationException("fk_lancamento_departamento")
 
         assertThatThrownBy { service.delete(id) }
             .isInstanceOf(ConflictException::class.java)

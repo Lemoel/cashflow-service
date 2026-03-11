@@ -28,8 +28,17 @@ class DepartmentRepositoryImplTest {
     fun `findFiltered with null filter uses count and select without WHERE`() {
         val countSqlSlot = slot<String>()
         val selectSqlSlot = slot<String>()
-        every { jdbcTemplate.queryForObject(capture(countSqlSlot), Long::class.java, *anyVararg()) } returns 0L
-        every { jdbcTemplate.query(capture(selectSqlSlot), any<RowMapper<Department>>(), *anyVararg()) } returns emptyList()
+        every {
+            jdbcTemplate.queryForObject(
+                capture(countSqlSlot),
+                Long::class.java,
+                *anyVararg(),
+            )
+        } returns
+            0L
+        every {
+            jdbcTemplate.query(capture(selectSqlSlot), any<RowMapper<Department>>(), *anyVararg())
+        } returns emptyList()
 
         val pageable = PageRequest.of(0, 10)
         val result = repository.findFiltered(null, pageable)
@@ -41,15 +50,26 @@ class DepartmentRepositoryImplTest {
         assertThat(selectSqlSlot.captured).contains("SELECT * FROM eventos.departamento")
         assertThat(selectSqlSlot.captured).contains("ORDER BY d.nome ASC LIMIT ? OFFSET ?")
         verify(exactly = 1) { jdbcTemplate.queryForObject(any(), Long::class.java, *anyVararg()) }
-        verify(exactly = 1) { jdbcTemplate.query(any(), any<RowMapper<Department>>(), *anyVararg()) }
+        verify(
+            exactly = 1,
+        ) { jdbcTemplate.query(any(), any<RowMapper<Department>>(), *anyVararg()) }
     }
 
     @Test
     fun `findFiltered with tenantId filter adds WHERE condition`() {
         val countSqlSlot = slot<String>()
         val selectSqlSlot = slot<String>()
-        every { jdbcTemplate.queryForObject(capture(countSqlSlot), Long::class.java, *anyVararg()) } returns 0L
-        every { jdbcTemplate.query(capture(selectSqlSlot), any<RowMapper<Department>>(), *anyVararg()) } returns emptyList()
+        every {
+            jdbcTemplate.queryForObject(
+                capture(countSqlSlot),
+                Long::class.java,
+                *anyVararg(),
+            )
+        } returns
+            0L
+        every {
+            jdbcTemplate.query(capture(selectSqlSlot), any<RowMapper<Department>>(), *anyVararg())
+        } returns emptyList()
 
         val tenantId = UUID.randomUUID()
         val filter = DepartmentFilter(tenantId = tenantId, nome = null, ativo = null)
@@ -64,8 +84,17 @@ class DepartmentRepositoryImplTest {
     fun `findFiltered with nome filter uses ILIKE condition`() {
         val countSqlSlot = slot<String>()
         val selectSqlSlot = slot<String>()
-        every { jdbcTemplate.queryForObject(capture(countSqlSlot), Long::class.java, *anyVararg()) } returns 1L
-        every { jdbcTemplate.query(capture(selectSqlSlot), any<RowMapper<Department>>(), *anyVararg()) } returns emptyList()
+        every {
+            jdbcTemplate.queryForObject(
+                capture(countSqlSlot),
+                Long::class.java,
+                *anyVararg(),
+            )
+        } returns
+            1L
+        every {
+            jdbcTemplate.query(capture(selectSqlSlot), any<RowMapper<Department>>(), *anyVararg())
+        } returns emptyList()
 
         val filter = DepartmentFilter(tenantId = null, nome = "TI", ativo = null)
         val result = repository.findFiltered(filter, PageRequest.of(0, 5))
@@ -79,8 +108,17 @@ class DepartmentRepositoryImplTest {
     fun `findFiltered with ativo filter adds condition`() {
         val countSqlSlot = slot<String>()
         val selectSqlSlot = slot<String>()
-        every { jdbcTemplate.queryForObject(capture(countSqlSlot), Long::class.java, *anyVararg()) } returns 0L
-        every { jdbcTemplate.query(capture(selectSqlSlot), any<RowMapper<Department>>(), *anyVararg()) } returns emptyList()
+        every {
+            jdbcTemplate.queryForObject(
+                capture(countSqlSlot),
+                Long::class.java,
+                *anyVararg(),
+            )
+        } returns
+            0L
+        every {
+            jdbcTemplate.query(capture(selectSqlSlot), any<RowMapper<Department>>(), *anyVararg())
+        } returns emptyList()
 
         val filter = DepartmentFilter(tenantId = null, nome = null, ativo = true)
         repository.findFiltered(filter, PageRequest.of(0, 10))
@@ -93,8 +131,17 @@ class DepartmentRepositoryImplTest {
     fun `findFiltered with all filters uses tenant nome and ativo conditions`() {
         val countSqlSlot = slot<String>()
         val selectSqlSlot = slot<String>()
-        every { jdbcTemplate.queryForObject(capture(countSqlSlot), Long::class.java, *anyVararg()) } returns 0L
-        every { jdbcTemplate.query(capture(selectSqlSlot), any<RowMapper<Department>>(), *anyVararg()) } returns emptyList()
+        every {
+            jdbcTemplate.queryForObject(
+                capture(countSqlSlot),
+                Long::class.java,
+                *anyVararg(),
+            )
+        } returns
+            0L
+        every {
+            jdbcTemplate.query(capture(selectSqlSlot), any<RowMapper<Department>>(), *anyVararg())
+        } returns emptyList()
 
         val tenantId = UUID.randomUUID()
         val filter = DepartmentFilter(tenantId = tenantId, nome = "Vendas", ativo = false)
@@ -111,8 +158,16 @@ class DepartmentRepositoryImplTest {
     @Test
     fun `findFiltered with blank nome does not add nome condition`() {
         val countSqlSlot = slot<String>()
-        every { jdbcTemplate.queryForObject(capture(countSqlSlot), Long::class.java, *anyVararg()) } returns 0L
-        every { jdbcTemplate.query(any(), any<RowMapper<Department>>(), *anyVararg()) } returns emptyList()
+        every {
+            jdbcTemplate.queryForObject(
+                capture(countSqlSlot),
+                Long::class.java,
+                *anyVararg(),
+            )
+        } returns
+            0L
+        every { jdbcTemplate.query(any(), any<RowMapper<Department>>(), *anyVararg()) } returns
+            emptyList()
 
         val filter = DepartmentFilter(tenantId = null, nome = "  ", ativo = null)
         repository.findFiltered(filter, PageRequest.of(0, 10))
@@ -130,7 +185,8 @@ class DepartmentRepositoryImplTest {
                 ativo = true,
             )
         every { jdbcTemplate.queryForObject(any(), Long::class.java, *anyVararg()) } returns 1L
-        every { jdbcTemplate.query(any(), any<RowMapper<Department>>(), *anyVararg()) } returns listOf(department)
+        every { jdbcTemplate.query(any(), any<RowMapper<Department>>(), *anyVararg()) } returns
+            listOf(department)
 
         val result = repository.findFiltered(null, PageRequest.of(0, 10))
 

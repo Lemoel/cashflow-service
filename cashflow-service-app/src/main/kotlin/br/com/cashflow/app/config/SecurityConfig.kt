@@ -1,5 +1,6 @@
 package br.com.cashflow.app.config
 
+import br.com.cashflow.app.security.ApiKeyAuthFilter
 import br.com.cashflow.app.security.JwtAuthenticationFilter
 import br.com.cashflow.commons.auth.CurrentUser
 import br.com.cashflow.usecase.acesso.port.AcessoOutputPort
@@ -50,15 +51,21 @@ class SecurityConfig(
     private val securityEnabled: Boolean,
     @param:Value("\${app.security.dev-default-tenant-id:}")
     private val devDefaultTenantId: String,
+    @param:Value("\${pagbank.api-key:}")
+    private val pagbankApiKey: String,
 ) {
     @Bean
     fun jwtAuthenticationFilter(): JwtAuthenticationFilter = JwtAuthenticationFilter(tokenProvider, acessoOutputPort, jsonMapper)
+
+    @Bean
+    fun apiKeyAuthFilter(): ApiKeyAuthFilter = ApiKeyAuthFilter(pagbankApiKey)
 
     @Bean
     fun securityFilterChain(
         http: HttpSecurity,
         securityContextRepository: SecurityContextRepository,
         jwtAuthenticationFilter: JwtAuthenticationFilter,
+        apiKeyAuthFilter: ApiKeyAuthFilter,
     ): SecurityFilterChain {
         http.csrf { it.disable() }
         http.cors { it.configurationSource(corsConfigurationSource) }
@@ -72,11 +79,23 @@ class SecurityConfig(
         if (securityEnabled) {
             http.authorizeHttpRequests {
                 it.requestMatchers("/actuator/**").permitAll()
-                it.requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/auth/login").permitAll()
-                it.requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/auth/refresh").permitAll()
+                it
+                    .requestMatchers(
+                        org.springframework.http.HttpMethod.POST,
+                        "/api/v1/auth/login",
+                    ).permitAll()
+                it
+                    .requestMatchers(
+                        org.springframework.http.HttpMethod.POST,
+                        "/api/v1/auth/refresh",
+                    ).permitAll()
                 it.anyRequest().authenticated()
             }
-            http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
+            http.addFilterBefore(
+                jwtAuthenticationFilter,
+                UsernamePasswordAuthenticationFilter::class.java,
+            )
+            http.addFilterAfter(apiKeyAuthFilter, JwtAuthenticationFilter::class.java)
             http.exceptionHandling {
                 it.authenticationEntryPoint(json401EntryPoint())
             }
@@ -139,7 +158,11 @@ class SecurityConfig(
     }
 
     private fun json401EntryPoint(): AuthenticationEntryPoint =
-        AuthenticationEntryPoint { request: HttpServletRequest, response: HttpServletResponse, _: AuthenticationException ->
+        AuthenticationEntryPoint {
+            request: HttpServletRequest,
+            response: HttpServletResponse,
+            _: AuthenticationException,
+            ->
             response.contentType = MediaType.APPLICATION_JSON_VALUE
             response.status = HttpServletResponse.SC_UNAUTHORIZED
             val body =

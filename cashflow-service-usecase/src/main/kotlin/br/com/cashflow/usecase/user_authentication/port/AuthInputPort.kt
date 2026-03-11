@@ -1,17 +1,17 @@
 package br.com.cashflow.usecase.user_authentication.port
 
-import br.com.cashflow.usecase.user_authentication.model.LoginResponse
-import br.com.cashflow.usecase.user_authentication.model.UsuarioResponse
+import br.com.cashflow.usecase.user_authentication.model.LoginResponseModel
+import br.com.cashflow.usecase.user_authentication.model.UsuarioResponseModel
 
 interface AuthInputPort {
     fun login(
         email: String,
         password: String,
-    ): LoginResponse
+    ): LoginResponseModel
 
-    fun refresh(refreshToken: String): LoginResponse
+    fun refresh(refreshToken: String): LoginResponseModel
 
-    fun getCurrentUser(email: String): UsuarioResponse
+    fun getCurrentUser(email: String): UsuarioResponseModel
 
     fun changePassword(
         email: String,

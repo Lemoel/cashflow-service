@@ -5,8 +5,8 @@ import br.com.cashflow.commons.exception.ResourceNotFoundException
 import br.com.cashflow.usecase.tenant.entity.Tenant
 import br.com.cashflow.usecase.tenant.model.TenantPage
 import br.com.cashflow.usecase.tenant.port.TenantOutputPort
-import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantCreateRequest
-import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantUpdateRequest
+import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantCreateRequestDto
+import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantUpdateRequestDto
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -30,7 +30,7 @@ class TenantManagementServiceTest {
     @Test
     fun `create returns saved tenant when CNPJ is unique`() {
         val request =
-            TenantCreateRequest(
+            TenantCreateRequestDto(
                 tradeName = "Church A",
                 cnpj = "12345678000190",
                 street = "Street",
@@ -62,7 +62,7 @@ class TenantManagementServiceTest {
     @Test
     fun `create throws ConflictException when CNPJ already exists`() {
         val request =
-            TenantCreateRequest(
+            TenantCreateRequestDto(
                 tradeName = "Church A",
                 cnpj = "12345678000190",
                 street = "Street",
@@ -82,7 +82,7 @@ class TenantManagementServiceTest {
     @Test
     fun `create throws when CNPJ has wrong digit count after normalization`() {
         val request =
-            TenantCreateRequest(
+            TenantCreateRequestDto(
                 tradeName = "Church A",
                 cnpj = "123",
                 street = "Street",
@@ -102,9 +102,18 @@ class TenantManagementServiceTest {
     fun `update returns updated tenant when CNPJ is unique`() {
         val id = UUID.randomUUID()
         val existing =
-            Tenant(id = id, cnpj = "12345678000190", tradeName = "OLD", street = "S", number = "1", city = "C", state = "SP", zipCode = "01234567")
+            Tenant(
+                id = id,
+                cnpj = "12345678000190",
+                tradeName = "OLD",
+                street = "S",
+                number = "1",
+                city = "C",
+                state = "SP",
+                zipCode = "01234567",
+            )
         val request =
-            TenantUpdateRequest(
+            TenantUpdateRequestDto(
                 tradeName = "New Name",
                 cnpj = "12345678000190",
                 street = "Street",
@@ -131,7 +140,7 @@ class TenantManagementServiceTest {
         assertThatThrownBy {
             service.update(
                 id,
-                TenantUpdateRequest(
+                TenantUpdateRequestDto(
                     tradeName = "A",
                     cnpj = "12345678000190",
                     street = "S",
@@ -149,14 +158,23 @@ class TenantManagementServiceTest {
     fun `update throws ConflictException when CNPJ belongs to another tenant`() {
         val id = UUID.randomUUID()
         val existing =
-            Tenant(id = id, cnpj = "11111111111111", tradeName = "A", street = "S", number = "1", city = "C", state = "SP", zipCode = "01234567")
+            Tenant(
+                id = id,
+                cnpj = "11111111111111",
+                tradeName = "A",
+                street = "S",
+                number = "1",
+                city = "C",
+                state = "SP",
+                zipCode = "01234567",
+            )
         every { tenantOutputPort.findById(id) } returns existing
         every { tenantOutputPort.existsByCnpjExcludingId("12345678000190", id) } returns true
 
         assertThatThrownBy {
             service.update(
                 id,
-                TenantUpdateRequest(
+                TenantUpdateRequestDto(
                     tradeName = "A",
                     cnpj = "12.345.678/0001-90",
                     street = "S",
@@ -174,7 +192,16 @@ class TenantManagementServiceTest {
     fun `findById returns tenant when found`() {
         val id = UUID.randomUUID()
         val tenant =
-            Tenant(id = id, cnpj = "12345678000190", tradeName = "A", street = "S", number = "1", city = "C", state = "SP", zipCode = "01234567")
+            Tenant(
+                id = id,
+                cnpj = "12345678000190",
+                tradeName = "A",
+                street = "S",
+                number = "1",
+                city = "C",
+                state = "SP",
+                zipCode = "01234567",
+            )
         every { tenantOutputPort.findById(id) } returns tenant
 
         val result = service.findById(id)
@@ -237,7 +264,17 @@ class TenantManagementServiceTest {
     @Test
     fun `delete calls deleteById when tenant exists`() {
         val id = UUID.randomUUID()
-        val tenant = Tenant(id = id, cnpj = "1", tradeName = "A", street = "S", number = "1", city = "C", state = "SP", zipCode = "01234567")
+        val tenant =
+            Tenant(
+                id = id,
+                cnpj = "1",
+                tradeName = "A",
+                street = "S",
+                number = "1",
+                city = "C",
+                state = "SP",
+                zipCode = "01234567",
+            )
         every { tenantOutputPort.findById(id) } returns tenant
         every { tenantOutputPort.deleteById(id) } just runs
 
@@ -267,7 +304,8 @@ class TenantManagementServiceTest {
     @Test
     fun `isCnpjAvailable returns true when CNPJ exists but is the excluded tenant`() {
         val excludeId = UUID.randomUUID()
-        every { tenantOutputPort.existsByCnpjExcludingId("12345678000195", excludeId) } returns false
+        every { tenantOutputPort.existsByCnpjExcludingId("12345678000195", excludeId) } returns
+            false
 
         val result = service.isCnpjAvailable("12345678000195", excludeId)
 

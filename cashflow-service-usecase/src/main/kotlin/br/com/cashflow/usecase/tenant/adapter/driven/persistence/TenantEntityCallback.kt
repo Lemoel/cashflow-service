@@ -14,13 +14,16 @@ class TenantEntityCallback(
     override fun onBeforeConvert(tenant: Tenant): Tenant {
         val now = Instant.now()
         val auditor = auditorAware.currentAuditor.orElse("system")
+
         if (tenant.id == null) {
             tenant.id = UUID.randomUUID()
             tenant.creationUserId = auditor
             tenant.createdAt = now
         }
+
         tenant.modUserId = auditor
         tenant.updatedAt = now
+
         return tenant
     }
 }

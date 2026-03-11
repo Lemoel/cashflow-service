@@ -23,7 +23,16 @@ class TenantEntityCallbackTest {
     @Test
     fun `onBeforeConvert for new entity sets id creationUserId createdAt modUserId updatedAt`() {
         every { auditorAware.currentAuditor } returns Optional.of("user1")
-        val tenant = Tenant(cnpj = "1", tradeName = "T", street = "S", number = "1", city = "C", state = "SP", zipCode = "01234567")
+        val tenant =
+            Tenant(
+                cnpj = "1",
+                tradeName = "T",
+                street = "S",
+                number = "1",
+                city = "C",
+                state = "SP",
+                zipCode = "01234567",
+            )
 
         val result = callback.onBeforeConvert(tenant)
 
@@ -67,7 +76,16 @@ class TenantEntityCallbackTest {
     @Test
     fun `onBeforeConvert when auditor is empty uses system`() {
         every { auditorAware.currentAuditor } returns Optional.empty()
-        val tenant = Tenant(cnpj = "1", tradeName = "T", street = "S", number = "1", city = "C", state = "SP", zipCode = "01234567")
+        val tenant =
+            Tenant(
+                cnpj = "1",
+                tradeName = "T",
+                street = "S",
+                number = "1",
+                city = "C",
+                state = "SP",
+                zipCode = "01234567",
+            )
 
         val result = callback.onBeforeConvert(tenant)
 

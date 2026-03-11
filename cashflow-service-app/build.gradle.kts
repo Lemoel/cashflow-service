@@ -20,7 +20,8 @@ jib {
     }
     to {
         image = project.findProperty("jib.to.image") as String? ?: "cashflow-service"
-        tags = (project.findProperty("jib.to.tags") as String?)?.split(",")?.toSet() ?: setOf("latest")
+        tags =
+            (project.findProperty("jib.to.tags") as String?)?.split(",")?.toSet() ?: setOf("latest")
     }
     container {
         mainClass = "br.com.cashflow.app.CashflowApplicationKt"
@@ -41,6 +42,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-flyway")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
     implementation("org.flywaydb:flyway-database-postgresql")
     implementation("me.paulschwarz:springboot4-dotenv:${property("springDotenvVersion")}")
     implementation("net.logstash.logback:logstash-logback-encoder:7.4")

@@ -41,8 +41,9 @@
 - Auditoria: `@EnableJdbcAuditing` na aplicação; `@CreatedDate`, `@LastModifiedDate` (e opcionalmente `@CreatedBy`, `@LastModifiedBy`) em `Auditable`.
 - Schema: criar tabelas via Flyway; JDBC não gera DDL.
 
-## Spring Data JDBC: métodos derivados
+## Spring Data JDBC: prioridade e métodos derivados
 
+- **Prioridade de acesso a dados:** Qualquer busca ou operação em banco de dados deve ser criada **primordialmente** usando Spring Data JDBC (interface estendendo `CrudRepository`, métodos derivados ou `@Query`). Só em **último caso**, quando não for possível atender aos critérios de busca com Spring Data JDBC (consultas complexas, joins, agregações ou SQL nativo indispensável), pode-se usar `JdbcTemplate` em uma implementação customizada (ex.: `ExampleRepositoryImpl`).
 - Preferir sempre que possível os métodos derivados (nomes de método transformados em SQL automaticamente).
 - Preferir nomes como `findByClassIdOrderByStartDateDesc`, `findFirstByTeacherIdAndClassId` em vez de `@Query` explícita.
 - Usar `@Query` com SQL explícita apenas quando o nome do método derivado ficar muito longo ou a lógica for complexa (ex.: overlap de datas, condições OR compostas).

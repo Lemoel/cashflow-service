@@ -1,7 +1,7 @@
 package br.com.cashflow.usecase.congregation.adapter.driven.persistence
 
 import br.com.cashflow.usecase.congregation.entity.Congregation
-import br.com.cashflow.usecase.congregation.model.CongregationFilter
+import br.com.cashflow.usecase.congregation.model.CongregationFilterModel
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
@@ -15,7 +15,7 @@ class CongregationRepositoryImpl(
     private val jdbcTemplate: JdbcTemplate,
 ) : CongregationRepositoryCustom {
     override fun findFiltered(
-        filter: CongregationFilter?,
+        filter: CongregationFilterModel?,
         pageable: Pageable,
     ): Page<Congregation> {
         val params = mutableListOf<Any>()
@@ -37,9 +37,16 @@ class CongregationRepositoryImpl(
                 params.add(it)
             }
         }
-        val whereClause = if (conditions.isEmpty()) "" else " WHERE " + conditions.joinToString(" AND ")
+        val whereClause =
+            if (conditions.isEmpty()) {
+                ""
+            } else {
+                " WHERE " +
+                    conditions.joinToString(" AND ")
+            }
         val countSql = "SELECT COUNT(*) FROM eventos.congregacao c$whereClause"
-        val total = jdbcTemplate.queryForObject(countSql, Long::class.java, *params.toTypedArray()) ?: 0L
+        val total =
+            jdbcTemplate.queryForObject(countSql, Long::class.java, *params.toTypedArray()) ?: 0L
         params.add(pageable.pageSize)
         params.add(pageable.offset)
         val selectSql = "SELECT * FROM eventos.congregacao c$whereClause ORDER BY c.nome ASC LIMIT ? OFFSET ?"

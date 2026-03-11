@@ -4,10 +4,10 @@ import br.com.cashflow.commons.auth.CurrentUser
 import br.com.cashflow.commons.exception.BusinessException
 import br.com.cashflow.commons.exception.ResourceNotFoundException
 import br.com.cashflow.usecase.department.model.DepartmentFilter
-import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentCreateRequest
+import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentCreateRequestDto
 import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentListResponse
 import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentResponse
-import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentUpdateRequest
+import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentUpdateRequestDto
 import br.com.cashflow.usecase.department_management.adapter.external.dto.toResponse
 import br.com.cashflow.usecase.department_management.port.DepartmentManagementInputPort
 import br.com.cashflow.usecase.tenant.port.TenantOutputPort
@@ -76,11 +76,13 @@ class DepartmentController(
     @PostMapping
     fun create(
         @AuthenticationPrincipal currentUser: CurrentUser,
-        @Valid @RequestBody request: DepartmentCreateRequest,
+        @Valid @RequestBody request: DepartmentCreateRequestDto,
     ): ResponseEntity<DepartmentResponse> {
         val tenantId =
             currentUser.tenantId
-                ?: throw BusinessException("Usuário sem igreja vinculada. Não é possível criar departamento.")
+                ?: throw BusinessException(
+                    "Usuário sem igreja vinculada. Não é possível criar departamento.",
+                )
         val created = departmentManagement.create(tenantId, request)
         val tenantNome = created.tenantId?.let { tenantOutputPort.findById(it)?.tradeName }
         val body = created.toResponse(tenantNome)
@@ -93,7 +95,7 @@ class DepartmentController(
     @PutMapping("/{id}")
     fun update(
         @PathVariable id: UUID,
-        @Valid @RequestBody request: DepartmentUpdateRequest,
+        @Valid @RequestBody request: DepartmentUpdateRequestDto,
     ): ResponseEntity<DepartmentResponse> {
         val updated = departmentManagement.update(id, request)
         val tenantNome = updated.tenantId?.let { tenantOutputPort.findById(it)?.tradeName }

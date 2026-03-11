@@ -2,17 +2,17 @@ package br.com.cashflow.usecase.maquina_management.port
 
 import br.com.cashflow.usecase.maquina.model.MaquinaComCongregacao
 import br.com.cashflow.usecase.maquina.model.MaquinaPage
-import br.com.cashflow.usecase.maquina_historico.model.MaquinaHistoricoItem
-import br.com.cashflow.usecase.maquina_management.adapter.external.dto.MaquinaCreateRequest
-import br.com.cashflow.usecase.maquina_management.adapter.external.dto.MaquinaUpdateRequest
+import br.com.cashflow.usecase.maquina_historico.model.MaquinaHistoricoItemModel
+import br.com.cashflow.usecase.maquina_management.adapter.external.dto.MaquinaCreateRequestDto
+import br.com.cashflow.usecase.maquina_management.adapter.external.dto.MaquinaUpdateRequestDto
 import java.util.UUID
 
 interface MaquinaManagementInputPort {
-    fun create(request: MaquinaCreateRequest): MaquinaComCongregacao
+    fun create(request: MaquinaCreateRequestDto): MaquinaComCongregacao
 
     fun update(
         id: UUID,
-        request: MaquinaUpdateRequest,
+        request: MaquinaUpdateRequestDto,
     ): MaquinaComCongregacao
 
     fun findById(id: UUID): MaquinaComCongregacao?
@@ -34,7 +34,7 @@ interface MaquinaManagementInputPort {
         size: Int,
     ): MaquinaPage
 
-    fun listHistoricoByMaquinaId(maquinaId: UUID): List<MaquinaHistoricoItem>
+    fun listHistoricoByMaquinaId(maquinaId: UUID): List<MaquinaHistoricoItemModel>
 
     fun delete(id: UUID)
 }

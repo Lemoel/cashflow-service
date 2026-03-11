@@ -17,7 +17,9 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.junit.platform:junit-platform-launcher")
-    testImplementation(platform("org.testcontainers:testcontainers-bom:${property("testcontainersVersion")}"))
+    testImplementation(
+        platform("org.testcontainers:testcontainers-bom:${property("testcontainersVersion")}"),
+    )
     testImplementation("org.testcontainers:testcontainers")
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")

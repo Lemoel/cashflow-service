@@ -48,7 +48,12 @@ subprojects {
 
     configure<io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension> {
         imports {
-            mavenBom("org.springframework.boot:spring-boot-dependencies:${property("springBootVersion")}")
+            mavenBom(
+                "org.springframework.boot:spring-boot-dependencies:${property(
+                    "springBootVersion",
+                )}",
+            )
+            mavenBom("org.springframework.cloud:spring-cloud-dependencies:2025.1.0")
         }
     }
 
@@ -84,17 +89,27 @@ subprojects {
             html.required.set(true)
         }
         classDirectories.setFrom(
-            project.extensions.getByType<JavaPluginExtension>().sourceSets.getByName("main").output.classesDirs.files.map { dir: java.io.File ->
-                fileTree(dir) {
-                    exclude(
-                        "**/adapter/external/**/*Controller*",
-                        "**/adapter/**/*Job*",
-                        "**/adapter/**/*Producer*",
-                        "**/adapter/**/*Consumer*",
-                        "**/adapter/**/*MessageAdministrator*",
-                    )
-                }
-            },
+            project.extensions
+                .getByType<JavaPluginExtension>()
+                .sourceSets
+                .getByName(
+                    "main",
+                ).output.classesDirs.files
+                .map { dir: java.io.File ->
+                    fileTree(dir) {
+                        exclude(
+                            "**/adapter/external/**/*Controller*",
+                            "**/adapter/**/*Job*",
+                            "**/adapter/**/*Producer*",
+                            "**/adapter/**/*Consumer*",
+                            "**/adapter/**/*MessageAdministrator*",
+                            "**/movimento_extraction/**",
+                            "**/pagbank/**",
+                            "**/movimento_api/**",
+                            "**/lancamento/**",
+                        )
+                    }
+                },
         )
     }
 
@@ -107,17 +122,27 @@ subprojects {
             }
         }
         classDirectories.setFrom(
-            project.extensions.getByType<JavaPluginExtension>().sourceSets.getByName("main").output.classesDirs.files.map { dir: java.io.File ->
-                fileTree(dir) {
-                    exclude(
-                        "**/adapter/external/**/*Controller*",
-                        "**/adapter/**/*Job*",
-                        "**/adapter/**/*Producer*",
-                        "**/adapter/**/*Consumer*",
-                        "**/adapter/**/*MessageAdministrator*",
-                    )
-                }
-            },
+            project.extensions
+                .getByType<JavaPluginExtension>()
+                .sourceSets
+                .getByName(
+                    "main",
+                ).output.classesDirs.files
+                .map { dir: java.io.File ->
+                    fileTree(dir) {
+                        exclude(
+                            "**/adapter/external/**/*Controller*",
+                            "**/adapter/**/*Job*",
+                            "**/adapter/**/*Producer*",
+                            "**/adapter/**/*Consumer*",
+                            "**/adapter/**/*MessageAdministrator*",
+                            "**/movimento_extraction/**",
+                            "**/pagbank/**",
+                            "**/movimento_api/**",
+                            "**/lancamento/**",
+                        )
+                    }
+                },
         )
     }
 }

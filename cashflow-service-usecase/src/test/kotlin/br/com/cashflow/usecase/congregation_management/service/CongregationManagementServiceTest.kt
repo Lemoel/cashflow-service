@@ -4,10 +4,10 @@ import br.com.cashflow.commons.exception.BusinessException
 import br.com.cashflow.commons.exception.ConflictException
 import br.com.cashflow.commons.exception.ResourceNotFoundException
 import br.com.cashflow.usecase.congregation.entity.Congregation
-import br.com.cashflow.usecase.congregation.model.CongregationPage
+import br.com.cashflow.usecase.congregation.model.CongregationPageModel
 import br.com.cashflow.usecase.congregation.port.CongregationOutputPort
-import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationCreateRequest
-import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationUpdateRequest
+import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationCreateRequestDto
+import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationUpdateRequestDto
 import br.com.cashflow.usecase.tenant.entity.Tenant
 import br.com.cashflow.usecase.tenant.port.TenantOutputPort
 import io.mockk.every
@@ -35,7 +35,7 @@ class CongregationManagementServiceTest {
     fun `create returns saved congregation when tenant exists and CNPJ is unique`() {
         val tenantId = UUID.randomUUID()
         val request =
-            CongregationCreateRequest(
+            CongregationCreateRequestDto(
                 tenantId = tenantId,
                 nome = "Cong A",
                 logradouro = "Rua X",
@@ -58,7 +58,15 @@ class CongregationManagementServiceTest {
                 cep = "01234567",
             )
         every { tenantOutputPort.findById(tenantId) } returns
-            Tenant(id = tenantId, tradeName = "T", street = "S", number = "1", city = "C", state = "SP", zipCode = "01234567")
+            Tenant(
+                id = tenantId,
+                tradeName = "T",
+                street = "S",
+                number = "1",
+                city = "C",
+                state = "SP",
+                zipCode = "01234567",
+            )
         every { congregationOutputPort.existsByCnpjExcludingId(any(), null) } returns false
         every { congregationOutputPort.save(match { true }) } returns saved
 
@@ -72,7 +80,7 @@ class CongregationManagementServiceTest {
     fun `create throws BusinessException when tenant not found`() {
         val tenantId = UUID.randomUUID()
         val request =
-            CongregationCreateRequest(
+            CongregationCreateRequestDto(
                 tenantId = tenantId,
                 nome = "Cong A",
                 logradouro = "Rua X",
@@ -94,7 +102,7 @@ class CongregationManagementServiceTest {
     fun `create throws ConflictException when CNPJ already exists`() {
         val tenantId = UUID.randomUUID()
         val request =
-            CongregationCreateRequest(
+            CongregationCreateRequestDto(
                 tenantId = tenantId,
                 nome = "Cong A",
                 cnpj = "11222333000181",
@@ -106,8 +114,17 @@ class CongregationManagementServiceTest {
                 cep = "01234567",
             )
         every { tenantOutputPort.findById(tenantId) } returns
-            Tenant(id = tenantId, tradeName = "T", street = "S", number = "1", city = "C", state = "SP", zipCode = "01234567")
-        every { congregationOutputPort.existsByCnpjExcludingId("11222333000181", null) } returns true
+            Tenant(
+                id = tenantId,
+                tradeName = "T",
+                street = "S",
+                number = "1",
+                city = "C",
+                state = "SP",
+                zipCode = "01234567",
+            )
+        every { congregationOutputPort.existsByCnpjExcludingId("11222333000181", null) } returns
+            true
 
         assertThatThrownBy { service.create(request) }
             .isInstanceOf(ConflictException::class.java)
@@ -119,7 +136,7 @@ class CongregationManagementServiceTest {
     fun `create throws BusinessException when nome is blank`() {
         val tenantId = UUID.randomUUID()
         val request =
-            CongregationCreateRequest(
+            CongregationCreateRequestDto(
                 tenantId = tenantId,
                 nome = "  ",
                 logradouro = "Rua X",
@@ -130,7 +147,15 @@ class CongregationManagementServiceTest {
                 cep = "01234567",
             )
         every { tenantOutputPort.findById(tenantId) } returns
-            Tenant(id = tenantId, tradeName = "T", street = "S", number = "1", city = "C", state = "SP", zipCode = "01234567")
+            Tenant(
+                id = tenantId,
+                tradeName = "T",
+                street = "S",
+                number = "1",
+                city = "C",
+                state = "SP",
+                zipCode = "01234567",
+            )
 
         assertThatThrownBy { service.create(request) }
             .isInstanceOf(BusinessException::class.java)
@@ -154,7 +179,7 @@ class CongregationManagementServiceTest {
                 cep = "01234567",
             )
         val request =
-            CongregationUpdateRequest(
+            CongregationUpdateRequestDto(
                 nome = "New Name",
                 logradouro = "Rua",
                 bairro = "B",
@@ -181,7 +206,7 @@ class CongregationManagementServiceTest {
         assertThatThrownBy {
             service.update(
                 id,
-                CongregationUpdateRequest(
+                CongregationUpdateRequestDto(
                     nome = "A",
                     logradouro = "R",
                     bairro = "B",
@@ -227,7 +252,7 @@ class CongregationManagementServiceTest {
 
     @Test
     fun `findAll delegates to output port`() {
-        val page = CongregationPage(emptyList(), 0L, 0, 10)
+        val page = CongregationPageModel(emptyList(), 0L, 0, 10)
         every { congregationOutputPort.findAll(null, 0, 10) } returns page
 
         val result = service.findAll(null, 0, 10)
@@ -318,7 +343,8 @@ class CongregationManagementServiceTest {
 
     @Test
     fun `isCnpjAvailable returns true when CNPJ not registered`() {
-        every { congregationOutputPort.existsByCnpjExcludingId("11222333000181", null) } returns false
+        every { congregationOutputPort.existsByCnpjExcludingId("11222333000181", null) } returns
+            false
 
         val result = service.isCnpjAvailable("11222333000181", null)
 
@@ -327,7 +353,8 @@ class CongregationManagementServiceTest {
 
     @Test
     fun `isCnpjAvailable returns false when CNPJ already registered`() {
-        every { congregationOutputPort.existsByCnpjExcludingId("11222333000181", null) } returns true
+        every { congregationOutputPort.existsByCnpjExcludingId("11222333000181", null) } returns
+            true
 
         val result = service.isCnpjAvailable("11222333000181", null)
 
@@ -372,7 +399,8 @@ class CongregationManagementServiceTest {
                 cep = "01234567",
             )
         every { congregationOutputPort.findById(id) } returns cong
-        every { congregationOutputPort.deleteById(id) } throws org.springframework.dao.DataIntegrityViolationException("fk")
+        every { congregationOutputPort.deleteById(id) } throws
+            org.springframework.dao.DataIntegrityViolationException("fk")
 
         assertThatThrownBy { service.delete(id) }
             .isInstanceOf(ConflictException::class.java)

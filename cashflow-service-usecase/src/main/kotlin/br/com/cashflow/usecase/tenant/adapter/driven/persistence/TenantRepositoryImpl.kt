@@ -34,9 +34,16 @@ class TenantRepositoryImpl(
                 params.add(it)
             }
         }
-        val whereClause = if (conditions.isEmpty()) "" else " WHERE " + conditions.joinToString(" AND ")
+        val whereClause =
+            if (conditions.isEmpty()) {
+                ""
+            } else {
+                " WHERE " +
+                    conditions.joinToString(" AND ")
+            }
         val countSql = "SELECT COUNT(*) FROM core.tenants$whereClause"
-        val total = jdbcTemplate.queryForObject(countSql, Long::class.java, *params.toTypedArray()) ?: 0L
+        val total =
+            jdbcTemplate.queryForObject(countSql, Long::class.java, *params.toTypedArray()) ?: 0L
         params.add(pageable.pageSize)
         params.add(pageable.offset)
         val selectSql = "SELECT * FROM core.tenants$whereClause ORDER BY nome_fantasia ASC LIMIT ? OFFSET ?"

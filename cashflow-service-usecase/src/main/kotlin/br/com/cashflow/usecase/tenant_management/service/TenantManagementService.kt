@@ -6,8 +6,8 @@ import br.com.cashflow.usecase.tenant.entity.Tenant
 import br.com.cashflow.usecase.tenant.model.TenantFilter
 import br.com.cashflow.usecase.tenant.model.TenantPage
 import br.com.cashflow.usecase.tenant.port.TenantOutputPort
-import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantCreateRequest
-import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantUpdateRequest
+import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantCreateRequestDto
+import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantUpdateRequestDto
 import br.com.cashflow.usecase.tenant_management.adapter.external.dto.applyTo
 import br.com.cashflow.usecase.tenant_management.adapter.external.dto.toEntity
 import br.com.cashflow.usecase.tenant_management.port.TenantManagementInputPort
@@ -22,7 +22,7 @@ private const val CNPJ_DIGITS_LENGTH = 14
 class TenantManagementService(
     private val tenantOutputPort: TenantOutputPort,
 ) : TenantManagementInputPort {
-    override fun create(request: TenantCreateRequest): Tenant {
+    override fun create(request: TenantCreateRequestDto): Tenant {
         val entity = request.toEntity()
         requireCnpjLength(entity.cnpj)
         if (tenantOutputPort.existsByCnpjExcludingId(entity.cnpj, null)) {
@@ -33,7 +33,7 @@ class TenantManagementService(
 
     override fun update(
         id: UUID,
-        request: TenantUpdateRequest,
+        request: TenantUpdateRequestDto,
     ): Tenant {
         val existing =
             tenantOutputPort.findById(id)
