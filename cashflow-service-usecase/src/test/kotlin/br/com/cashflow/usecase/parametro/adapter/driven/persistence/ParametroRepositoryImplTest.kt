@@ -1,7 +1,7 @@
 package br.com.cashflow.usecase.parametro.adapter.driven.persistence
 
 import br.com.cashflow.usecase.parametro.entity.Parametro
-import br.com.cashflow.usecase.parametro.model.ParametroFilter
+import br.com.cashflow.usecase.parametro.model.ParametroFilterModel
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -28,8 +28,17 @@ class ParametroRepositoryImplTest {
     fun `findWithFilters with null filter uses count and select without WHERE`() {
         val countSqlSlot = slot<String>()
         val selectSqlSlot = slot<String>()
-        every { jdbcTemplate.queryForObject(capture(countSqlSlot), Long::class.java, *anyVararg()) } returns 0L
-        every { jdbcTemplate.query(capture(selectSqlSlot), any<RowMapper<Parametro>>(), *anyVararg()) } returns emptyList()
+        every {
+            jdbcTemplate.queryForObject(
+                capture(countSqlSlot),
+                Long::class.java,
+                *anyVararg(),
+            )
+        } returns
+            0L
+        every {
+            jdbcTemplate.query(capture(selectSqlSlot), any<RowMapper<Parametro>>(), *anyVararg())
+        } returns emptyList()
 
         val pageable = PageRequest.of(0, 10)
         val result = repository.findWithFilters(null, pageable)
@@ -48,11 +57,20 @@ class ParametroRepositoryImplTest {
     fun `findWithFilters with chave filter uses ILIKE`() {
         val countSqlSlot = slot<String>()
         val selectSqlSlot = slot<String>()
-        every { jdbcTemplate.queryForObject(capture(countSqlSlot), Long::class.java, *anyVararg()) } returns 1L
-        every { jdbcTemplate.query(capture(selectSqlSlot), any<RowMapper<Parametro>>(), *anyVararg()) } returns emptyList()
+        every {
+            jdbcTemplate.queryForObject(
+                capture(countSqlSlot),
+                Long::class.java,
+                *anyVararg(),
+            )
+        } returns
+            1L
+        every {
+            jdbcTemplate.query(capture(selectSqlSlot), any<RowMapper<Parametro>>(), *anyVararg())
+        } returns emptyList()
 
         val pageable = PageRequest.of(0, 10)
-        val filter = ParametroFilter(chave = "KEY", ativo = null)
+        val filter = ParametroFilterModel(chave = "KEY", ativo = null)
         repository.findWithFilters(filter, pageable)
 
         assertThat(countSqlSlot.captured).contains("p.chave ILIKE ?")
@@ -63,11 +81,20 @@ class ParametroRepositoryImplTest {
     fun `findWithFilters with ativo filter uses ativo condition`() {
         val countSqlSlot = slot<String>()
         val selectSqlSlot = slot<String>()
-        every { jdbcTemplate.queryForObject(capture(countSqlSlot), Long::class.java, *anyVararg()) } returns 0L
-        every { jdbcTemplate.query(capture(selectSqlSlot), any<RowMapper<Parametro>>(), *anyVararg()) } returns emptyList()
+        every {
+            jdbcTemplate.queryForObject(
+                capture(countSqlSlot),
+                Long::class.java,
+                *anyVararg(),
+            )
+        } returns
+            0L
+        every {
+            jdbcTemplate.query(capture(selectSqlSlot), any<RowMapper<Parametro>>(), *anyVararg())
+        } returns emptyList()
 
         val pageable = PageRequest.of(0, 10)
-        val filter = ParametroFilter(chave = null, ativo = true)
+        val filter = ParametroFilterModel(chave = null, ativo = true)
         repository.findWithFilters(filter, pageable)
 
         assertThat(countSqlSlot.captured).contains("p.ativo = ?")
@@ -78,7 +105,13 @@ class ParametroRepositoryImplTest {
     fun `findWithFilters returns PageImpl with content and total`() {
         val items =
             listOf(
-                Parametro(id = UUID.randomUUID(), chave = "A", valorTexto = "v", tipo = "STRING", ativo = true),
+                Parametro(
+                    id = UUID.randomUUID(),
+                    chave = "A",
+                    valorTexto = "v",
+                    tipo = "STRING",
+                    ativo = true,
+                ),
             )
         every { jdbcTemplate.queryForObject(any(), Long::class.java, *anyVararg()) } returns 1L
         every { jdbcTemplate.query(any(), any<RowMapper<Parametro>>(), *anyVararg()) } returns items

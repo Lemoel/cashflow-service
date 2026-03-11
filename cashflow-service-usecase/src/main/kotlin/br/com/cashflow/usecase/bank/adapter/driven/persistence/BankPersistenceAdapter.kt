@@ -9,7 +9,9 @@ import java.util.UUID
 class BankPersistenceAdapter(
     private val bankRepository: BankRepository,
 ) : BankOutputPort {
-    override fun findById(id: UUID): Bank? = bankRepository.findById(id)
+    override fun findById(id: UUID): Bank? = bankRepository.findById(id).orElse(null)
+
+    override fun findByCodigo(codigo: String): Bank? = bankRepository.findByCodigo(codigo)
 
     override fun findAllOrderByNomeAsc(): List<Bank> = bankRepository.findAllByOrderByNomeAsc()
 }

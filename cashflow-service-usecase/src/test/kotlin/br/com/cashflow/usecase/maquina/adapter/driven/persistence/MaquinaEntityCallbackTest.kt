@@ -23,7 +23,12 @@ class MaquinaEntityCallbackTest {
     @Test
     fun `onBeforeConvert for new entity sets id creationUserId modUserId createdAt updatedAt`() {
         every { auditorAware.currentAuditor } returns Optional.of("user1")
-        val maquina = Maquina(numeroSerieLeitor = "X", congregacaoId = UUID.randomUUID(), bancoId = UUID.randomUUID())
+        val maquina =
+            Maquina(
+                numeroSerieLeitor = "X",
+                congregacaoId = UUID.randomUUID(),
+                bancoId = UUID.randomUUID(),
+            )
 
         val result = callback.onBeforeConvert(maquina)
 
@@ -63,7 +68,13 @@ class MaquinaEntityCallbackTest {
     @Test
     fun `onBeforeConvert when creationUserId is blank uses auditor`() {
         every { auditorAware.currentAuditor } returns Optional.of("auditor1")
-        val maquina = Maquina(numeroSerieLeitor = "X", congregacaoId = UUID.randomUUID(), bancoId = UUID.randomUUID(), creationUserId = "")
+        val maquina =
+            Maquina(
+                numeroSerieLeitor = "X",
+                congregacaoId = UUID.randomUUID(),
+                bancoId = UUID.randomUUID(),
+                creationUserId = "",
+            )
 
         val result = callback.onBeforeConvert(maquina)
 
@@ -73,7 +84,12 @@ class MaquinaEntityCallbackTest {
     @Test
     fun `onBeforeConvert when auditor is empty uses sistema`() {
         every { auditorAware.currentAuditor } returns Optional.empty()
-        val maquina = Maquina(numeroSerieLeitor = "X", congregacaoId = UUID.randomUUID(), bancoId = UUID.randomUUID())
+        val maquina =
+            Maquina(
+                numeroSerieLeitor = "X",
+                congregacaoId = UUID.randomUUID(),
+                bancoId = UUID.randomUUID(),
+            )
 
         val result = callback.onBeforeConvert(maquina)
 

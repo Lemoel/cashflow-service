@@ -1,5 +1,5 @@
 # Cashflow Service
-.PHONY: run build test quality format lint coverage coverage-check pre-push clean docker-build docker-push docker-run native-build native-run setup-hooks
+.PHONY: run build test quality format lint coverage coverage-check pre-push check-editorconfig clean docker-build docker-push docker-run native-build native-run setup-hooks
 
 # Desenvolvimento
 run:
@@ -18,7 +18,11 @@ quality:
 coverage-check:
 	./gradlew jacocoTestCoverageVerification
 
-pre-push: format lint build coverage-check
+# format e lint usam .editorconfig (ktlint); format corrige, lint verifica
+pre-push: check-editorconfig format lint build coverage-check
+
+check-editorconfig:
+	@test -f .editorconfig || (echo "Erro: .editorconfig nao encontrado." && exit 1)
 
 format:
 	./gradlew ktlintFormat

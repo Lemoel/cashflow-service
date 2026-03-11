@@ -1,9 +1,9 @@
 package br.com.cashflow.usecase.user_authentication.adapter.external.controller
 
 import br.com.cashflow.commons.auth.CurrentUser
-import br.com.cashflow.usecase.user_authentication.adapter.external.dto.ChangePasswordRequest
-import br.com.cashflow.usecase.user_authentication.adapter.external.dto.LoginRequest
-import br.com.cashflow.usecase.user_authentication.adapter.external.dto.RefreshTokenRequest
+import br.com.cashflow.usecase.user_authentication.adapter.external.dto.ChangePasswordRequestDto
+import br.com.cashflow.usecase.user_authentication.adapter.external.dto.LoginRequestDto
+import br.com.cashflow.usecase.user_authentication.adapter.external.dto.RefreshTokenRequestDto
 import br.com.cashflow.usecase.user_authentication.port.AuthInputPort
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
@@ -22,7 +22,7 @@ class AuthController(
 ) {
     @PostMapping("/login")
     fun login(
-        @Valid @RequestBody request: LoginRequest,
+        @Valid @RequestBody request: LoginRequestDto,
     ): ResponseEntity<*> {
         val response = authInputPort.login(request.email, request.password)
         return ResponseEntity.ok(response)
@@ -30,7 +30,7 @@ class AuthController(
 
     @PostMapping("/refresh")
     fun refresh(
-        @Valid @RequestBody request: RefreshTokenRequest,
+        @Valid @RequestBody request: RefreshTokenRequestDto,
     ): ResponseEntity<*> {
         val response = authInputPort.refresh(request.refreshToken)
         return ResponseEntity.ok(response)
@@ -47,9 +47,13 @@ class AuthController(
     @PutMapping("/alterar-senha")
     fun alterarSenha(
         @AuthenticationPrincipal currentUser: CurrentUser,
-        @Valid @RequestBody request: ChangePasswordRequest,
+        @Valid @RequestBody request: ChangePasswordRequestDto,
     ): ResponseEntity<*> {
-        authInputPort.changePassword(currentUser.email, request.currentPassword, request.newPassword)
+        authInputPort.changePassword(
+            currentUser.email,
+            request.currentPassword,
+            request.newPassword,
+        )
         return ResponseEntity.ok(mapOf("message" to "Senha alterada com sucesso."))
     }
 }

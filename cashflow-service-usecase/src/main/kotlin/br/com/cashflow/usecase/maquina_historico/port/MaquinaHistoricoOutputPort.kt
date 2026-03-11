@@ -1,10 +1,10 @@
 package br.com.cashflow.usecase.maquina_historico.port
 
-import br.com.cashflow.usecase.maquina_historico.model.MaquinaHistoricoItem
+import br.com.cashflow.usecase.maquina_historico.model.MaquinaHistoricoItemModel
 import java.util.UUID
 
 interface MaquinaHistoricoOutputPort {
-    fun listarPorMaquinaId(maquinaId: UUID): List<MaquinaHistoricoItem>
+    fun listarPorMaquinaId(maquinaId: UUID): List<MaquinaHistoricoItemModel>
 
     fun fecharPeriodoAtual(maquinaId: UUID)
 

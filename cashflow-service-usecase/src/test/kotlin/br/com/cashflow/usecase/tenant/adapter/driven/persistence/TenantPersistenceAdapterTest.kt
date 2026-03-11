@@ -24,9 +24,28 @@ class TenantPersistenceAdapterTest {
 
     @Test
     fun `save delegates to repository and returns saved tenant`() {
-        val tenant = Tenant(id = null, cnpj = "1", tradeName = "A", street = "S", number = "1", city = "C", state = "SP", zipCode = "01234567")
+        val tenant =
+            Tenant(
+                id = null,
+                cnpj = "1",
+                tradeName = "A",
+                street = "S",
+                number = "1",
+                city = "C",
+                state = "SP",
+                zipCode = "01234567",
+            )
         val saved =
-            Tenant(id = UUID.randomUUID(), cnpj = "1", tradeName = "A", street = "S", number = "1", city = "C", state = "SP", zipCode = "01234567")
+            Tenant(
+                id = UUID.randomUUID(),
+                cnpj = "1",
+                tradeName = "A",
+                street = "S",
+                number = "1",
+                city = "C",
+                state = "SP",
+                zipCode = "01234567",
+            )
         every { tenantRepository.save(tenant) } returns saved
 
         val result = adapter.save(tenant)
@@ -38,7 +57,17 @@ class TenantPersistenceAdapterTest {
     @Test
     fun `findById delegates to repository and returns entity when found`() {
         val id = UUID.randomUUID()
-        val tenant = Tenant(id = id, cnpj = "1", tradeName = "A", street = "S", number = "1", city = "C", state = "SP", zipCode = "01234567")
+        val tenant =
+            Tenant(
+                id = id,
+                cnpj = "1",
+                tradeName = "A",
+                street = "S",
+                number = "1",
+                city = "C",
+                state = "SP",
+                zipCode = "01234567",
+            )
         every { tenantRepository.findById(id) } returns Optional.of(tenant)
 
         val result = adapter.findById(id)

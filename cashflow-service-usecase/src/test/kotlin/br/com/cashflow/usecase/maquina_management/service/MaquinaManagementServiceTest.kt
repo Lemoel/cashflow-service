@@ -11,10 +11,10 @@ import br.com.cashflow.usecase.department.port.DepartmentOutputPort
 import br.com.cashflow.usecase.maquina.entity.Maquina
 import br.com.cashflow.usecase.maquina.model.MaquinaComCongregacao
 import br.com.cashflow.usecase.maquina.port.MaquinaOutputPort
-import br.com.cashflow.usecase.maquina_historico.model.MaquinaHistoricoItem
+import br.com.cashflow.usecase.maquina_historico.model.MaquinaHistoricoItemModel
 import br.com.cashflow.usecase.maquina_historico.port.MaquinaHistoricoOutputPort
-import br.com.cashflow.usecase.maquina_management.adapter.external.dto.MaquinaCreateRequest
-import br.com.cashflow.usecase.maquina_management.adapter.external.dto.MaquinaUpdateRequest
+import br.com.cashflow.usecase.maquina_management.adapter.external.dto.MaquinaCreateRequestDto
+import br.com.cashflow.usecase.maquina_management.adapter.external.dto.MaquinaUpdateRequestDto
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -51,7 +51,7 @@ class MaquinaManagementServiceTest {
         val congregacaoId = UUID.randomUUID()
         val bancoId = UUID.randomUUID()
         val request =
-            MaquinaCreateRequest(
+            MaquinaCreateRequestDto(
                 maquinaId = " abc123 ",
                 congregacaoId = congregacaoId,
                 bancoId = bancoId,
@@ -82,7 +82,8 @@ class MaquinaManagementServiceTest {
                 createdAt = Instant.now(),
                 updatedAt = null,
             )
-        every { congregationOutputPort.findById(congregacaoId) } returns Congregation(id = congregacaoId, nome = "Cong")
+        every { congregationOutputPort.findById(congregacaoId) } returns
+            Congregation(id = congregacaoId, nome = "Cong")
         every { bankOutputPort.findById(bancoId) } returns Bank(id = bancoId, nome = "Banco")
         every { maquinaOutputPort.existsByNumeroSerieLeitor("ABC123") } returns false
         every { maquinaOutputPort.save(match { true }) } returns saved
@@ -96,7 +97,7 @@ class MaquinaManagementServiceTest {
     @Test
     fun `create throws ConflictException when maquinaId already exists`() {
         val request =
-            MaquinaCreateRequest(
+            MaquinaCreateRequestDto(
                 maquinaId = "XYZ",
                 congregacaoId = UUID.randomUUID(),
                 bancoId = UUID.randomUUID(),
@@ -114,7 +115,7 @@ class MaquinaManagementServiceTest {
     @Test
     fun `create throws BusinessException when congregacaoId is null`() {
         val request =
-            MaquinaCreateRequest(
+            MaquinaCreateRequestDto(
                 maquinaId = "X",
                 congregacaoId = UUID.randomUUID(),
                 bancoId = UUID.randomUUID(),
@@ -134,7 +135,7 @@ class MaquinaManagementServiceTest {
         assertThatThrownBy {
             service.update(
                 id,
-                MaquinaUpdateRequest(
+                MaquinaUpdateRequestDto(
                     congregacaoId = UUID.randomUUID(),
                     bancoId = UUID.randomUUID(),
                 ),
@@ -182,7 +183,7 @@ class MaquinaManagementServiceTest {
         val result =
             service.update(
                 id,
-                MaquinaUpdateRequest(congregacaoId = newCong, bancoId = bancoId),
+                MaquinaUpdateRequestDto(congregacaoId = newCong, bancoId = bancoId),
             )
 
         assertThat(result.congregacaoId).isEqualTo(newCong)
@@ -202,12 +203,15 @@ class MaquinaManagementServiceTest {
     @Test
     fun `delete throws ConflictException when DataIntegrityViolationException`() {
         val id = UUID.randomUUID()
-        every { maquinaOutputPort.findById(id) } returns Maquina(id = id, bancoId = UUID.randomUUID())
+        every { maquinaOutputPort.findById(id) } returns
+            Maquina(id = id, bancoId = UUID.randomUUID())
         every { maquinaOutputPort.deleteById(id) } throws DataIntegrityViolationException("fk")
 
         assertThatThrownBy { service.delete(id) }
             .isInstanceOf(ConflictException::class.java)
-            .hasMessageContaining("Erro ao excluir a máquina. Verifique se não há registros dependentes.")
+            .hasMessageContaining(
+                "Erro ao excluir a máquina. Verifique se não há registros dependentes.",
+            )
     }
 
     @Test
@@ -223,7 +227,7 @@ class MaquinaManagementServiceTest {
         val maquinaId = UUID.randomUUID()
         val items =
             listOf(
-                MaquinaHistoricoItem(
+                MaquinaHistoricoItemModel(
                     UUID.randomUUID(),
                     maquinaId,
                     UUID.randomUUID(),

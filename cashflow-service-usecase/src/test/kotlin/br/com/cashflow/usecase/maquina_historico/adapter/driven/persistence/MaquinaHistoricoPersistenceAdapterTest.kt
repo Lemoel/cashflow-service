@@ -1,7 +1,7 @@
 package br.com.cashflow.usecase.maquina_historico.adapter.driven.persistence
 
 import br.com.cashflow.usecase.maquina_historico.entity.MaquinaHistorico
-import br.com.cashflow.usecase.maquina_historico.model.MaquinaHistoricoItem
+import br.com.cashflow.usecase.maquina_historico.model.MaquinaHistoricoItemModel
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -37,13 +37,14 @@ class MaquinaHistoricoPersistenceAdapterTest {
                 dataInicio = Instant.now(),
                 dataFim = null,
             )
-        every { maquinaHistoricoRepository.findByMaquinaIdOrderByDataInicioDesc(maquinaId) } returns listOf(row)
+        every { maquinaHistoricoRepository.findByMaquinaIdOrderByDataInicioDesc(maquinaId) } returns
+            listOf(row)
 
         val result = adapter.listarPorMaquinaId(maquinaId)
 
         assertThat(result).hasSize(1)
         assertThat(result[0]).isEqualTo(
-            MaquinaHistoricoItem(
+            MaquinaHistoricoItemModel(
                 id = row.id,
                 maquinaId = row.maquinaId,
                 congregacaoId = row.congregacaoId,
@@ -54,7 +55,9 @@ class MaquinaHistoricoPersistenceAdapterTest {
                 dataFim = row.dataFim,
             ),
         )
-        verify(exactly = 1) { maquinaHistoricoRepository.findByMaquinaIdOrderByDataInicioDesc(maquinaId) }
+        verify(
+            exactly = 1,
+        ) { maquinaHistoricoRepository.findByMaquinaIdOrderByDataInicioDesc(maquinaId) }
     }
 
     @Test

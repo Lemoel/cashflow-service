@@ -9,7 +9,8 @@ object CnpjValidator {
         if (digits.length != CNPJ_DIGITS_LENGTH) return false
         if (allDigitsEqual(digits)) return false
         val d1 = checkDigit(digits.substring(0, 12), intArrayOf(5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2))
-        val d2 = checkDigit(digits.substring(0, 13), intArrayOf(6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2))
+        val d2 =
+            checkDigit(digits.substring(0, 13), intArrayOf(6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2))
         return d1 == digits[12].digitToInt() && d2 == digits[13].digitToInt()
     }
 

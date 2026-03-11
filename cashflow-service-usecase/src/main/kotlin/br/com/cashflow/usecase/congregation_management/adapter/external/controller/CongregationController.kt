@@ -1,13 +1,13 @@
 package br.com.cashflow.usecase.congregation_management.adapter.external.controller
 
 import br.com.cashflow.commons.exception.ResourceNotFoundException
-import br.com.cashflow.usecase.congregation.model.CongregationFilter
+import br.com.cashflow.usecase.congregation.model.CongregationFilterModel
 import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CnpjUnicoCongregationResponse
-import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationCreateRequest
+import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationCreateRequestDto
 import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationListOption
 import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationListResponse
 import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationResponse
-import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationUpdateRequest
+import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationUpdateRequestDto
 import br.com.cashflow.usecase.congregation_management.adapter.external.dto.toResponse
 import br.com.cashflow.usecase.congregation_management.port.CongregationManagementInputPort
 import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentListOption
@@ -44,7 +44,7 @@ class CongregationController(
         @RequestParam(required = false) ativo: Boolean?,
     ): CongregationListResponse {
         val filter =
-            CongregationFilter(
+            CongregationFilterModel(
                 nome = nome?.takeIf { it.isNotBlank() },
                 cnpj = cnpj?.takeIf { it.isNotBlank() },
                 ativo = ativo,
@@ -80,10 +80,15 @@ class CongregationController(
     }
 
     @GetMapping("/{congregationId}/departamentos")
-    @PreAuthorize("hasAnyRole('FISCAL','ADMIN','ADMIN_MATRIZ','GESTOR_SETORIAL','GESTOR_CONGREGACAO')")
+    @PreAuthorize(
+        "hasAnyRole('FISCAL','ADMIN','ADMIN_MATRIZ','GESTOR_SETORIAL','GESTOR_CONGREGACAO')",
+    )
     fun listDepartmentsByCongregation(
         @PathVariable congregationId: UUID,
-    ): List<DepartmentListOption> = departmentManagement.findDepartmentsByCongregationId(congregationId).map { it.toListOption() }
+    ): List<DepartmentListOption> =
+        departmentManagement.findDepartmentsByCongregationId(congregationId).map {
+            it.toListOption()
+        }
 
     @GetMapping("/{id}")
     fun getById(
@@ -97,7 +102,7 @@ class CongregationController(
 
     @PostMapping
     fun create(
-        @Valid @RequestBody request: CongregationCreateRequest,
+        @Valid @RequestBody request: CongregationCreateRequestDto,
     ): ResponseEntity<CongregationResponse> {
         val created = congregationManagement.create(request)
         val body = created.toResponse()
@@ -110,7 +115,7 @@ class CongregationController(
     @PutMapping("/{id}")
     fun update(
         @PathVariable id: UUID,
-        @Valid @RequestBody request: CongregationUpdateRequest,
+        @Valid @RequestBody request: CongregationUpdateRequestDto,
     ): ResponseEntity<CongregationResponse> {
         val updated = congregationManagement.update(id, request)
         return ResponseEntity.ok(updated.toResponse())

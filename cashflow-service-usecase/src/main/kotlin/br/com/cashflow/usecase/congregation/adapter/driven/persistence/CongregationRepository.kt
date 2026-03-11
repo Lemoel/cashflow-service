@@ -1,7 +1,7 @@
 package br.com.cashflow.usecase.congregation.adapter.driven.persistence
 
 import br.com.cashflow.usecase.congregation.entity.Congregation
-import br.com.cashflow.usecase.congregation.model.CongregationFilter
+import br.com.cashflow.usecase.congregation.model.CongregationFilterModel
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.CrudRepository
@@ -24,7 +24,7 @@ interface CongregationRepository :
 
 interface CongregationRepositoryCustom {
     fun findFiltered(
-        filter: CongregationFilter?,
+        filter: CongregationFilterModel?,
         pageable: Pageable,
     ): Page<Congregation>
 }

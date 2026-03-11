@@ -2,11 +2,11 @@ package br.com.cashflow.usecase.maquina_management.adapter.external.controller
 
 import br.com.cashflow.commons.auth.CurrentUser
 import br.com.cashflow.commons.exception.ResourceNotFoundException
-import br.com.cashflow.usecase.maquina_management.adapter.external.dto.MaquinaCreateRequest
+import br.com.cashflow.usecase.maquina_management.adapter.external.dto.MaquinaCreateRequestDto
 import br.com.cashflow.usecase.maquina_management.adapter.external.dto.MaquinaHistoricoResponse
 import br.com.cashflow.usecase.maquina_management.adapter.external.dto.MaquinaListResponse
 import br.com.cashflow.usecase.maquina_management.adapter.external.dto.MaquinaResponse
-import br.com.cashflow.usecase.maquina_management.adapter.external.dto.MaquinaUpdateRequest
+import br.com.cashflow.usecase.maquina_management.adapter.external.dto.MaquinaUpdateRequestDto
 import br.com.cashflow.usecase.maquina_management.adapter.external.dto.toHistoricoResponse
 import br.com.cashflow.usecase.maquina_management.adapter.external.dto.toResponse
 import br.com.cashflow.usecase.maquina_management.port.MaquinaManagementInputPort
@@ -53,7 +53,13 @@ class MaquinaController(
         val pageResult =
             if (!hasSearchFilters) {
                 val tenantEfetivo = currentUser?.tenantId ?: tenantId
-                maquinaManagement.listForOptions(tenantEfetivo, congregacaoId, numeroSerie, page, size)
+                maquinaManagement.listForOptions(
+                    tenantEfetivo,
+                    congregacaoId,
+                    numeroSerie,
+                    page,
+                    size,
+                )
             } else {
                 maquinaManagement.search(maquinaId, congregacao, banco, departamentoId, page, size)
             }
@@ -69,13 +75,15 @@ class MaquinaController(
     fun getById(
         @PathVariable id: UUID,
     ): ResponseEntity<MaquinaResponse> {
-        val maquina = maquinaManagement.findById(id) ?: throw ResourceNotFoundException("Máquina não encontrada")
+        val maquina =
+            maquinaManagement.findById(id)
+                ?: throw ResourceNotFoundException("Máquina não encontrada")
         return ResponseEntity.ok(maquina.toResponse())
     }
 
     @PostMapping
     fun create(
-        @Valid @RequestBody request: MaquinaCreateRequest,
+        @Valid @RequestBody request: MaquinaCreateRequestDto,
     ): ResponseEntity<MaquinaResponse> {
         val created = maquinaManagement.create(request)
         return ResponseEntity
@@ -87,7 +95,7 @@ class MaquinaController(
     @PutMapping("/{id}")
     fun update(
         @PathVariable id: UUID,
-        @Valid @RequestBody request: MaquinaUpdateRequest,
+        @Valid @RequestBody request: MaquinaUpdateRequestDto,
     ): ResponseEntity<MaquinaResponse> {
         val updated = maquinaManagement.update(id, request)
         return ResponseEntity.ok(updated.toResponse())

@@ -36,13 +36,23 @@ class MaquinaHistoricoRepositoryImplTest {
                 dataFim = null,
             )
         every {
-            jdbcTemplate.query(any<String>(), any<PreparedStatementSetter>(), any<RowMapper<MaquinaHistoricoItemRow>>())
+            jdbcTemplate.query(
+                any<String>(),
+                any<PreparedStatementSetter>(),
+                any<RowMapper<MaquinaHistoricoItemRow>>(),
+            )
         } returns listOf(row)
 
         val result = repository.findByMaquinaIdOrderByDataInicioDesc(maquinaId)
 
         assertThat(result).hasSize(1)
         assertThat(result[0]).isEqualTo(row)
-        verify(exactly = 1) { jdbcTemplate.query(any<String>(), any<PreparedStatementSetter>(), any<RowMapper<MaquinaHistoricoItemRow>>()) }
+        verify(exactly = 1) {
+            jdbcTemplate.query(
+                any<String>(),
+                any<PreparedStatementSetter>(),
+                any<RowMapper<MaquinaHistoricoItemRow>>(),
+            )
+        }
     }
 }

@@ -28,8 +28,22 @@ class TenantRepositoryImplTest {
     fun `findFiltered with null filter uses count and select without WHERE`() {
         val countSqlSlot = slot<String>()
         val selectSqlSlot = slot<String>()
-        every { jdbcTemplate.queryForObject(capture(countSqlSlot), Long::class.java, *anyVararg()) } returns 0L
-        every { jdbcTemplate.query(capture(selectSqlSlot), any<RowMapper<Tenant>>(), *anyVararg()) } returns emptyList()
+        every {
+            jdbcTemplate.queryForObject(
+                capture(countSqlSlot),
+                Long::class.java,
+                *anyVararg(),
+            )
+        } returns
+            0L
+        every {
+            jdbcTemplate.query(
+                capture(selectSqlSlot),
+                any<RowMapper<Tenant>>(),
+                *anyVararg(),
+            )
+        } returns
+            emptyList()
 
         val pageable = PageRequest.of(0, 10)
         val result = repository.findFiltered(null, pageable)
@@ -48,8 +62,22 @@ class TenantRepositoryImplTest {
     fun `findFiltered with nome filter uses ILIKE condition`() {
         val countSqlSlot = slot<String>()
         val selectSqlSlot = slot<String>()
-        every { jdbcTemplate.queryForObject(capture(countSqlSlot), Long::class.java, *anyVararg()) } returns 1L
-        every { jdbcTemplate.query(capture(selectSqlSlot), any<RowMapper<Tenant>>(), *anyVararg()) } returns emptyList()
+        every {
+            jdbcTemplate.queryForObject(
+                capture(countSqlSlot),
+                Long::class.java,
+                *anyVararg(),
+            )
+        } returns
+            1L
+        every {
+            jdbcTemplate.query(
+                capture(selectSqlSlot),
+                any<RowMapper<Tenant>>(),
+                *anyVararg(),
+            )
+        } returns
+            emptyList()
 
         val pageable = PageRequest.of(0, 5)
         val filter = TenantFilter(nome = "Church", cnpj = null, active = null)
@@ -64,8 +92,22 @@ class TenantRepositoryImplTest {
     fun `findFiltered with all filters uses nome cnpj and ativo conditions`() {
         val countSqlSlot = slot<String>()
         val selectSqlSlot = slot<String>()
-        every { jdbcTemplate.queryForObject(capture(countSqlSlot), Long::class.java, *anyVararg()) } returns 0L
-        every { jdbcTemplate.query(capture(selectSqlSlot), any<RowMapper<Tenant>>(), *anyVararg()) } returns emptyList()
+        every {
+            jdbcTemplate.queryForObject(
+                capture(countSqlSlot),
+                Long::class.java,
+                *anyVararg(),
+            )
+        } returns
+            0L
+        every {
+            jdbcTemplate.query(
+                capture(selectSqlSlot),
+                any<RowMapper<Tenant>>(),
+                *anyVararg(),
+            )
+        } returns
+            emptyList()
 
         val filter = TenantFilter(nome = "A", cnpj = "12345678000199", active = true)
         val result = repository.findFiltered(filter, PageRequest.of(0, 10))
@@ -81,9 +123,19 @@ class TenantRepositoryImplTest {
     @Test
     fun `findFiltered returns PageImpl with content from query`() {
         val tenant =
-            Tenant(id = UUID.randomUUID(), cnpj = "1", tradeName = "T", street = "S", number = "1", city = "C", state = "SP", zipCode = "01234567")
+            Tenant(
+                id = UUID.randomUUID(),
+                cnpj = "1",
+                tradeName = "T",
+                street = "S",
+                number = "1",
+                city = "C",
+                state = "SP",
+                zipCode = "01234567",
+            )
         every { jdbcTemplate.queryForObject(any(), Long::class.java, *anyVararg()) } returns 1L
-        every { jdbcTemplate.query(any(), any<RowMapper<Tenant>>(), *anyVararg()) } returns listOf(tenant)
+        every { jdbcTemplate.query(any(), any<RowMapper<Tenant>>(), *anyVararg()) } returns
+            listOf(tenant)
 
         val result = repository.findFiltered(null, PageRequest.of(0, 10))
 

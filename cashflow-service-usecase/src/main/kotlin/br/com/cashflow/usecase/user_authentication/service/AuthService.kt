@@ -9,8 +9,8 @@ import br.com.cashflow.usecase.acesso.entity.Acesso
 import br.com.cashflow.usecase.acesso.port.AcessoOutputPort
 import br.com.cashflow.usecase.tenant.port.TenantOutputPort
 import br.com.cashflow.usecase.user_authentication.legacy.LegacyPasswordSupport
-import br.com.cashflow.usecase.user_authentication.model.LoginResponse
-import br.com.cashflow.usecase.user_authentication.model.UsuarioResponse
+import br.com.cashflow.usecase.user_authentication.model.LoginResponseModel
+import br.com.cashflow.usecase.user_authentication.model.UsuarioResponseModel
 import br.com.cashflow.usecase.user_authentication.port.AuthInputPort
 import br.com.cashflow.usecase.user_authentication.port.TokenProvider
 import org.springframework.beans.factory.annotation.Value
@@ -24,69 +24,39 @@ class AuthService(
     private val tokenProvider: TokenProvider,
     private val tenantOutputPort: TenantOutputPort,
     private val passwordEncoder: PasswordEncoder,
-    @Value("\${app.jwt.expiration-ms:3600000}")
+    @param:Value("\${app.jwt.expiration-ms:3600000}")
     private val expirationMs: Long,
 ) : AuthInputPort {
     override fun login(
         email: String,
         password: String,
-    ): LoginResponse {
+    ): LoginResponseModel {
         val acesso =
             acessoOutputPort.findByEmail(email)
                 ?: throw InvalidCredentialsException()
-        if (!acesso.ativo) {
-            throw InactiveUserException()
-        }
-        if (!passwordMatches(password, acesso.password)) {
-            throw InvalidCredentialsException()
-        }
+        if (!acesso.ativo) throw InactiveUserException()
+        if (!passwordMatches(password, acesso.password)) throw InvalidCredentialsException()
         if (!LegacyPasswordSupport.looksLikeBcrypt(acesso.password)) {
-            val bcryptHash = requireNotNull(passwordEncoder.encode(password)) { "Password encoding failed" }
+            val bcryptHash =
+                requireNotNull(passwordEncoder.encode(password)) { "Password encoding failed" }
             acessoOutputPort.updatePassword(email, bcryptHash)
         }
-        val tenantId = acessoOutputPort.findTenantIdByEmail(email)
-        val tenantNome = tenantId?.let { tenantOutputPort.findById(it)?.tradeName }
-        val usuarioResponse = toUsuarioResponse(acesso, tenantId, tenantNome)
-        val token = tokenProvider.generateToken(acesso, tenantId)
-        val refreshToken = tokenProvider.generateRefreshToken(acesso, tenantId)
-        return LoginResponse(
-            token = token,
-            refreshToken = refreshToken,
-            expiresIn = expirationMs / 1000,
-            usuario = usuarioResponse,
-        )
+        return buildLoginResponse(acesso, email)
     }
 
-    override fun refresh(refreshToken: String): LoginResponse {
+    override fun refresh(refreshToken: String): LoginResponseModel {
         val claims =
-            tokenProvider.validateRefreshToken(refreshToken)
-                ?: throw InvalidCredentialsException()
+            tokenProvider.validateRefreshToken(refreshToken) ?: throw InvalidCredentialsException()
         val email = claims.sub
-        val acesso =
-            acessoOutputPort.findByEmail(email)
-                ?: throw InvalidCredentialsException()
-        if (!acesso.ativo) {
-            throw InactiveUserException()
-        }
-        val tenantId = acessoOutputPort.findTenantIdByEmail(email)
-        val tenantNome = tenantId?.let { tenantOutputPort.findById(it)?.tradeName }
-        val usuarioResponse = toUsuarioResponse(acesso, tenantId, tenantNome)
-        val token = tokenProvider.generateToken(acesso, tenantId)
-        val newRefreshToken = tokenProvider.generateRefreshToken(acesso, tenantId)
-        return LoginResponse(
-            token = token,
-            refreshToken = newRefreshToken,
-            expiresIn = expirationMs / 1000,
-            usuario = usuarioResponse,
-        )
+        val acesso = acessoOutputPort.findByEmail(email) ?: throw InvalidCredentialsException()
+        if (!acesso.ativo) throw InactiveUserException()
+        return buildLoginResponse(acesso, email)
     }
 
-    override fun getCurrentUser(email: String): UsuarioResponse {
+    override fun getCurrentUser(email: String): UsuarioResponseModel {
         val acesso =
-            acessoOutputPort.findByEmail(email)
-                ?: throw ResourceNotFoundException("User not found")
-        val tenantId = acessoOutputPort.findTenantIdByEmail(email)
-        val tenantNome = tenantId?.let { tenantOutputPort.findById(it)?.tradeName }
+            acessoOutputPort.findByEmail(email) ?: throw ResourceNotFoundException("User not found")
+        val (tenantId, tenantNome) = getTenantInfo(email)
         return toUsuarioResponse(acesso, tenantId, tenantNome)
     }
 
@@ -104,12 +74,35 @@ class AuthService(
         if (!passwordMatches(currentPassword, acesso.password)) {
             throw WrongPasswordException()
         }
-        val hash = requireNotNull(passwordEncoder.encode(newPassword)) { "Password encoding failed" }
+        val hash =
+            requireNotNull(passwordEncoder.encode(newPassword)) { "Password encoding failed" }
         acessoOutputPort.updatePassword(email, hash)
     }
 
     companion object {
         const val MSG_NEW_PASSWORD_MIN_LENGTH = "A nova senha deve ter no mínimo 6 caracteres."
+    }
+
+    private fun getTenantInfo(email: String): Pair<UUID?, String?> {
+        val tenantId = acessoOutputPort.findTenantIdByEmail(email)
+        val tenantNome = tenantId?.let { tenantOutputPort.findById(it)?.tradeName }
+        return Pair(tenantId, tenantNome)
+    }
+
+    private fun buildLoginResponse(
+        acesso: Acesso,
+        email: String,
+    ): LoginResponseModel {
+        val (tenantId, tenantNome) = getTenantInfo(email)
+        val usuarioResponse = toUsuarioResponse(acesso, tenantId, tenantNome)
+        val token = tokenProvider.generateToken(acesso, tenantId)
+        val refreshToken = tokenProvider.generateRefreshToken(acesso, tenantId)
+        return LoginResponseModel(
+            token = token,
+            refreshToken = refreshToken,
+            expiresIn = expirationMs / 1000,
+            usuario = usuarioResponse,
+        )
     }
 
     private fun passwordMatches(
@@ -126,8 +119,8 @@ class AuthService(
         acesso: Acesso,
         tenantId: UUID?,
         tenantNome: String?,
-    ): UsuarioResponse =
-        UsuarioResponse(
+    ): UsuarioResponseModel =
+        UsuarioResponseModel(
             id = acesso.email!!,
             nome = acesso.nome,
             email = acesso.email!!,

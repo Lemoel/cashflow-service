@@ -15,6 +15,9 @@ class MaquinaPersistenceAdapter(
 
     override fun findById(id: UUID): Maquina? = maquinaRepository.findById(id).orElse(null)
 
+    override fun findByNumeroSerieLeitorIn(numeroSerieLeitor: Collection<String>): List<Maquina> =
+        maquinaRepository.findByNumeroSerieLeitorIn(numeroSerieLeitor)
+
     override fun findByIdWithDetalhes(id: UUID): MaquinaComCongregacao? = maquinaRepository.findByIdWithDetalhes(id)
 
     override fun existsByNumeroSerieLeitor(numeroSerieLeitor: String): Boolean = maquinaRepository.existsByNumeroSerieLeitor(numeroSerieLeitor)
@@ -31,7 +34,15 @@ class MaquinaPersistenceAdapter(
         page: Int,
         size: Int,
     ): MaquinaPage {
-        val result = maquinaRepository.findWithFiltersComDetalhes(maquinaId, congregacao, banco, departamentoId, page, size)
+        val result =
+            maquinaRepository.findWithFiltersComDetalhes(
+                maquinaId,
+                congregacao,
+                banco,
+                departamentoId,
+                page,
+                size,
+            )
         return MaquinaPage(
             items = result.items,
             total = result.total,
@@ -47,7 +58,14 @@ class MaquinaPersistenceAdapter(
         page: Int,
         size: Int,
     ): MaquinaPage {
-        val result = maquinaRepository.findParaSelecaoHistorico(tenantId, congregacaoId, numeroSerieLeitor, page, size)
+        val result =
+            maquinaRepository.findParaSelecaoHistorico(
+                tenantId,
+                congregacaoId,
+                numeroSerieLeitor,
+                page,
+                size,
+            )
         return MaquinaPage(
             items = result.items,
             total = result.total,

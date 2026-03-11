@@ -25,9 +25,20 @@ class MaquinaPersistenceAdapterTest {
 
     @Test
     fun `save delegates to repository and returns saved maquina`() {
-        val maquina = Maquina(numeroSerieLeitor = "ABC", congregacaoId = UUID.randomUUID(), bancoId = UUID.randomUUID())
+        val maquina =
+            Maquina(
+                numeroSerieLeitor = "ABC",
+                congregacaoId = UUID.randomUUID(),
+                bancoId = UUID.randomUUID(),
+            )
         val savedId = UUID.randomUUID()
-        val saved = Maquina(id = savedId, numeroSerieLeitor = "ABC", congregacaoId = maquina.congregacaoId, bancoId = maquina.bancoId)
+        val saved =
+            Maquina(
+                id = savedId,
+                numeroSerieLeitor = "ABC",
+                congregacaoId = maquina.congregacaoId,
+                bancoId = maquina.bancoId,
+            )
         every { maquinaRepository.save(maquina) } returns saved
 
         val result = adapter.save(maquina)
@@ -39,7 +50,13 @@ class MaquinaPersistenceAdapterTest {
     @Test
     fun `findById returns entity when repository returns Optional with value`() {
         val id = UUID.randomUUID()
-        val maquina = Maquina(id = id, numeroSerieLeitor = "X", congregacaoId = UUID.randomUUID(), bancoId = UUID.randomUUID())
+        val maquina =
+            Maquina(
+                id = id,
+                numeroSerieLeitor = "X",
+                congregacaoId = UUID.randomUUID(),
+                bancoId = UUID.randomUUID(),
+            )
         every { maquinaRepository.findById(id) } returns Optional.of(maquina)
 
         val result = adapter.findById(id)
@@ -124,8 +141,12 @@ class MaquinaPersistenceAdapterTest {
 
         val result = adapter.findWithFiltersComDetalhes(null, null, null, null, 0, 10)
 
-        assertThat(result).isEqualTo(MaquinaPage(items = emptyList(), total = 0L, page = 0, pageSize = 10))
-        verify(exactly = 1) { maquinaRepository.findWithFiltersComDetalhes(null, null, null, null, 0, 10) }
+        assertThat(
+            result,
+        ).isEqualTo(MaquinaPage(items = emptyList(), total = 0L, page = 0, pageSize = 10))
+        verify(
+            exactly = 1,
+        ) { maquinaRepository.findWithFiltersComDetalhes(null, null, null, null, 0, 10) }
     }
 
     @Test
@@ -137,7 +158,9 @@ class MaquinaPersistenceAdapterTest {
 
         val result = adapter.findParaSelecaoHistorico(null, null, null, 0, 20)
 
-        assertThat(result).isEqualTo(MaquinaPage(items = emptyList(), total = 0L, page = 0, pageSize = 20))
+        assertThat(
+            result,
+        ).isEqualTo(MaquinaPage(items = emptyList(), total = 0L, page = 0, pageSize = 20))
         verify(exactly = 1) { maquinaRepository.findParaSelecaoHistorico(null, null, null, 0, 20) }
     }
 }

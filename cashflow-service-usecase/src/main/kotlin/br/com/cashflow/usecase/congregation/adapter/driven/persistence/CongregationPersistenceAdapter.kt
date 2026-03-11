@@ -1,8 +1,8 @@
 package br.com.cashflow.usecase.congregation.adapter.driven.persistence
 
 import br.com.cashflow.usecase.congregation.entity.Congregation
-import br.com.cashflow.usecase.congregation.model.CongregationFilter
-import br.com.cashflow.usecase.congregation.model.CongregationPage
+import br.com.cashflow.usecase.congregation.model.CongregationFilterModel
+import br.com.cashflow.usecase.congregation.model.CongregationPageModel
 import br.com.cashflow.usecase.congregation.port.CongregationOutputPort
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
@@ -17,13 +17,13 @@ class CongregationPersistenceAdapter(
     override fun findById(id: UUID): Congregation? = congregationRepository.findById(id).orElse(null)
 
     override fun findAll(
-        filter: CongregationFilter?,
+        filter: CongregationFilterModel?,
         page: Int,
         size: Int,
-    ): CongregationPage {
+    ): CongregationPageModel {
         val pageable = PageRequest.of(page, size)
         val springPage = congregationRepository.findFiltered(filter, pageable)
-        return CongregationPage(
+        return CongregationPageModel(
             items = springPage.content,
             total = springPage.totalElements,
             page = springPage.number,

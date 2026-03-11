@@ -59,7 +59,17 @@ class CongregationResponseTest {
     @Test
     fun `toListOption maps id and nome`() {
         val id = UUID.randomUUID()
-        val congregation = Congregation(id = id, nome = "Cong B", logradouro = "", bairro = "", numero = "", cidade = "", uf = "", cep = "")
+        val congregation =
+            Congregation(
+                id = id,
+                nome = "Cong B",
+                logradouro = "",
+                bairro = "",
+                numero = "",
+                cidade = "",
+                uf = "",
+                cep = "",
+            )
 
         val result = congregation.toListOption()
 
@@ -72,7 +82,7 @@ class CongregationResponseTest {
         val tenantId = UUID.randomUUID()
         val setorialId = UUID.randomUUID()
         val request =
-            CongregationCreateRequest(
+            CongregationCreateRequestDto(
                 tenantId = tenantId,
                 setorialId = setorialId,
                 nome = "  cong c  ",
@@ -123,7 +133,7 @@ class CongregationResponseTest {
                 ativo = true,
             )
         val request =
-            CongregationUpdateRequest(
+            CongregationUpdateRequestDto(
                 setorialId = setorialId,
                 nome = "  new name  ",
                 cnpj = "11.222.333/0001-81",

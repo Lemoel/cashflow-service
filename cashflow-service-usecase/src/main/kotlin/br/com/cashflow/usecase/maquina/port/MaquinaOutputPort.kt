@@ -10,6 +10,8 @@ interface MaquinaOutputPort {
 
     fun findById(id: UUID): Maquina?
 
+    fun findByNumeroSerieLeitorIn(numeroSerieLeitor: Collection<String>): List<Maquina>
+
     fun findByIdWithDetalhes(id: UUID): MaquinaComCongregacao?
 
     fun existsByNumeroSerieLeitor(numeroSerieLeitor: String): Boolean

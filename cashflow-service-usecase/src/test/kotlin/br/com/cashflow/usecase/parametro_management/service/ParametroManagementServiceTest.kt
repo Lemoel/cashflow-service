@@ -4,11 +4,11 @@ import br.com.cashflow.commons.exception.BusinessException
 import br.com.cashflow.commons.exception.ConflictException
 import br.com.cashflow.commons.exception.ResourceNotFoundException
 import br.com.cashflow.usecase.parametro.entity.Parametro
-import br.com.cashflow.usecase.parametro.model.ParametroPage
+import br.com.cashflow.usecase.parametro.model.ParametroPageModel
 import br.com.cashflow.usecase.parametro.port.ParametroOutputPort
-import br.com.cashflow.usecase.parametro_management.adapter.external.dto.ParametroCreateRequest
-import br.com.cashflow.usecase.parametro_management.adapter.external.dto.ParametroUpdateRequest
-import br.com.cashflow.usecase.parametro_management.adapter.external.dto.TipoParametro
+import br.com.cashflow.usecase.parametro_management.adapter.external.dto.EnumTipoParametro
+import br.com.cashflow.usecase.parametro_management.adapter.external.dto.ParametroCreateRequestDto
+import br.com.cashflow.usecase.parametro_management.adapter.external.dto.ParametroUpdateRequestDto
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -32,10 +32,10 @@ class ParametroManagementServiceTest {
     @Test
     fun `create returns saved parametro when chave and valor valid and chave unique`() {
         val request =
-            ParametroCreateRequest(
+            ParametroCreateRequestDto(
                 chave = " CHAVE_A ",
                 valor = "texto",
-                tipo = TipoParametro.TEXTO,
+                tipo = EnumTipoParametro.TEXTO,
                 ativo = true,
             )
         val saved =
@@ -47,7 +47,9 @@ class ParametroManagementServiceTest {
                 ativo = true,
             )
         every { parametroOutputPort.existsByChave("CHAVE_A") } returns false
-        every { parametroOutputPort.save(match { it.chave == "CHAVE_A" && it.valorTexto == "texto" }) } returns saved
+        every {
+            parametroOutputPort.save(match { it.chave == "CHAVE_A" && it.valorTexto == "texto" })
+        } returns saved
 
         val result = service.create(request)
 
@@ -58,10 +60,10 @@ class ParametroManagementServiceTest {
     @Test
     fun `create throws ConflictException when chave already exists`() {
         val request =
-            ParametroCreateRequest(
+            ParametroCreateRequestDto(
                 chave = "CHAVE_X",
                 valor = "v",
-                tipo = TipoParametro.TEXTO,
+                tipo = EnumTipoParametro.TEXTO,
             )
         every { parametroOutputPort.existsByChave("CHAVE_X") } returns true
 
@@ -74,10 +76,10 @@ class ParametroManagementServiceTest {
     @Test
     fun `create throws BusinessException when chave is blank`() {
         val request =
-            ParametroCreateRequest(
+            ParametroCreateRequestDto(
                 chave = "  ",
                 valor = "v",
-                tipo = TipoParametro.TEXTO,
+                tipo = EnumTipoParametro.TEXTO,
             )
 
         assertThatThrownBy { service.create(request) }
@@ -89,10 +91,10 @@ class ParametroManagementServiceTest {
     @Test
     fun `create throws BusinessException when valor is blank`() {
         val request =
-            ParametroCreateRequest(
+            ParametroCreateRequestDto(
                 chave = "CHAVE",
                 valor = "  ",
-                tipo = TipoParametro.TEXTO,
+                tipo = EnumTipoParametro.TEXTO,
             )
         every { parametroOutputPort.existsByChave("CHAVE") } returns false
 
@@ -105,10 +107,10 @@ class ParametroManagementServiceTest {
     @Test
     fun `create throws BusinessException when tipo INTEIRO and valor not numeric`() {
         val request =
-            ParametroCreateRequest(
+            ParametroCreateRequestDto(
                 chave = "K",
                 valor = "abc",
-                tipo = TipoParametro.INTEIRO,
+                tipo = EnumTipoParametro.INTEIRO,
             )
         every { parametroOutputPort.existsByChave("K") } returns false
 
@@ -130,10 +132,10 @@ class ParametroManagementServiceTest {
                 ativo = true,
             )
         val request =
-            ParametroUpdateRequest(
+            ParametroUpdateRequestDto(
                 chave = "K",
                 valor = "99",
-                tipo = TipoParametro.INTEIRO,
+                tipo = EnumTipoParametro.INTEIRO,
                 ativo = true,
             )
         every { parametroOutputPort.findById(id) } returns existing
@@ -150,12 +152,19 @@ class ParametroManagementServiceTest {
     @Test
     fun `create accepts tipo DECIMAL with numeric valor`() {
         val request =
-            ParametroCreateRequest(
+            ParametroCreateRequestDto(
                 chave = "K",
                 valor = "3.14",
-                tipo = TipoParametro.DECIMAL,
+                tipo = EnumTipoParametro.DECIMAL,
             )
-        val saved = Parametro(id = UUID.randomUUID(), chave = "K", valorDecimal = 3.14, tipo = "DOUBLE", ativo = true)
+        val saved =
+            Parametro(
+                id = UUID.randomUUID(),
+                chave = "K",
+                valorDecimal = 3.14,
+                tipo = "DOUBLE",
+                ativo = true,
+            )
         every { parametroOutputPort.existsByChave("K") } returns false
         every { parametroOutputPort.save(match { it.valorDecimal == 3.14 }) } returns saved
 
@@ -176,10 +185,10 @@ class ParametroManagementServiceTest {
                 ativo = true,
             )
         val request =
-            ParametroUpdateRequest(
+            ParametroUpdateRequestDto(
                 chave = "NEW_CHAVE",
                 valor = "novo",
-                tipo = TipoParametro.TEXTO,
+                tipo = EnumTipoParametro.TEXTO,
                 ativo = false,
             )
         every { parametroOutputPort.findById(id) } returns existing
@@ -202,7 +211,7 @@ class ParametroManagementServiceTest {
         assertThatThrownBy {
             service.update(
                 id,
-                ParametroUpdateRequest(chave = "K", valor = "v", tipo = TipoParametro.TEXTO),
+                ParametroUpdateRequestDto(chave = "K", valor = "v", tipo = EnumTipoParametro.TEXTO),
             )
         }.isInstanceOf(ResourceNotFoundException::class.java)
             .hasMessageContaining("Parâmetro não encontrado")
@@ -212,8 +221,10 @@ class ParametroManagementServiceTest {
     @Test
     fun `update throws ConflictException when chave changed and already exists`() {
         val id = UUID.randomUUID()
-        val existing = Parametro(id = id, chave = "OLD", valorTexto = "v", tipo = "STRING", ativo = true)
-        val request = ParametroUpdateRequest(chave = "OTHER", valor = "v", tipo = TipoParametro.TEXTO)
+        val existing =
+            Parametro(id = id, chave = "OLD", valorTexto = "v", tipo = "STRING", ativo = true)
+        val request =
+            ParametroUpdateRequestDto(chave = "OTHER", valor = "v", tipo = EnumTipoParametro.TEXTO)
         every { parametroOutputPort.findById(id) } returns existing
         every { parametroOutputPort.existsByChaveExcludingId("OTHER", id) } returns true
 
@@ -244,7 +255,7 @@ class ParametroManagementServiceTest {
 
     @Test
     fun `findAll delegates to output port`() {
-        val page = ParametroPage(emptyList(), 0L, 0, 10)
+        val page = ParametroPageModel(emptyList(), 0L, 0, 10)
         every { parametroOutputPort.findWithFilters(null, 0, 10) } returns page
 
         val result = service.findAll(null, 0, 10)
@@ -256,8 +267,20 @@ class ParametroManagementServiceTest {
     fun `findChavesForDropdown returns pairs chave chave`() {
         val list =
             listOf(
-                Parametro(id = UUID.randomUUID(), chave = "A", valorTexto = "1", tipo = "STRING", ativo = true),
-                Parametro(id = UUID.randomUUID(), chave = "B", valorTexto = "2", tipo = "STRING", ativo = true),
+                Parametro(
+                    id = UUID.randomUUID(),
+                    chave = "A",
+                    valorTexto = "1",
+                    tipo = "STRING",
+                    ativo = true,
+                ),
+                Parametro(
+                    id = UUID.randomUUID(),
+                    chave = "B",
+                    valorTexto = "2",
+                    tipo = "STRING",
+                    ativo = true,
+                ),
             )
         every { parametroOutputPort.findAllOrderByChave() } returns list
 
@@ -294,7 +317,8 @@ class ParametroManagementServiceTest {
         val id = UUID.randomUUID()
         val p = Parametro(id = id, chave = "K", valorTexto = "v", tipo = "STRING", ativo = true)
         every { parametroOutputPort.findById(id) } returns p
-        every { parametroOutputPort.deleteById(id) } throws org.springframework.dao.DataIntegrityViolationException("fk")
+        every { parametroOutputPort.deleteById(id) } throws
+            org.springframework.dao.DataIntegrityViolationException("fk")
 
         assertThatThrownBy { service.delete(id) }
             .isInstanceOf(BusinessException::class.java)

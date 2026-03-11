@@ -23,7 +23,13 @@ class AcessoPersistenceAdapterTest {
     @Test
     fun `findByEmail delegates to repository findById and returns entity when found`() {
         val email = "user@test.com"
-        val acesso = Acesso(email = email, password = "hash", ativo = true, tipoAcesso = PerfilUsuario.ADMIN.name)
+        val acesso =
+            Acesso(
+                email = email,
+                password = "hash",
+                ativo = true,
+                tipoAcesso = PerfilUsuario.ADMIN.name,
+            )
         every { acessoRepository.findById(email) } returns Optional.of(acesso)
 
         val result = adapter.findByEmail(email)
@@ -45,14 +51,27 @@ class AcessoPersistenceAdapterTest {
     @Test
     fun `updatePassword loads entity sets password and saves`() {
         val email = "user@test.com"
-        val acesso = Acesso(email = email, password = "old-hash", ativo = true, tipoAcesso = PerfilUsuario.USER.name)
+        val acesso =
+            Acesso(
+                email = email,
+                password = "old-hash",
+                ativo = true,
+                tipoAcesso = PerfilUsuario.USER.name,
+            )
         every { acessoRepository.findById(email) } returns Optional.of(acesso)
         every { acessoRepository.save(match { it.password == "new-hash" }) } returns acesso
 
         adapter.updatePassword(email, "new-hash")
 
         verify(exactly = 1) { acessoRepository.findById(email) }
-        verify(exactly = 1) { acessoRepository.save(match { it.email == email && it.password == "new-hash" }) }
+        verify(exactly = 1) {
+            acessoRepository.save(
+                match {
+                    it.email == email &&
+                        it.password == "new-hash"
+                },
+            )
+        }
     }
 
     @Test

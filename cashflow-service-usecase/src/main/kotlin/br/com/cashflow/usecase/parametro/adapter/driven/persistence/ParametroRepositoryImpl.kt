@@ -1,7 +1,7 @@
 package br.com.cashflow.usecase.parametro.adapter.driven.persistence
 
 import br.com.cashflow.usecase.parametro.entity.Parametro
-import br.com.cashflow.usecase.parametro.model.ParametroFilter
+import br.com.cashflow.usecase.parametro.model.ParametroFilterModel
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
@@ -15,7 +15,7 @@ class ParametroRepositoryImpl(
     private val jdbcTemplate: JdbcTemplate,
 ) : ParametroRepositoryCustom {
     override fun findWithFilters(
-        filter: ParametroFilter?,
+        filter: ParametroFilterModel?,
         pageable: Pageable,
     ): Page<Parametro> {
         val params = mutableListOf<Any>()
@@ -31,9 +31,16 @@ class ParametroRepositoryImpl(
                 params.add(it)
             }
         }
-        val whereClause = if (conditions.isEmpty()) "" else " WHERE " + conditions.joinToString(" AND ")
+        val whereClause =
+            if (conditions.isEmpty()) {
+                ""
+            } else {
+                " WHERE " +
+                    conditions.joinToString(" AND ")
+            }
         val countSql = "SELECT COUNT(*) FROM eventos.parametro p$whereClause"
-        val total = jdbcTemplate.queryForObject(countSql, Long::class.java, *params.toTypedArray()) ?: 0L
+        val total =
+            jdbcTemplate.queryForObject(countSql, Long::class.java, *params.toTypedArray()) ?: 0L
         params.add(pageable.pageSize)
         params.add(pageable.offset)
         val selectSql = "SELECT * FROM eventos.parametro p$whereClause ORDER BY p.chave ASC LIMIT ? OFFSET ?"

@@ -2,12 +2,12 @@ package br.com.cashflow.usecase.tenant_management.adapter.external.controller
 
 import br.com.cashflow.commons.exception.ResourceNotFoundException
 import br.com.cashflow.usecase.tenant.model.TenantFilter
-import br.com.cashflow.usecase.tenant_management.adapter.external.dto.CnpjUnicoResponse
-import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantCreateRequest
+import br.com.cashflow.usecase.tenant_management.adapter.external.dto.CnpjUnicoResponseDto
+import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantCreateRequestDto
 import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantListOption
 import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantListResponse
-import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantResponse
-import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantUpdateRequest
+import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantResponseDto
+import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantUpdateRequestDto
 import br.com.cashflow.usecase.tenant_management.adapter.external.dto.toListOption
 import br.com.cashflow.usecase.tenant_management.adapter.external.dto.toResponse
 import br.com.cashflow.usecase.tenant_management.port.TenantManagementInputPort
@@ -40,7 +40,15 @@ class TenantController(
         @RequestParam(required = false) cnpj: String?,
         @RequestParam(required = false) active: Boolean?,
     ): TenantListResponse {
-        val filter = TenantFilter(nome = nome?.takeIf { it.isNotBlank() }, cnpj = cnpj?.takeIf { it.isNotBlank() }, active = active)
+        val filter =
+            TenantFilter(
+                nome =
+                    nome?.takeIf {
+                        it.isNotBlank()
+                    },
+                cnpj = cnpj?.takeIf { it.isNotBlank() },
+                active = active,
+            )
         val pageResult = tenantManagement.findAll(filter, page, size)
         return TenantListResponse(
             items = pageResult.items.map { it.toResponse() },
@@ -51,21 +59,24 @@ class TenantController(
     }
 
     @GetMapping("/list")
-    fun listForDropdown(): List<TenantListOption> = tenantManagement.findActiveForList().map { it.toListOption() }
+    fun listForDropdown(): List<TenantListOption> =
+        tenantManagement.findActiveForList().map {
+            it.toListOption()
+        }
 
     @GetMapping("/cnpj-unico")
     fun cnpjUnico(
         @RequestParam cnpj: String,
         @RequestParam(required = false) excludeId: UUID?,
-    ): ResponseEntity<CnpjUnicoResponse> {
+    ): ResponseEntity<CnpjUnicoResponseDto> {
         val unique = tenantManagement.isCnpjAvailable(cnpj, excludeId)
-        return ResponseEntity.ok(CnpjUnicoResponse(unique = unique))
+        return ResponseEntity.ok(CnpjUnicoResponseDto(unique = unique))
     }
 
     @GetMapping("/{id}")
     fun getById(
         @PathVariable id: UUID,
-    ): ResponseEntity<TenantResponse> {
+    ): ResponseEntity<TenantResponseDto> {
         val tenant =
             tenantManagement.findById(id)
                 ?: throw ResourceNotFoundException("Tenant not found: $id")
@@ -74,8 +85,8 @@ class TenantController(
 
     @PostMapping
     fun create(
-        @Valid @RequestBody request: TenantCreateRequest,
-    ): ResponseEntity<TenantResponse> {
+        @Valid @RequestBody request: TenantCreateRequestDto,
+    ): ResponseEntity<TenantResponseDto> {
         val created = tenantManagement.create(request)
         val body = created.toResponse()
         return ResponseEntity
@@ -87,8 +98,8 @@ class TenantController(
     @PutMapping("/{id}")
     fun update(
         @PathVariable id: UUID,
-        @Valid @RequestBody request: TenantUpdateRequest,
-    ): ResponseEntity<TenantResponse> {
+        @Valid @RequestBody request: TenantUpdateRequestDto,
+    ): ResponseEntity<TenantResponseDto> {
         val updated = tenantManagement.update(id, request)
         return ResponseEntity.ok(updated.toResponse())
     }

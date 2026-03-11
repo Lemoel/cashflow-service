@@ -37,9 +37,16 @@ class DepartmentRepositoryImpl(
                 params.add(it)
             }
         }
-        val whereClause = if (conditions.isEmpty()) "" else " WHERE " + conditions.joinToString(" AND ")
+        val whereClause =
+            if (conditions.isEmpty()) {
+                ""
+            } else {
+                " WHERE " +
+                    conditions.joinToString(" AND ")
+            }
         val countSql = "SELECT COUNT(*) FROM eventos.departamento d$whereClause"
-        val total = jdbcTemplate.queryForObject(countSql, Long::class.java, *params.toTypedArray()) ?: 0L
+        val total =
+            jdbcTemplate.queryForObject(countSql, Long::class.java, *params.toTypedArray()) ?: 0L
         params.add(pageable.pageSize)
         params.add(pageable.offset)
         val selectSql = "SELECT * FROM eventos.departamento d$whereClause ORDER BY d.nome ASC LIMIT ? OFFSET ?"

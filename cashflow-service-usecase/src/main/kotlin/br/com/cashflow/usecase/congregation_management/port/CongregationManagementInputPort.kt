@@ -1,27 +1,27 @@
 package br.com.cashflow.usecase.congregation_management.port
 
 import br.com.cashflow.usecase.congregation.entity.Congregation
-import br.com.cashflow.usecase.congregation.model.CongregationFilter
-import br.com.cashflow.usecase.congregation.model.CongregationPage
-import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationCreateRequest
-import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationUpdateRequest
+import br.com.cashflow.usecase.congregation.model.CongregationFilterModel
+import br.com.cashflow.usecase.congregation.model.CongregationPageModel
+import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationCreateRequestDto
+import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationUpdateRequestDto
 import java.util.UUID
 
 interface CongregationManagementInputPort {
-    fun create(request: CongregationCreateRequest): Congregation
+    fun create(request: CongregationCreateRequestDto): Congregation
 
     fun update(
         id: UUID,
-        request: CongregationUpdateRequest,
+        request: CongregationUpdateRequestDto,
     ): Congregation
 
     fun findById(id: UUID): Congregation?
 
     fun findAll(
-        filter: CongregationFilter?,
+        filter: CongregationFilterModel?,
         page: Int,
         size: Int,
-    ): CongregationPage
+    ): CongregationPageModel
 
     fun findListForDropdown(): List<Pair<UUID, String>>
 

@@ -6,13 +6,13 @@ import br.com.cashflow.commons.exception.ResourceNotFoundException
 import br.com.cashflow.tests.base.postgresql.PostgresqlBaseTest
 import br.com.cashflow.tests.base.postgresql.annotations.SqlSetUp
 import br.com.cashflow.tests.base.postgresql.annotations.SqlTearDown
-import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationCreateRequest
+import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationCreateRequestDto
 import br.com.cashflow.usecase.congregation_management.port.CongregationManagementInputPort
 import br.com.cashflow.usecase.department.model.DepartmentFilter
-import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentCreateRequest
-import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentUpdateRequest
+import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentCreateRequestDto
+import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentUpdateRequestDto
 import br.com.cashflow.usecase.department_management.port.DepartmentManagementInputPort
-import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantCreateRequest
+import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantCreateRequestDto
 import br.com.cashflow.usecase.tenant_management.port.TenantManagementInputPort
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -34,7 +34,7 @@ class DepartmentManagementServiceITCase : PostgresqlBaseTest() {
 
     private fun createTenant(): UUID {
         val request =
-            TenantCreateRequest(
+            TenantCreateRequestDto(
                 tradeName = "Tenant Dept IT",
                 cnpj = "12345678000190",
                 street = "Rua",
@@ -49,7 +49,7 @@ class DepartmentManagementServiceITCase : PostgresqlBaseTest() {
 
     private fun createCongregation(tenantId: UUID): UUID {
         val request =
-            CongregationCreateRequest(
+            CongregationCreateRequestDto(
                 tenantId = tenantId,
                 nome = "Cong Dept IT",
                 logradouro = "Rua",
@@ -68,7 +68,7 @@ class DepartmentManagementServiceITCase : PostgresqlBaseTest() {
     fun should_CreateFindUpdateFindAllFindByCongregationAndDelete_When_FullCrud() {
         val tenantId = createTenant()
         val createRequest =
-            DepartmentCreateRequest(
+            DepartmentCreateRequestDto(
                 nome = "Departamento CRUD",
                 ativo = true,
             )
@@ -86,7 +86,7 @@ class DepartmentManagementServiceITCase : PostgresqlBaseTest() {
         assertThat(found.nome).isEqualTo("DEPARTAMENTO CRUD")
 
         val updateRequest =
-            DepartmentUpdateRequest(
+            DepartmentUpdateRequestDto(
                 nome = "Departamento CRUD Atualizado",
                 ativo = false,
             )
@@ -110,7 +110,7 @@ class DepartmentManagementServiceITCase : PostgresqlBaseTest() {
     @Test
     fun should_ThrowConflictException_When_CreateWithDuplicateNomeInSameTenant() {
         val tenantId = createTenant()
-        val request = DepartmentCreateRequest(nome = "TI", ativo = true)
+        val request = DepartmentCreateRequestDto(nome = "TI", ativo = true)
         departmentManagement.create(tenantId, request)
 
         assertThatThrownBy { departmentManagement.create(tenantId, request) }
@@ -133,7 +133,7 @@ class DepartmentManagementServiceITCase : PostgresqlBaseTest() {
 
     @Test
     fun should_ThrowResourceNotFoundException_When_UpdateAndDepartmentNotFound() {
-        val request = DepartmentUpdateRequest(nome = "Qualquer", ativo = true)
+        val request = DepartmentUpdateRequestDto(nome = "Qualquer", ativo = true)
         assertThatThrownBy { departmentManagement.update(UUID.randomUUID(), request) }
             .isInstanceOf(ResourceNotFoundException::class.java)
             .hasMessageContaining("Departamento não encontrado")
@@ -149,7 +149,7 @@ class DepartmentManagementServiceITCase : PostgresqlBaseTest() {
     @Test
     fun should_ThrowBusinessException_When_CreateWithBlankNome() {
         val tenantId = createTenant()
-        val request = DepartmentCreateRequest(nome = "   ", ativo = true)
+        val request = DepartmentCreateRequestDto(nome = "   ", ativo = true)
         assertThatThrownBy { departmentManagement.create(tenantId, request) }
             .isInstanceOf(BusinessException::class.java)
             .hasMessageContaining("Nome do departamento é obrigatório")
@@ -158,7 +158,10 @@ class DepartmentManagementServiceITCase : PostgresqlBaseTest() {
     @Test
     fun should_ReturnMatchingDepartments_When_FindAllWithFilterByNome() {
         val tenantId = createTenant()
-        departmentManagement.create(tenantId, DepartmentCreateRequest(nome = "Vendas", ativo = true))
+        departmentManagement.create(
+            tenantId,
+            DepartmentCreateRequestDto(nome = "Vendas", ativo = true),
+        )
 
         val page =
             departmentManagement.findAll(
@@ -174,7 +177,10 @@ class DepartmentManagementServiceITCase : PostgresqlBaseTest() {
     fun should_ReturnDepartmentsByCongregationId_When_CongregationExists() {
         val tenantId = createTenant()
         val congregationId = createCongregation(tenantId)
-        departmentManagement.create(tenantId, DepartmentCreateRequest(nome = "Financeiro", ativo = true))
+        departmentManagement.create(
+            tenantId,
+            DepartmentCreateRequestDto(nome = "Financeiro", ativo = true),
+        )
 
         val list = departmentManagement.findDepartmentsByCongregationId(congregationId)
         assertThat(list).isNotEmpty

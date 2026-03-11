@@ -9,6 +9,8 @@ interface MaquinaRepository :
     CrudRepository<Maquina, UUID>,
     MaquinaRepositoryCustom {
     fun existsByNumeroSerieLeitor(numeroSerieLeitor: String): Boolean
+
+    fun findByNumeroSerieLeitorIn(numeroSerieLeitor: Collection<String>): List<Maquina>
 }
 
 interface MaquinaRepositoryCustom {

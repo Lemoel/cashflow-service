@@ -3,19 +3,19 @@ package br.com.cashflow.usecase.department_management.port
 import br.com.cashflow.usecase.department.entity.Department
 import br.com.cashflow.usecase.department.model.DepartmentFilter
 import br.com.cashflow.usecase.department.model.DepartmentPage
-import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentCreateRequest
-import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentUpdateRequest
+import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentCreateRequestDto
+import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentUpdateRequestDto
 import java.util.UUID
 
 interface DepartmentManagementInputPort {
     fun create(
         tenantId: java.util.UUID,
-        request: DepartmentCreateRequest,
+        request: DepartmentCreateRequestDto,
     ): Department
 
     fun update(
         id: UUID,
-        request: DepartmentUpdateRequest,
+        request: DepartmentUpdateRequestDto,
     ): Department
 
     fun findById(id: UUID): Department?

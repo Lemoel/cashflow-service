@@ -1,7 +1,7 @@
 package br.com.cashflow.usecase.parametro.adapter.driven.persistence
 
 import br.com.cashflow.usecase.parametro.entity.Parametro
-import br.com.cashflow.usecase.parametro.model.ParametroFilter
+import br.com.cashflow.usecase.parametro.model.ParametroFilterModel
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -27,7 +27,14 @@ class ParametroPersistenceAdapterTest {
     @Test
     fun `save delegates to repository and returns saved parametro`() {
         val parametro = Parametro(chave = "K", valorTexto = "v", tipo = "STRING", ativo = true)
-        val saved = Parametro(id = UUID.randomUUID(), chave = "K", valorTexto = "v", tipo = "STRING", ativo = true)
+        val saved =
+            Parametro(
+                id = UUID.randomUUID(),
+                chave = "K",
+                valorTexto = "v",
+                tipo = "STRING",
+                ativo = true,
+            )
         every { parametroRepository.save(parametro) } returns saved
 
         val result = adapter.save(parametro)
@@ -39,7 +46,8 @@ class ParametroPersistenceAdapterTest {
     @Test
     fun `findById delegates to repository and returns entity when found`() {
         val id = UUID.randomUUID()
-        val parametro = Parametro(id = id, chave = "K", valorTexto = "v", tipo = "STRING", ativo = true)
+        val parametro =
+            Parametro(id = id, chave = "K", valorTexto = "v", tipo = "STRING", ativo = true)
         every { parametroRepository.findById(id) } returns Optional.of(parametro)
 
         val result = adapter.findById(id)
@@ -62,7 +70,13 @@ class ParametroPersistenceAdapterTest {
         val pageable = PageRequest.of(0, 10)
         val items =
             listOf(
-                Parametro(id = UUID.randomUUID(), chave = "A", valorTexto = "1", tipo = "STRING", ativo = true),
+                Parametro(
+                    id = UUID.randomUUID(),
+                    chave = "A",
+                    valorTexto = "1",
+                    tipo = "STRING",
+                    ativo = true,
+                ),
             )
         val springPage = PageImpl(items, pageable, 1L)
         every { parametroRepository.findWithFilters(null, pageable) } returns springPage
@@ -79,7 +93,7 @@ class ParametroPersistenceAdapterTest {
     @Test
     fun `findWithFilters with filter delegates with filter`() {
         val pageable = PageRequest.of(1, 5)
-        val filter = ParametroFilter(chave = "X", ativo = true)
+        val filter = ParametroFilterModel(chave = "X", ativo = true)
         val springPage = PageImpl(emptyList<Parametro>(), pageable, 0L)
         every { parametroRepository.findWithFilters(filter, pageable) } returns springPage
 
@@ -96,7 +110,13 @@ class ParametroPersistenceAdapterTest {
     fun `findAllOrderByChave delegates to findAllByOrderByChaveAsc`() {
         val list =
             listOf(
-                Parametro(id = UUID.randomUUID(), chave = "A", valorTexto = "1", tipo = "STRING", ativo = true),
+                Parametro(
+                    id = UUID.randomUUID(),
+                    chave = "A",
+                    valorTexto = "1",
+                    tipo = "STRING",
+                    ativo = true,
+                ),
             )
         every { parametroRepository.findAllByOrderByChaveAsc() } returns list
 

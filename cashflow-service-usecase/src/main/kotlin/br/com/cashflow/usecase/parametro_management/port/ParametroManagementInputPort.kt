@@ -1,27 +1,27 @@
 package br.com.cashflow.usecase.parametro_management.port
 
 import br.com.cashflow.usecase.parametro.entity.Parametro
-import br.com.cashflow.usecase.parametro.model.ParametroFilter
-import br.com.cashflow.usecase.parametro.model.ParametroPage
-import br.com.cashflow.usecase.parametro_management.adapter.external.dto.ParametroCreateRequest
-import br.com.cashflow.usecase.parametro_management.adapter.external.dto.ParametroUpdateRequest
+import br.com.cashflow.usecase.parametro.model.ParametroFilterModel
+import br.com.cashflow.usecase.parametro.model.ParametroPageModel
+import br.com.cashflow.usecase.parametro_management.adapter.external.dto.ParametroCreateRequestDto
+import br.com.cashflow.usecase.parametro_management.adapter.external.dto.ParametroUpdateRequestDto
 import java.util.UUID
 
 interface ParametroManagementInputPort {
-    fun create(request: ParametroCreateRequest): Parametro
+    fun create(request: ParametroCreateRequestDto): Parametro
 
     fun update(
         id: UUID,
-        request: ParametroUpdateRequest,
+        request: ParametroUpdateRequestDto,
     ): Parametro
 
     fun findById(id: UUID): Parametro?
 
     fun findAll(
-        filter: ParametroFilter?,
+        filter: ParametroFilterModel?,
         page: Int,
         size: Int,
-    ): ParametroPage
+    ): ParametroPageModel
 
     fun findChavesForDropdown(): List<Pair<String, String>>
 

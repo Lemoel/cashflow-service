@@ -5,8 +5,8 @@ import br.com.cashflow.commons.exception.ResourceNotFoundException
 import br.com.cashflow.tests.base.postgresql.PostgresqlBaseTest
 import br.com.cashflow.tests.base.postgresql.annotations.SqlSetUp
 import br.com.cashflow.tests.base.postgresql.annotations.SqlTearDown
-import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantCreateRequest
-import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantUpdateRequest
+import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantCreateRequestDto
+import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantUpdateRequestDto
 import br.com.cashflow.usecase.tenant_management.port.TenantManagementInputPort
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -24,7 +24,7 @@ class TenantManagementServiceITCase : PostgresqlBaseTest() {
     fun should_CreateFindUpdateFindAllFindActiveForListAndDelete_When_FullCrud() {
         // prepare
         val createRequest =
-            TenantCreateRequest(
+            TenantCreateRequestDto(
                 tradeName = "Church CRUD",
                 companyName = "Company CRUD",
                 cnpj = "12345678000190",
@@ -64,7 +64,7 @@ class TenantManagementServiceITCase : PostgresqlBaseTest() {
 
         // prepare
         val updateRequest =
-            TenantUpdateRequest(
+            TenantUpdateRequestDto(
                 tradeName = "Church CRUD Updated",
                 companyName = "Company Updated",
                 cnpj = "12345678000190",
@@ -116,7 +116,7 @@ class TenantManagementServiceITCase : PostgresqlBaseTest() {
     fun should_ThrowConflictException_When_CreateWithDuplicateCnpj() {
         // prepare
         val request =
-            TenantCreateRequest(
+            TenantCreateRequestDto(
                 tradeName = "First",
                 cnpj = "11111111000191",
                 street = "S",
@@ -149,7 +149,7 @@ class TenantManagementServiceITCase : PostgresqlBaseTest() {
     fun should_ThrowResourceNotFoundException_When_UpdateAndTenantNotFound() {
         // prepare
         val request =
-            TenantUpdateRequest(
+            TenantUpdateRequestDto(
                 tradeName = "A",
                 cnpj = "12345678000190",
                 street = "S",
@@ -177,7 +177,7 @@ class TenantManagementServiceITCase : PostgresqlBaseTest() {
     fun should_ReturnOnlyActiveTenantsOrderedByTradeName_When_FindActiveForList() {
         // prepare
         val a =
-            TenantCreateRequest(
+            TenantCreateRequestDto(
                 tradeName = "Zebra Church",
                 cnpj = "22222222000192",
                 street = "S",
@@ -188,7 +188,7 @@ class TenantManagementServiceITCase : PostgresqlBaseTest() {
                 active = true,
             )
         val b =
-            TenantCreateRequest(
+            TenantCreateRequestDto(
                 tradeName = "Alpha Church",
                 cnpj = "33333333000193",
                 street = "S",
@@ -223,7 +223,7 @@ class TenantManagementServiceITCase : PostgresqlBaseTest() {
     fun should_ReturnFalse_When_IsCnpjAvailableAndCnpjAlreadyRegistered() {
         // prepare
         val createRequest =
-            TenantCreateRequest(
+            TenantCreateRequestDto(
                 tradeName = "Unique Check",
                 cnpj = "12345678000190",
                 street = "S",
@@ -245,7 +245,7 @@ class TenantManagementServiceITCase : PostgresqlBaseTest() {
     fun should_ReturnTrue_When_IsCnpjAvailableAndExcludeIdIsThatTenant() {
         // prepare
         val createRequest =
-            TenantCreateRequest(
+            TenantCreateRequestDto(
                 tradeName = "Exclude Self",
                 cnpj = "12345678000190",
                 street = "S",
@@ -267,7 +267,7 @@ class TenantManagementServiceITCase : PostgresqlBaseTest() {
     fun should_NormalizeMaskedCnpj_When_IsCnpjAvailable() {
         // prepare
         val createRequest =
-            TenantCreateRequest(
+            TenantCreateRequestDto(
                 tradeName = "Masked",
                 cnpj = "12345678000190",
                 street = "S",

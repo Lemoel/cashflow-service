@@ -71,8 +71,10 @@ class JwtAuthenticationFilter(
             return
         }
         val authority = SimpleGrantedAuthority("ROLE_${claims.perfil}")
-        val currentUser = CurrentUser(email = claims.sub, perfil = claims.perfil, tenantId = claims.tenantId)
-        val authentication = UsernamePasswordAuthenticationToken(currentUser, null, listOf(authority))
+        val currentUser =
+            CurrentUser(email = claims.sub, perfil = claims.perfil, tenantId = claims.tenantId)
+        val authentication =
+            UsernamePasswordAuthenticationToken(currentUser, null, listOf(authority))
         SecurityContextHolder.getContext().authentication = authentication
         filterChain.doFilter(request, response)
     }
