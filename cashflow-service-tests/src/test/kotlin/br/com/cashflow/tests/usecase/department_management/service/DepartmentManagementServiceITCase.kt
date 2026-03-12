@@ -6,8 +6,6 @@ import br.com.cashflow.commons.exception.ResourceNotFoundException
 import br.com.cashflow.tests.base.postgresql.PostgresqlBaseTest
 import br.com.cashflow.tests.base.postgresql.annotations.SqlSetUp
 import br.com.cashflow.tests.base.postgresql.annotations.SqlTearDown
-import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationCreateRequestDto
-import br.com.cashflow.usecase.congregation_management.port.CongregationManagementInputPort
 import br.com.cashflow.usecase.department.model.DepartmentFilter
 import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentCreateRequestDto
 import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentUpdateRequestDto
@@ -29,9 +27,6 @@ class DepartmentManagementServiceITCase : PostgresqlBaseTest() {
     @Autowired
     private lateinit var tenantManagement: TenantManagementInputPort
 
-    @Autowired
-    private lateinit var congregationManagement: CongregationManagementInputPort
-
     private fun createTenant(): UUID {
         val request =
             TenantCreateRequestDto(
@@ -47,25 +42,8 @@ class DepartmentManagementServiceITCase : PostgresqlBaseTest() {
         return created.id!!
     }
 
-    private fun createCongregation(tenantId: UUID): UUID {
-        val request =
-            CongregationCreateRequestDto(
-                tenantId = tenantId,
-                nome = "Cong Dept IT",
-                logradouro = "Rua",
-                bairro = "Centro",
-                numero = "1",
-                cidade = "São Paulo",
-                uf = "SP",
-                cep = "01234567",
-                ativo = true,
-            )
-        val created = congregationManagement.create(request)
-        return created.id!!
-    }
-
     @Test
-    fun should_CreateFindUpdateFindAllFindByCongregationAndDelete_When_FullCrud() {
+    fun should_CreateFindUpdateFindAllAndDelete_When_FullCrud() {
         val tenantId = createTenant()
         val createRequest =
             DepartmentCreateRequestDto(
@@ -97,10 +75,6 @@ class DepartmentManagementServiceITCase : PostgresqlBaseTest() {
         val page = departmentManagement.findAll(DepartmentFilter(tenantId = tenantId), 0, 10)
         assertThat(page.items).isNotEmpty
         assertThat(page.total).isGreaterThanOrEqualTo(1)
-
-        val congregationId = createCongregation(tenantId)
-        val byCongregation = departmentManagement.findDepartmentsByCongregationId(congregationId)
-        assertThat(byCongregation.any { it.nome == "DEPARTAMENTO CRUD ATUALIZADO" }).isTrue()
 
         departmentManagement.delete(created.id!!)
         val afterDelete = departmentManagement.findById(created.id!!)
@@ -171,25 +145,5 @@ class DepartmentManagementServiceITCase : PostgresqlBaseTest() {
             )
         assertThat(page.items).isNotEmpty
         assertThat(page.items.any { it.nome.contains("VENDAS") }).isTrue()
-    }
-
-    @Test
-    fun should_ReturnDepartmentsByCongregationId_When_CongregationExists() {
-        val tenantId = createTenant()
-        val congregationId = createCongregation(tenantId)
-        departmentManagement.create(
-            tenantId,
-            DepartmentCreateRequestDto(nome = "Financeiro", ativo = true),
-        )
-
-        val list = departmentManagement.findDepartmentsByCongregationId(congregationId)
-        assertThat(list).isNotEmpty
-        assertThat(list.any { it.nome == "FINANCEIRO" }).isTrue()
-    }
-
-    @Test
-    fun should_ReturnEmptyList_When_FindDepartmentsByCongregationIdAndCongregationNotFound() {
-        val list = departmentManagement.findDepartmentsByCongregationId(UUID.randomUUID())
-        assertThat(list).isEmpty()
     }
 }

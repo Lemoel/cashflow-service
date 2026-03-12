@@ -4,9 +4,6 @@
 			"path": "."
 		},
 		{
-			"path": "../eventos"
-		},
-		{
 			"path": "../cashflow-web-app"
 		}
 	],

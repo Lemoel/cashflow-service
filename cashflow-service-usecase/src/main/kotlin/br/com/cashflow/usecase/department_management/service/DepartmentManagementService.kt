@@ -3,7 +3,6 @@ package br.com.cashflow.usecase.department_management.service
 import br.com.cashflow.commons.exception.BusinessException
 import br.com.cashflow.commons.exception.ConflictException
 import br.com.cashflow.commons.exception.ResourceNotFoundException
-import br.com.cashflow.usecase.congregation.port.CongregationOutputPort
 import br.com.cashflow.usecase.department.entity.Department
 import br.com.cashflow.usecase.department.model.DepartmentFilter
 import br.com.cashflow.usecase.department.model.DepartmentPage
@@ -21,7 +20,6 @@ import java.util.UUID
 @Service
 class DepartmentManagementService(
     private val departmentOutputPort: DepartmentOutputPort,
-    private val congregationOutputPort: CongregationOutputPort,
 ) : DepartmentManagementInputPort {
     override fun create(
         tenantId: UUID,
@@ -76,12 +74,6 @@ class DepartmentManagementService(
                         ?.takeIf { it.isNotBlank() },
             )
         return departmentOutputPort.findAll(normalizedFilter, page, size)
-    }
-
-    override fun findDepartmentsByCongregationId(congregationId: UUID): List<Department> {
-        val congregation = congregationOutputPort.findById(congregationId) ?: return emptyList()
-        val tenantId = congregation.tenantId ?: return emptyList()
-        return departmentOutputPort.findByTenantIdOrderByNomeAsc(tenantId)
     }
 
     @Transactional

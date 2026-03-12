@@ -64,11 +64,20 @@ class DepartmentController(
 
     @GetMapping("/{id}")
     fun getById(
+        @AuthenticationPrincipal currentUser: CurrentUser,
         @PathVariable id: UUID,
     ): ResponseEntity<DepartmentResponse> {
+        val tenantId =
+            currentUser.tenantId
+                ?: throw BusinessException(
+                    "Usuário sem igreja vinculada. Não é possível acessar o departamento.",
+                )
         val department =
             departmentManagement.findById(id)
                 ?: throw ResourceNotFoundException("Departamento não encontrado")
+        if (department.tenantId != tenantId) {
+            throw ResourceNotFoundException("Departamento não encontrado")
+        }
         val tenantNome = department.tenantId?.let { tenantOutputPort.findById(it)?.tradeName }
         return ResponseEntity.ok(department.toResponse(tenantNome))
     }
@@ -94,9 +103,21 @@ class DepartmentController(
 
     @PutMapping("/{id}")
     fun update(
+        @AuthenticationPrincipal currentUser: CurrentUser,
         @PathVariable id: UUID,
         @Valid @RequestBody request: DepartmentUpdateRequestDto,
     ): ResponseEntity<DepartmentResponse> {
+        val tenantId =
+            currentUser.tenantId
+                ?: throw BusinessException(
+                    "Usuário sem igreja vinculada. Não é possível atualizar o departamento.",
+                )
+        val existing =
+            departmentManagement.findById(id)
+                ?: throw ResourceNotFoundException("Departamento não encontrado")
+        if (existing.tenantId != tenantId) {
+            throw ResourceNotFoundException("Departamento não encontrado")
+        }
         val updated = departmentManagement.update(id, request)
         val tenantNome = updated.tenantId?.let { tenantOutputPort.findById(it)?.tradeName }
         return ResponseEntity.ok(updated.toResponse(tenantNome))
@@ -104,8 +125,20 @@ class DepartmentController(
 
     @DeleteMapping("/{id}")
     fun delete(
+        @AuthenticationPrincipal currentUser: CurrentUser,
         @PathVariable id: UUID,
     ): ResponseEntity<Unit> {
+        val tenantId =
+            currentUser.tenantId
+                ?: throw BusinessException(
+                    "Usuário sem igreja vinculada. Não é possível excluir o departamento.",
+                )
+        val existing =
+            departmentManagement.findById(id)
+                ?: throw ResourceNotFoundException("Departamento não encontrado")
+        if (existing.tenantId != tenantId) {
+            throw ResourceNotFoundException("Departamento não encontrado")
+        }
         departmentManagement.delete(id)
         return ResponseEntity.noContent().build()
     }
