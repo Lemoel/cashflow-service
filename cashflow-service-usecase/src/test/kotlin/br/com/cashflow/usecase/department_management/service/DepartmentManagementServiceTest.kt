@@ -3,8 +3,6 @@ package br.com.cashflow.usecase.department_management.service
 import br.com.cashflow.commons.exception.BusinessException
 import br.com.cashflow.commons.exception.ConflictException
 import br.com.cashflow.commons.exception.ResourceNotFoundException
-import br.com.cashflow.usecase.congregation.entity.Congregation
-import br.com.cashflow.usecase.congregation.port.CongregationOutputPort
 import br.com.cashflow.usecase.department.entity.Department
 import br.com.cashflow.usecase.department.model.DepartmentFilter
 import br.com.cashflow.usecase.department.model.DepartmentPage
@@ -25,12 +23,11 @@ import java.util.UUID
 
 class DepartmentManagementServiceTest {
     private val departmentOutputPort: DepartmentOutputPort = mockk()
-    private val congregationOutputPort: CongregationOutputPort = mockk()
     private lateinit var service: DepartmentManagementService
 
     @BeforeEach
     fun setUp() {
-        service = DepartmentManagementService(departmentOutputPort, congregationOutputPort)
+        service = DepartmentManagementService(departmentOutputPort)
     }
 
     @Test
@@ -196,47 +193,6 @@ class DepartmentManagementServiceTest {
         verify(
             exactly = 1,
         ) { departmentOutputPort.findAll(match { it?.tenantId == tenantId }, 0, 10) }
-    }
-
-    @Test
-    fun `findDepartmentsByCongregationId returns empty list when congregation not found`() {
-        val congregationId = UUID.randomUUID()
-        every { congregationOutputPort.findById(congregationId) } returns null
-
-        val result = service.findDepartmentsByCongregationId(congregationId)
-
-        assertThat(result).isEmpty()
-        verify(exactly = 0) { departmentOutputPort.findByTenantIdOrderByNomeAsc(any()) }
-    }
-
-    @Test
-    fun `findDepartmentsByCongregationId returns empty list when congregation has no tenantId`() {
-        val congregationId = UUID.randomUUID()
-        val congregation = Congregation(id = congregationId, tenantId = null, nome = "C")
-        every { congregationOutputPort.findById(congregationId) } returns congregation
-
-        val result = service.findDepartmentsByCongregationId(congregationId)
-
-        assertThat(result).isEmpty()
-        verify(exactly = 0) { departmentOutputPort.findByTenantIdOrderByNomeAsc(any()) }
-    }
-
-    @Test
-    fun `findDepartmentsByCongregationId returns departments of congregation tenant`() {
-        val congregationId = UUID.randomUUID()
-        val tenantId = UUID.randomUUID()
-        val congregation = Congregation(id = congregationId, tenantId = tenantId, nome = "C")
-        val departments =
-            listOf(
-                Department(id = UUID.randomUUID(), tenantId = tenantId, nome = "D1", ativo = true),
-            )
-        every { congregationOutputPort.findById(congregationId) } returns congregation
-        every { departmentOutputPort.findByTenantIdOrderByNomeAsc(tenantId) } returns departments
-
-        val result = service.findDepartmentsByCongregationId(congregationId)
-
-        assertThat(result).isEqualTo(departments)
-        verify(exactly = 1) { departmentOutputPort.findByTenantIdOrderByNomeAsc(tenantId) }
     }
 
     @Test

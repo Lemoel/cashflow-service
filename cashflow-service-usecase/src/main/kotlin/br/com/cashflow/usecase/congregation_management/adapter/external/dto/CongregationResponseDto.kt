@@ -68,14 +68,10 @@ data class CongregationListResponse(
     val pageSize: Int,
 )
 
-data class CnpjUnicoCongregationResponse(
-    val unique: Boolean,
-)
-
 fun Congregation.toResponse(): CongregationResponse =
     CongregationResponse(
-        id = id!!.toString(),
-        tenantId = tenantId!!.toString(),
+        id = id?.toString() ?: "",
+        tenantId = tenantId?.toString() ?: "",
         setorialId = setorialId?.toString(),
         nome = nome,
         cnpj = cnpj,
@@ -94,6 +90,6 @@ fun Congregation.toResponse(): CongregationResponse =
 
 fun Congregation.toListOption(): CongregationListOption =
     CongregationListOption(
-        id = id!!.toString(),
+        id = id?.toString() ?: "",
         nome = nome,
     )

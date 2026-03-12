@@ -26,7 +26,5 @@ interface DepartmentManagementInputPort {
         size: Int,
     ): DepartmentPage
 
-    fun findDepartmentsByCongregationId(congregationId: UUID): List<Department>
-
     fun delete(id: UUID)
 }

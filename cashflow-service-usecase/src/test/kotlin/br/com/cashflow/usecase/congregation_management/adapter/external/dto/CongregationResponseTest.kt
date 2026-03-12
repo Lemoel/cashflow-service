@@ -57,6 +57,48 @@ class CongregationResponseTest {
     }
 
     @Test
+    fun `toResponse handles null id and tenantId without NPE`() {
+        val congregation =
+            Congregation(
+                id = null,
+                tenantId = null,
+                nome = "Cong Null",
+                logradouro = "",
+                bairro = "",
+                numero = "",
+                cidade = "",
+                uf = "",
+                cep = "",
+            )
+
+        val result = congregation.toResponse()
+
+        assertThat(result.id).isEmpty()
+        assertThat(result.tenantId).isEmpty()
+        assertThat(result.nome).isEqualTo("Cong Null")
+    }
+
+    @Test
+    fun `toListOption handles null id without NPE`() {
+        val congregation =
+            Congregation(
+                id = null,
+                nome = "Cong No Id",
+                logradouro = "",
+                bairro = "",
+                numero = "",
+                cidade = "",
+                uf = "",
+                cep = "",
+            )
+
+        val result = congregation.toListOption()
+
+        assertThat(result.id).isEmpty()
+        assertThat(result.nome).isEqualTo("Cong No Id")
+    }
+
+    @Test
     fun `toListOption maps id and nome`() {
         val id = UUID.randomUUID()
         val congregation =
