@@ -34,12 +34,16 @@ class CongregationManagementService(
         validateRequiredFields(entity)
         val cnpjDigits = entity.cnpj
         if (!cnpjDigits.isNullOrBlank()) {
-            validateCnpjFormat(cnpjDigits)
+            requireValidCnpjDigits(cnpjDigits)
             if (congregationOutputPort.existsByCnpjExcludingId(cnpjDigits, null)) {
                 throw ConflictException("Já existe uma congregação com este CNPJ")
             }
         }
-        return congregationOutputPort.save(entity)
+        try {
+            return congregationOutputPort.save(entity)
+        } catch (error: DataIntegrityViolationException) {
+            throw ConflictException("Já existe uma congregação com este CNPJ.")
+        }
     }
 
     override fun update(
@@ -53,12 +57,16 @@ class CongregationManagementService(
         validateRequiredFields(existing)
         val cnpjDigits = existing.cnpj
         if (!cnpjDigits.isNullOrBlank()) {
-            validateCnpjFormat(cnpjDigits)
+            requireValidCnpjDigits(cnpjDigits)
             if (congregationOutputPort.existsByCnpjExcludingId(cnpjDigits, id)) {
                 throw ConflictException("Já existe uma congregação com este CNPJ")
             }
         }
-        return congregationOutputPort.save(existing)
+        try {
+            return congregationOutputPort.save(existing)
+        } catch (error: DataIntegrityViolationException) {
+            throw ConflictException("Já existe uma congregação com este CNPJ.")
+        }
     }
 
     override fun findById(id: UUID): Congregation? = congregationOutputPort.findById(id)
@@ -99,14 +107,8 @@ class CongregationManagementService(
         cnpj: String,
         excludeId: UUID?,
     ): Boolean {
-        val digits = CnpjValidator.clean(cnpj)
-        if (digits.isBlank()) return true
-        if (digits.length != CNPJ_DIGITS_LENGTH) {
-            throw IllegalArgumentException("CNPJ deve ter exatamente 14 dígitos numéricos")
-        }
-        if (!CnpjValidator.isValid(digits)) {
-            throw IllegalArgumentException("CNPJ inválido: dígitos verificadores não conferem")
-        }
+        if (CnpjValidator.clean(cnpj).isBlank()) return true
+        val digits = requireValidCnpjDigits(cnpj)
         return !congregationOutputPort.existsByCnpjExcludingId(digits, excludeId)
     }
 
@@ -120,12 +122,17 @@ class CongregationManagementService(
         if (c.cep.isBlank()) throw BusinessException("O CEP é obrigatório")
     }
 
-    private fun validateCnpjFormat(cnpj: String) {
-        if (cnpj.length != CNPJ_DIGITS_LENGTH) {
+    private fun requireValidCnpjDigits(cnpj: String): String {
+        val digits = CnpjValidator.clean(cnpj)
+        if (digits.isBlank()) {
+            throw BusinessException("CNPJ é inválido.")
+        }
+        if (digits.length != CNPJ_DIGITS_LENGTH) {
             throw BusinessException("CNPJ deve ter exatamente 14 dígitos numéricos")
         }
-        if (!CnpjValidator.isValid(cnpj)) {
+        if (!CnpjValidator.isValid(digits)) {
             throw BusinessException("CNPJ inválido: dígitos verificadores não conferem")
         }
+        return digits
     }
 }

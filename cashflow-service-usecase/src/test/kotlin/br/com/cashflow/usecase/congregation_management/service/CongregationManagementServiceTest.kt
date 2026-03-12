@@ -19,6 +19,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.dao.DataIntegrityViolationException
 import java.util.UUID
 
 class CongregationManagementServiceTest {
@@ -133,6 +134,40 @@ class CongregationManagementServiceTest {
     }
 
     @Test
+    fun `create throws ConflictException when save fails with DataIntegrityViolationException`() {
+        val tenantId = UUID.randomUUID()
+        val request =
+            CongregationCreateRequestDto(
+                tenantId = tenantId,
+                nome = "Cong A",
+                cnpj = "11222333000181",
+                logradouro = "Rua X",
+                bairro = "Centro",
+                numero = "1",
+                cidade = "São Paulo",
+                uf = "SP",
+                cep = "01234567",
+            )
+        every { tenantOutputPort.findById(tenantId) } returns
+            Tenant(
+                id = tenantId,
+                tradeName = "T",
+                street = "S",
+                number = "1",
+                city = "C",
+                state = "SP",
+                zipCode = "01234567",
+            )
+        every { congregationOutputPort.existsByCnpjExcludingId("11222333000181", null) } returns
+            false
+        every { congregationOutputPort.save(any()) } throws DataIntegrityViolationException("unique cnpj")
+
+        assertThatThrownBy { service.create(request) }
+            .isInstanceOf(ConflictException::class.java)
+            .hasMessageContaining("CNPJ")
+    }
+
+    @Test
     fun `create throws BusinessException when nome is blank`() {
         val tenantId = UUID.randomUUID()
         val request =
@@ -218,6 +253,40 @@ class CongregationManagementServiceTest {
             )
         }.isInstanceOf(ResourceNotFoundException::class.java)
             .hasMessageContaining("Congregação não encontrada")
+    }
+
+    @Test
+    fun `update throws ConflictException when save fails with DataIntegrityViolationException`() {
+        val id = UUID.randomUUID()
+        val existing =
+            Congregation(
+                id = id,
+                tenantId = UUID.randomUUID(),
+                nome = "OLD",
+                logradouro = "Rua",
+                bairro = "B",
+                numero = "1",
+                cidade = "C",
+                uf = "SP",
+                cep = "01234567",
+            )
+        val request =
+            CongregationUpdateRequestDto(
+                nome = "New Name",
+                logradouro = "Rua",
+                bairro = "B",
+                numero = "1",
+                cidade = "C",
+                uf = "SP",
+                cep = "01234567",
+            )
+        every { congregationOutputPort.findById(id) } returns existing
+        every { congregationOutputPort.existsByCnpjExcludingId(any(), id) } returns false
+        every { congregationOutputPort.save(any()) } throws DataIntegrityViolationException("unique cnpj")
+
+        assertThatThrownBy { service.update(id, request) }
+            .isInstanceOf(ConflictException::class.java)
+            .hasMessageContaining("CNPJ")
     }
 
     @Test
@@ -372,14 +441,14 @@ class CongregationManagementServiceTest {
     @Test
     fun `isCnpjAvailable throws when CNPJ has wrong length`() {
         assertThatThrownBy { service.isCnpjAvailable("123", null) }
-            .isInstanceOf(IllegalArgumentException::class.java)
+            .isInstanceOf(BusinessException::class.java)
             .hasMessageContaining("14 dígitos")
     }
 
     @Test
     fun `isCnpjAvailable throws when CNPJ digest invalid`() {
         assertThatThrownBy { service.isCnpjAvailable("11111111111111", null) }
-            .isInstanceOf(IllegalArgumentException::class.java)
+            .isInstanceOf(BusinessException::class.java)
             .hasMessageContaining("inválido")
     }
 
