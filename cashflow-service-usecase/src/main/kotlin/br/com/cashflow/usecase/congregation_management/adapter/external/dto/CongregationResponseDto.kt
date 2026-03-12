@@ -68,10 +68,6 @@ data class CongregationListResponse(
     val pageSize: Int,
 )
 
-data class CnpjUnicoCongregationResponse(
-    val unique: Boolean,
-)
-
 fun Congregation.toResponse(): CongregationResponse =
     CongregationResponse(
         id = id?.toString() ?: "",

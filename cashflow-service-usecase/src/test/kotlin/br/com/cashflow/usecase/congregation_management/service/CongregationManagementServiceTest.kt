@@ -411,48 +411,6 @@ class CongregationManagementServiceTest {
     }
 
     @Test
-    fun `isCnpjAvailable returns true when CNPJ not registered`() {
-        every { congregationOutputPort.existsByCnpjExcludingId("11222333000181", null) } returns
-            false
-
-        val result = service.isCnpjAvailable("11222333000181", null)
-
-        assertThat(result).isTrue()
-    }
-
-    @Test
-    fun `isCnpjAvailable returns false when CNPJ already registered`() {
-        every { congregationOutputPort.existsByCnpjExcludingId("11222333000181", null) } returns
-            true
-
-        val result = service.isCnpjAvailable("11222333000181", null)
-
-        assertThat(result).isFalse()
-    }
-
-    @Test
-    fun `isCnpjAvailable returns true when CNPJ is blank`() {
-        val result = service.isCnpjAvailable("  ", null)
-
-        assertThat(result).isTrue()
-        verify(exactly = 0) { congregationOutputPort.existsByCnpjExcludingId(any(), any()) }
-    }
-
-    @Test
-    fun `isCnpjAvailable throws when CNPJ has wrong length`() {
-        assertThatThrownBy { service.isCnpjAvailable("123", null) }
-            .isInstanceOf(BusinessException::class.java)
-            .hasMessageContaining("14 dígitos")
-    }
-
-    @Test
-    fun `isCnpjAvailable throws when CNPJ digest invalid`() {
-        assertThatThrownBy { service.isCnpjAvailable("11111111111111", null) }
-            .isInstanceOf(BusinessException::class.java)
-            .hasMessageContaining("inválido")
-    }
-
-    @Test
     fun `delete throws ConflictException when DataIntegrityViolationException`() {
         val id = UUID.randomUUID()
         val cong =

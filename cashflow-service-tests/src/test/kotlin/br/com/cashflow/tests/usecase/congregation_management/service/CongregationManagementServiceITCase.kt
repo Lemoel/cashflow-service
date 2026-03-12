@@ -271,13 +271,4 @@ class CongregationManagementServiceITCase : PostgresqlBaseTest() {
         assertThat(setoriais.map { it.second }).contains("SETORIAL A")
         assertThat(setoriais.map { it.second }).doesNotContain("CONG FILHA")
     }
-
-    @Test
-    fun should_ReturnTrue_When_IsCnpjAvailableAndCnpjNotRegistered() {
-        // call
-        val result = congregationManagement.isCnpjAvailable("11222333000181", null)
-
-        // assert
-        assertThat(result).isTrue()
-    }
 }

@@ -2,7 +2,6 @@ package br.com.cashflow.usecase.congregation_management.adapter.external.control
 
 import br.com.cashflow.commons.exception.ResourceNotFoundException
 import br.com.cashflow.usecase.congregation.model.CongregationFilterModel
-import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CnpjUnicoCongregationResponse
 import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationCreateRequestDto
 import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationListOption
 import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationListResponse
@@ -10,9 +9,6 @@ import br.com.cashflow.usecase.congregation_management.adapter.external.dto.Cong
 import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationUpdateRequestDto
 import br.com.cashflow.usecase.congregation_management.adapter.external.dto.toResponse
 import br.com.cashflow.usecase.congregation_management.port.CongregationManagementInputPort
-import br.com.cashflow.usecase.department_management.adapter.external.dto.DepartmentListOption
-import br.com.cashflow.usecase.department_management.adapter.external.dto.toListOption
-import br.com.cashflow.usecase.department_management.port.DepartmentManagementInputPort
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -33,7 +29,6 @@ import java.util.UUID
 @PreAuthorize("hasAnyRole('ADMIN','ADMIN_MATRIZ')")
 class CongregationController(
     private val congregationManagement: CongregationManagementInputPort,
-    private val departmentManagement: DepartmentManagementInputPort,
 ) {
     @GetMapping
     fun list(
@@ -68,26 +63,6 @@ class CongregationController(
     fun listSetoriais(): List<CongregationListOption> =
         congregationManagement.findSetoriais().map { (id, nome) ->
             CongregationListOption(id = id.toString(), nome = nome)
-        }
-
-    @GetMapping("/cnpj-unico")
-    fun cnpjUnico(
-        @RequestParam cnpj: String,
-        @RequestParam(required = false) excludeId: UUID?,
-    ): ResponseEntity<CnpjUnicoCongregationResponse> {
-        val unique = congregationManagement.isCnpjAvailable(cnpj, excludeId)
-        return ResponseEntity.ok(CnpjUnicoCongregationResponse(unique = unique))
-    }
-
-    @GetMapping("/{congregationId}/departamentos")
-    @PreAuthorize(
-        "hasAnyRole('FISCAL','ADMIN','ADMIN_MATRIZ','GESTOR_SETORIAL','GESTOR_CONGREGACAO')",
-    )
-    fun listDepartmentsByCongregation(
-        @PathVariable congregationId: UUID,
-    ): List<DepartmentListOption> =
-        departmentManagement.findDepartmentsByCongregationId(congregationId).map {
-            it.toListOption()
         }
 
     @GetMapping("/{id}")

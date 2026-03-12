@@ -28,9 +28,4 @@ interface CongregationManagementInputPort {
     fun findSetoriais(): List<Pair<UUID, String>>
 
     fun delete(id: UUID)
-
-    fun isCnpjAvailable(
-        cnpj: String,
-        excludeId: UUID?,
-    ): Boolean
 }

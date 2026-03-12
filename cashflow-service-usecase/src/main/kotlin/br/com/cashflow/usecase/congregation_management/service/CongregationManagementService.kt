@@ -103,15 +103,6 @@ class CongregationManagementService(
         }
     }
 
-    override fun isCnpjAvailable(
-        cnpj: String,
-        excludeId: UUID?,
-    ): Boolean {
-        if (CnpjValidator.clean(cnpj).isBlank()) return true
-        val digits = requireValidCnpjDigits(cnpj)
-        return !congregationOutputPort.existsByCnpjExcludingId(digits, excludeId)
-    }
-
     private fun validateRequiredFields(c: Congregation) {
         if (c.nome.isBlank()) throw BusinessException("O nome é obrigatório")
         if (c.logradouro.isBlank()) throw BusinessException("O logradouro é obrigatório")
