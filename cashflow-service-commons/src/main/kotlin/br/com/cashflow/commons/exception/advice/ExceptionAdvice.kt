@@ -3,6 +3,7 @@ package br.com.cashflow.commons.exception.advice
 import br.com.cashflow.commons.exception.BusinessException
 import br.com.cashflow.commons.exception.ConflictException
 import br.com.cashflow.commons.exception.InactiveUserException
+import br.com.cashflow.commons.exception.InvalidBootstrapSecretException
 import br.com.cashflow.commons.exception.ResourceNotFoundException
 import br.com.cashflow.commons.exception.WrongPasswordException
 import br.com.cashflow.commons.exception.model.ErrorResponse
@@ -65,6 +66,19 @@ class ExceptionAdvice {
                 error = "Unprocessable Entity",
             )
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(response)
+    }
+
+    @ExceptionHandler(InvalidBootstrapSecretException::class)
+    fun handleInvalidBootstrapSecretException(request: HttpServletRequest): ResponseEntity<ErrorResponse> {
+        val response =
+            ErrorResponse(
+                timestamp = Instant.now().toString(),
+                status = HttpStatus.UNAUTHORIZED.value(),
+                message = "Unauthorized",
+                path = request.requestURI,
+                error = "Unauthorized",
+            )
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response)
     }
 
     @ExceptionHandler(AuthenticationException::class)

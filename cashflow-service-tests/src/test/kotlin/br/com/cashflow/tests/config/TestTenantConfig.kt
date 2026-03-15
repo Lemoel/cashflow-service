@@ -34,6 +34,8 @@ class TestTenantConfig {
                     .dataSource(dataSource)
                     .locations("classpath:db/tenant-migration")
                     .schemas(schemaName)
+                    .defaultSchema(schemaName)
+                    .placeholders(mapOf("tenant_schema" to schemaName))
                     .load()
                     .migrate()
             }

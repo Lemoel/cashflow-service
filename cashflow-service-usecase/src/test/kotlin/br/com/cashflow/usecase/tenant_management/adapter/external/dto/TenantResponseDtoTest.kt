@@ -74,4 +74,115 @@ class TenantResponseDtoTest {
         assertThat(result.id).isEqualTo(id.toString())
         assertThat(result.name).isEqualTo("Church B")
     }
+
+    @Test
+    fun `TenantCreateRequestDto toEntity normalizes cnpj and uppercases required fields`() {
+        val request =
+            TenantCreateRequestDto(
+                tradeName = "  church crud  ",
+                companyName = "  company ltda  ",
+                cnpj = "12.345.678/0001-90",
+                street = "  street  ",
+                number = " 1 ",
+                complement = " room ",
+                neighborhood = " center ",
+                city = " city ",
+                state = "sp",
+                zipCode = "01234-567",
+                phone = " 11999999999 ",
+                email = " A@B.COM ",
+                active = false,
+            )
+
+        val result = request.toEntity()
+
+        assertThat(result.id).isNull()
+        assertThat(result.cnpj).isEqualTo("12345678000190")
+        assertThat(result.tradeName).isEqualTo("  CHURCH CRUD  ".trim().uppercase())
+        assertThat(result.companyName).isEqualTo("  COMPANY LTDA  ".trim().uppercase())
+        assertThat(result.street).isEqualTo("  STREET  ".trim().uppercase())
+        assertThat(result.number).isEqualTo("1")
+        assertThat(result.complement).isEqualTo(" ROOM ".trim().uppercase())
+        assertThat(result.neighborhood).isEqualTo(" CENTER ".trim().uppercase())
+        assertThat(result.city).isEqualTo(" CITY ".trim().uppercase())
+        assertThat(result.state).isEqualTo("SP")
+        assertThat(result.zipCode).isEqualTo("01234-567")
+        assertThat(result.phone).isEqualTo("11999999999")
+        assertThat(result.email).isEqualTo("a@b.com")
+        assertThat(result.active).isFalse()
+        assertThat(result.schemaName).isEqualTo("tenant_12345678000190")
+    }
+
+    @Test
+    fun `TenantCreateRequestDto toEntity with null optionals`() {
+        val request =
+            TenantCreateRequestDto(
+                tradeName = "Church",
+                cnpj = "11111111000191",
+                street = "S",
+                number = "1",
+                city = "C",
+                state = "SP",
+                zipCode = "01234567",
+            )
+
+        val result = request.toEntity()
+
+        assertThat(result.companyName).isNull()
+        assertThat(result.complement).isNull()
+        assertThat(result.neighborhood).isNull()
+        assertThat(result.phone).isNull()
+        assertThat(result.email).isNull()
+        assertThat(result.active).isTrue()
+        assertThat(result.schemaName).isEqualTo("tenant_11111111000191")
+    }
+
+    @Test
+    fun `TenantUpdateRequestDto applyTo updates tenant fields with normalized values`() {
+        val tenant =
+            Tenant(
+                id = UUID.randomUUID(),
+                cnpj = "old",
+                tradeName = "Old Name",
+                companyName = "Old Co",
+                street = "Old St",
+                number = "0",
+                city = "Old City",
+                state = "RJ",
+                zipCode = "20000000",
+                active = true,
+            )
+        val request =
+            TenantUpdateRequestDto(
+                tradeName = "  new name  ",
+                companyName = "  new company  ",
+                cnpj = "98.765.432/0001-10",
+                street = "  new street  ",
+                number = " 2 ",
+                complement = " sala ",
+                neighborhood = " norte ",
+                city = " new city ",
+                state = "sp",
+                zipCode = " 01234-567 ",
+                phone = " 11888887777 ",
+                email = " NEW@EMAIL.COM ",
+                active = false,
+            )
+
+        request.applyTo(tenant)
+
+        assertThat(tenant.cnpj).isEqualTo("98765432000110")
+        assertThat(tenant.tradeName).isEqualTo("NEW NAME")
+        assertThat(tenant.companyName).isEqualTo("NEW COMPANY")
+        assertThat(tenant.street).isEqualTo("NEW STREET")
+        assertThat(tenant.number).isEqualTo("2")
+        assertThat(tenant.complement).isEqualTo("SALA")
+        assertThat(tenant.neighborhood).isEqualTo("NORTE")
+        assertThat(tenant.city).isEqualTo("NEW CITY")
+        assertThat(tenant.state).isEqualTo("SP")
+        assertThat(tenant.zipCode).isEqualTo("01234-567")
+        assertThat(tenant.phone).isEqualTo("11888887777")
+        assertThat(tenant.email).isEqualTo("new@email.com")
+        assertThat(tenant.active).isFalse()
+    }
 }

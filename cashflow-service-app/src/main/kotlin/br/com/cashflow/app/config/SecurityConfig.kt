@@ -97,6 +97,11 @@ class SecurityConfig(
                         org.springframework.http.HttpMethod.POST,
                         "/api/v1/auth/refresh",
                     ).permitAll()
+                it
+                    .requestMatchers(
+                        org.springframework.http.HttpMethod.POST,
+                        "/api/v1/bootstrap",
+                    ).permitAll()
                 it.anyRequest().authenticated()
             }
             http.addFilterAfter(apiKeyAuthFilter, UsernamePasswordAuthenticationFilter::class.java)

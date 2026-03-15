@@ -62,6 +62,7 @@ cashflow-service-tests     → testes de integração (PostgresqlBaseTest); regr
 make run          # Subir aplicação
 make build        # Compilar
 make test         # Todos os testes
+make pre-push     # Obrigatório ao final de qualquer implementação (format, lint, build, coverage-check)
 make quality      # ktlint + testes + cobertura
 make format       # Formatar com ktlint
 make coverage     # Relatório JaCoCo
@@ -95,7 +96,7 @@ Ou via Gradle:
 2. **Migrations Flyway:** Sem comentários, sem COMMENT ON, sem CASCADE em FKs; nomenclatura conforme scripts. Ver `.cursor/rules/06-migrations-flyway.md`.
 3. Respeitar o fluxo **InputPort → Service → OutputPort ← Adapter → Repository**.
 4. Não acessar Repository diretamente em Services.
-5. Validar com `make build` e `make test` (ou `./gradlew qualityCheck`) antes de commit.
+5. **Ao final de qualquer implementação** (nova funcionalidade, bugfix, refatoração, etc.): executar **`make pre-push`** e garantir que conclua com sucesso. Ver `.cursor/rules/10-pre-push-obrigatorio.md`.
 6. Usar Conventional Commits (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`).
 7. **Testes de integração:** Ver `.cursor/rules/08-testes-integracao.md` para regras completas (PostgresqlBaseTest, SqlSetUp/SqlTearDown, scripts).
 8. **Testes de Adapters e DTOs:** Ver `.cursor/rules/09-testes-adapter-dto.md` para regras obrigatórias de testes unitários de Persistence Adapters e DTOs.

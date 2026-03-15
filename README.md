@@ -14,7 +14,7 @@
 Create the database before running:
 
 ```sql
-CREATE DATABASE cahsflowdb;
+CREATE DATABASE cashflowdb;
 ```
 
 ## Commands (Makefile)
