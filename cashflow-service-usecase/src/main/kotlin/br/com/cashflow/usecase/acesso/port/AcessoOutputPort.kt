@@ -37,4 +37,9 @@ interface AcessoOutputPort {
     )
 
     fun findListItemByEmail(email: String): AcessoListItem?
+
+    fun insertUserTenantMap(
+        email: String,
+        tenantId: UUID,
+    )
 }

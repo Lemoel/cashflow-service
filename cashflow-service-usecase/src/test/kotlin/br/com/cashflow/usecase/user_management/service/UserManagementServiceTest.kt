@@ -100,7 +100,7 @@ class UserManagementServiceTest {
 
     private fun stubCongregationExists() {
         every { congregationOutputPort.findById(congregacaoId) } returns
-            Congregation(id = congregacaoId, nome = "SEDE")
+            Congregation(id = congregacaoId, tenantId = congregacaoId, nome = "SEDE")
     }
 
     @Test
@@ -113,6 +113,7 @@ class UserManagementServiceTest {
         every { passwordEncoder.encode(any()) } returns "\$2a\$12\$temporaryHash"
         every { acessoOutputPort.save(any()) } answers { firstArg() }
         every { acessoOutputPort.setCongregacaoForEmail("user@test.com", congregacaoId) } just runs
+        every { acessoOutputPort.insertUserTenantMap("user@test.com", congregacaoId) } just runs
         every { acessoOutputPort.findListItemByEmail("user@test.com") } returns expected
 
         val result = service.create(command)
@@ -134,6 +135,7 @@ class UserManagementServiceTest {
         every { passwordEncoder.encode(any()) } returns "\$2a\$12\$hash"
         every { acessoOutputPort.save(capture(acessoSlot)) } answers { firstArg() }
         every { acessoOutputPort.setCongregacaoForEmail(any(), any()) } just runs
+        every { acessoOutputPort.insertUserTenantMap(any(), any()) } just runs
         every { acessoOutputPort.findListItemByEmail(any()) } returns buildListItem()
 
         service.create(command)
@@ -188,6 +190,7 @@ class UserManagementServiceTest {
         every { passwordEncoder.encode(any()) } returns "\$2a\$12\$bcryptHashResult"
         every { acessoOutputPort.save(capture(acessoSlot)) } answers { firstArg() }
         every { acessoOutputPort.setCongregacaoForEmail(any(), any()) } just runs
+        every { acessoOutputPort.insertUserTenantMap(any(), any()) } just runs
         every { acessoOutputPort.findListItemByEmail(any()) } returns buildListItem()
 
         val result = service.create(command)

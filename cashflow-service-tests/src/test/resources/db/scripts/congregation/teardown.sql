@@ -1,2 +1,2 @@
-DELETE FROM eventos.congregacao;
+DELETE FROM congregacao;
 DELETE FROM core.tenants;

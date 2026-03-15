@@ -36,7 +36,7 @@ class AcessoPersistenceAdapter(
             try {
                 jdbcTemplate.update(
                     """
-                    INSERT INTO eventos.acesso (email, password, nome, telefone, ativo, tipo_acesso, data, mod_date_time)
+                    INSERT INTO acesso (email, password, nome, telefone, ativo, tipo_acesso, data, mod_date_time)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                     """.trimIndent(),
                     email,
@@ -95,15 +95,26 @@ class AcessoPersistenceAdapter(
         congregacaoId: UUID,
     ) {
         jdbcTemplate.update(
-            "DELETE FROM eventos.acesso_congregacao WHERE email = ?",
+            "DELETE FROM acesso_congregacao WHERE email = ?",
             email,
         )
         jdbcTemplate.update(
-            "INSERT INTO eventos.acesso_congregacao (email, congregacao_id) VALUES (?, ?)",
+            "INSERT INTO acesso_congregacao (email, congregacao_id) VALUES (?, ?)",
             email,
             congregacaoId,
         )
     }
 
     override fun findListItemByEmail(email: String): AcessoListItem? = acessoRepository.findListItemByEmail(email)
+
+    override fun insertUserTenantMap(
+        email: String,
+        tenantId: UUID,
+    ) {
+        jdbcTemplate.update(
+            "INSERT INTO core.user_tenant_map (email, tenant_id) VALUES (?, ?)",
+            email,
+            tenantId,
+        )
+    }
 }

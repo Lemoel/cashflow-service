@@ -7,7 +7,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
-@Table(value = "movimento_api", schema = "eventos")
+@Table("movimento_api")
 class MovimentoApi(
     @Id
     var id: UUID? = null,

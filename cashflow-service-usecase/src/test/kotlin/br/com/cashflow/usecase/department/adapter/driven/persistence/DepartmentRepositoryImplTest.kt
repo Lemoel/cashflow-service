@@ -45,9 +45,9 @@ class DepartmentRepositoryImplTest {
 
         assertThat(result.content).isEmpty()
         assertThat(result.totalElements).isEqualTo(0L)
-        assertThat(countSqlSlot.captured).contains("SELECT COUNT(*) FROM eventos.departamento")
+        assertThat(countSqlSlot.captured).contains("SELECT COUNT(*) FROM departamento")
         assertThat(countSqlSlot.captured).doesNotContain("WHERE")
-        assertThat(selectSqlSlot.captured).contains("SELECT * FROM eventos.departamento")
+        assertThat(selectSqlSlot.captured).contains("SELECT * FROM departamento")
         assertThat(selectSqlSlot.captured).contains("ORDER BY d.nome ASC LIMIT ? OFFSET ?")
         verify(exactly = 1) { jdbcTemplate.queryForObject(any(), Long::class.java, *anyVararg()) }
         verify(

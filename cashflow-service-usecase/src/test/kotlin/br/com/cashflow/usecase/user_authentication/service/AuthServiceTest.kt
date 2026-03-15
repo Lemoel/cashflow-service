@@ -8,6 +8,7 @@ import br.com.cashflow.commons.exception.WrongPasswordException
 import br.com.cashflow.usecase.acesso.entity.Acesso
 import br.com.cashflow.usecase.acesso.entity.PerfilUsuario
 import br.com.cashflow.usecase.acesso.port.AcessoOutputPort
+import br.com.cashflow.usecase.tenant.model.TenantSchemaInfo
 import br.com.cashflow.usecase.tenant.port.TenantOutputPort
 import br.com.cashflow.usecase.user_authentication.legacy.LegacyPasswordSupport
 import br.com.cashflow.usecase.user_authentication.model.TokenClaimsModel
@@ -20,6 +21,7 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.security.crypto.password.PasswordEncoder
+import java.util.UUID
 
 class AuthServiceTest {
     private val acessoOutputPort: AcessoOutputPort = mockk()
@@ -44,6 +46,8 @@ class AuthServiceTest {
     fun `login returns LoginResponse when credentials are valid with BCrypt`() {
         val email = "user@test.com"
         val senha = "password123"
+        val tenantId = UUID.randomUUID()
+        val schemaInfo = TenantSchemaInfo(tenantId = tenantId, schemaName = "tenant_12345678000190")
         val bcryptHash = "\$2a\$12\$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.VTtP2o1eR1qK2u"
         val acesso =
             Acesso(
@@ -53,11 +57,24 @@ class AuthServiceTest {
                 ativo = true,
                 tipoAcesso = PerfilUsuario.ADMIN.name,
             )
+        every { tenantOutputPort.findTenantSchemaByEmail(email) } returns schemaInfo
+        every { tenantOutputPort.findById(tenantId) } returns
+            br.com.cashflow.usecase.tenant.entity.Tenant(
+                id = tenantId,
+                tradeName = "Church",
+                cnpj = "1",
+                street = "S",
+                number = "1",
+                city = "C",
+                state = "SP",
+                zipCode = "00000000",
+                schemaName = schemaInfo.schemaName,
+            )
         every { acessoOutputPort.findByEmail(email) } returns acesso
         every { passwordEncoder.matches(senha, acesso.password) } returns true
-        every { acessoOutputPort.findTenantIdByEmail(email) } returns null
-        every { tokenProvider.generateToken(acesso, null) } returns "jwt-token"
-        every { tokenProvider.generateRefreshToken(acesso, null) } returns "refresh-token"
+        every { acessoOutputPort.findTenantIdByEmail(email) } returns tenantId
+        every { tokenProvider.generateToken(acesso, tenantId) } returns "jwt-token"
+        every { tokenProvider.generateRefreshToken(acesso, tenantId) } returns "refresh-token"
 
         val result = service.login(email, senha)
 
@@ -65,13 +82,14 @@ class AuthServiceTest {
         assertThat(result.refreshToken).isEqualTo("refresh-token")
         assertThat(result.usuario.email).isEqualTo(email)
         assertThat(result.usuario.perfil).isEqualTo("ADMIN")
-        verify(exactly = 1) { acessoOutputPort.findByEmail(email) }
+        verify { tenantOutputPort.findTenantSchemaByEmail(email) }
+        verify { acessoOutputPort.findByEmail(email) }
         verify(exactly = 0) { acessoOutputPort.updatePassword(any(), any()) }
     }
 
     @Test
-    fun `login throws InvalidCredentialsException when email not found`() {
-        every { acessoOutputPort.findByEmail("unknown@test.com") } returns null
+    fun `login throws InvalidCredentialsException when email not in user_tenant_map`() {
+        every { tenantOutputPort.findTenantSchemaByEmail("unknown@test.com") } returns null
 
         assertThatThrownBy { service.login("unknown@test.com", "password") }
             .isInstanceOf(InvalidCredentialsException::class.java)
@@ -81,6 +99,20 @@ class AuthServiceTest {
     fun `login returns LoginResponse when credentials are valid with SHA-256 legacy hash`() {
         val email = "legacy@test.com"
         val senha = "senha123"
+        val tenantId = UUID.randomUUID()
+        every { tenantOutputPort.findTenantSchemaByEmail(email) } returns TenantSchemaInfo(tenantId, "tenant_xxx")
+        every { tenantOutputPort.findById(tenantId) } returns
+            br.com.cashflow.usecase.tenant.entity.Tenant(
+                id = tenantId,
+                tradeName = "Church",
+                cnpj = "1",
+                street = "S",
+                number = "1",
+                city = "C",
+                state = "SP",
+                zipCode = "00000000",
+                schemaName = "tenant_xxx",
+            )
         val sha256Hash = LegacyPasswordSupport.sha256Hex(senha)!!
         val acesso =
             Acesso(
@@ -94,15 +126,15 @@ class AuthServiceTest {
         every { passwordEncoder.encode(senha) } returns
             "\$2a\$12\$migratedBcryptHashPlaceholder1234567890123456789012"
         every { acessoOutputPort.updatePassword(email, any()) } returns Unit
-        every { acessoOutputPort.findTenantIdByEmail(email) } returns null
-        every { tokenProvider.generateToken(acesso, null) } returns "jwt-token"
-        every { tokenProvider.generateRefreshToken(acesso, null) } returns "refresh-token"
+        every { acessoOutputPort.findTenantIdByEmail(email) } returns tenantId
+        every { tokenProvider.generateToken(acesso, tenantId) } returns "jwt-token"
+        every { tokenProvider.generateRefreshToken(acesso, tenantId) } returns "refresh-token"
 
         val result = service.login(email, senha)
 
         assertThat(result.token).isEqualTo("jwt-token")
         assertThat(result.usuario.email).isEqualTo(email)
-        verify(exactly = 1) {
+        verify {
             acessoOutputPort.updatePassword(
                 email,
                 "\$2a\$12\$migratedBcryptHashPlaceholder1234567890123456789012",
@@ -114,6 +146,7 @@ class AuthServiceTest {
     fun `login with SHA-256 triggers migration to BCrypt`() {
         val email = "migrate@test.com"
         val senha = "admin"
+        every { tenantOutputPort.findTenantSchemaByEmail(email) } returns TenantSchemaInfo(UUID.randomUUID(), "tenant_xxx")
         val sha256Hash = "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918"
         val acesso =
             Acesso(
@@ -139,6 +172,7 @@ class AuthServiceTest {
     @Test
     fun `login throws InvalidCredentialsException when password does not match`() {
         val email = "user@test.com"
+        every { tenantOutputPort.findTenantSchemaByEmail(email) } returns TenantSchemaInfo(UUID.randomUUID(), "tenant_xxx")
         val storedSha256 = LegacyPasswordSupport.sha256Hex("correct")!!
         val acesso =
             Acesso(
@@ -157,6 +191,7 @@ class AuthServiceTest {
     @Test
     fun `login throws InactiveUserException when user is inactive`() {
         val email = "user@test.com"
+        every { tenantOutputPort.findTenantSchemaByEmail(email) } returns TenantSchemaInfo(UUID.randomUUID(), "tenant_xxx")
         val bcryptHash = "\$2a\$12\$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.VTtP2o1eR1qK2u"
         val acesso =
             Acesso(

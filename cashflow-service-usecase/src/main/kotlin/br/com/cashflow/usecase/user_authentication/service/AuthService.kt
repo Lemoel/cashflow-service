@@ -5,6 +5,7 @@ import br.com.cashflow.commons.exception.InactiveUserException
 import br.com.cashflow.commons.exception.InvalidCredentialsException
 import br.com.cashflow.commons.exception.ResourceNotFoundException
 import br.com.cashflow.commons.exception.WrongPasswordException
+import br.com.cashflow.commons.tenant.TenantContext
 import br.com.cashflow.usecase.acesso.entity.Acesso
 import br.com.cashflow.usecase.acesso.port.AcessoOutputPort
 import br.com.cashflow.usecase.tenant.port.TenantOutputPort
@@ -31,6 +32,9 @@ class AuthService(
         email: String,
         password: String,
     ): LoginResponseModel {
+        val schemaInfo =
+            tenantOutputPort.findTenantSchemaByEmail(email) ?: throw InvalidCredentialsException()
+        TenantContext.setSchema(schemaInfo.schemaName)
         val acesso =
             acessoOutputPort.findByEmail(email)
                 ?: throw InvalidCredentialsException()
@@ -48,6 +52,11 @@ class AuthService(
         val claims =
             tokenProvider.validateRefreshToken(refreshToken) ?: throw InvalidCredentialsException()
         val email = claims.sub
+        claims.tenantId?.let { tenantId ->
+            tenantOutputPort.findById(tenantId)?.schemaName?.let { schemaName ->
+                TenantContext.setSchema(schemaName)
+            }
+        }
         val acesso = acessoOutputPort.findByEmail(email) ?: throw InvalidCredentialsException()
         if (!acesso.ativo) throw InactiveUserException()
         return buildLoginResponse(acesso, email)

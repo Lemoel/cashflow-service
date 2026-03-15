@@ -3,6 +3,7 @@ package br.com.cashflow.usecase.tenant.adapter.driven.persistence
 import br.com.cashflow.usecase.tenant.entity.Tenant
 import br.com.cashflow.usecase.tenant.model.TenantFilter
 import br.com.cashflow.usecase.tenant.model.TenantPage
+import br.com.cashflow.usecase.tenant.model.TenantSchemaInfo
 import br.com.cashflow.usecase.tenant.port.TenantOutputPort
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
@@ -11,6 +12,7 @@ import java.util.UUID
 @Component
 class TenantPersistenceAdapter(
     private val tenantRepository: TenantRepository,
+    private val tenantJdbcRepository: TenantJdbcRepository,
 ) : TenantOutputPort {
     override fun save(tenant: Tenant): Tenant = tenantRepository.save(tenant)
 
@@ -46,4 +48,8 @@ class TenantPersistenceAdapter(
     override fun deleteById(id: UUID) {
         tenantRepository.deleteById(id)
     }
+
+    override fun findTenantSchemaByEmail(email: String): TenantSchemaInfo? = tenantJdbcRepository.findTenantSchemaByEmail(email)
+
+    override fun findAllSchemaNames(): List<String> = tenantRepository.findAllSchemaNames()
 }

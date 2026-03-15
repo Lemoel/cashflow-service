@@ -7,6 +7,7 @@ import br.com.cashflow.usecase.tenant.model.TenantPage
 import br.com.cashflow.usecase.tenant.port.TenantOutputPort
 import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantCreateRequestDto
 import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantUpdateRequestDto
+import br.com.cashflow.usecase.tenant_management.port.TenantSchemaProvisionerPort
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -20,11 +21,12 @@ import java.util.UUID
 
 class TenantManagementServiceTest {
     private val tenantOutputPort: TenantOutputPort = mockk()
+    private val tenantSchemaProvisioner: TenantSchemaProvisionerPort = mockk()
     private lateinit var service: TenantManagementService
 
     @BeforeEach
     fun setUp() {
-        service = TenantManagementService(tenantOutputPort)
+        service = TenantManagementService(tenantOutputPort, tenantSchemaProvisioner)
     }
 
     @Test
@@ -49,14 +51,17 @@ class TenantManagementServiceTest {
                 city = "CITY",
                 state = "SP",
                 zipCode = "01234567",
+                schemaName = "tenant_12345678000190",
             )
         every { tenantOutputPort.existsByCnpjExcludingId("12345678000190", null) } returns false
         every { tenantOutputPort.save(match { true }) } returns saved
+        every { tenantSchemaProvisioner.provision(any()) } just runs
 
         val result = service.create(request)
 
         assertThat(result).isEqualTo(saved)
         verify(exactly = 1) { tenantOutputPort.save(match { true }) }
+        verify(exactly = 1) { tenantSchemaProvisioner.provision("tenant_12345678000190") }
     }
 
     @Test

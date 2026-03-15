@@ -17,7 +17,7 @@
 
 ## Banco de Dados
 
-- PostgreSQL; criar banco (ex.: `CREATE DATABASE eventosdb;`) antes de rodar a aplicação.
+- PostgreSQL; criar banco (ex.: `CREATE DATABASE cahsflowdb;`) antes de rodar a aplicação.
 - Flyway: migrations em `database/src/main/resources/db/migration/` (V001, V002, V003...).
 - Spring Data JDBC não gera DDL; Flyway é a fonte da verdade do schema.
 

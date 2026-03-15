@@ -11,6 +11,7 @@ import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantUpda
 import br.com.cashflow.usecase.tenant_management.adapter.external.dto.applyTo
 import br.com.cashflow.usecase.tenant_management.adapter.external.dto.toEntity
 import br.com.cashflow.usecase.tenant_management.port.TenantManagementInputPort
+import br.com.cashflow.usecase.tenant_management.port.TenantSchemaProvisionerPort
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -21,6 +22,7 @@ private const val CNPJ_DIGITS_LENGTH = 14
 @Service
 class TenantManagementService(
     private val tenantOutputPort: TenantOutputPort,
+    private val tenantSchemaProvisioner: TenantSchemaProvisionerPort,
 ) : TenantManagementInputPort {
     override fun create(request: TenantCreateRequestDto): Tenant {
         val entity = request.toEntity()
@@ -28,7 +30,9 @@ class TenantManagementService(
         if (tenantOutputPort.existsByCnpjExcludingId(entity.cnpj, null)) {
             throw ConflictException("CNPJ already registered")
         }
-        return tenantOutputPort.save(entity)
+        val saved = tenantOutputPort.save(entity)
+        tenantSchemaProvisioner.provision(saved.schemaName)
+        return saved
     }
 
     override fun update(

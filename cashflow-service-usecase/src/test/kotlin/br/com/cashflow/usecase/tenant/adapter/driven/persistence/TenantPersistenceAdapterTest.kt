@@ -15,11 +15,12 @@ import java.util.UUID
 
 class TenantPersistenceAdapterTest {
     private val tenantRepository: TenantRepository = mockk()
+    private val tenantJdbcRepository: TenantJdbcRepository = mockk()
     private lateinit var adapter: TenantPersistenceAdapter
 
     @BeforeEach
     fun setUp() {
-        adapter = TenantPersistenceAdapter(tenantRepository)
+        adapter = TenantPersistenceAdapter(tenantRepository, tenantJdbcRepository)
     }
 
     @Test

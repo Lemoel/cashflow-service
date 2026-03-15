@@ -16,7 +16,7 @@ interface LancamentoRepository : CrudRepository<Lancamento, UUID> {
     @Modifying
     @Query(
         """
-        INSERT INTO eventos.lancamento (
+        INSERT INTO lancamento (
             id, nsu, tid, codigo_transacao, parcela, tipo_evento, meio_captura, valor_parcela,
             meio_pagamento, estabelecimento, pagamento_prazo, taxa_intermediacao,
             numero_serie_leitor, valor_total_transacao, data_inicial_transacao, hora_inicial_transacao,

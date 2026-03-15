@@ -46,9 +46,9 @@ class CongregationRepositoryImplTest {
         assertThat(result.content).isEmpty()
         assertThat(result.totalElements).isEqualTo(0L)
         assertThat(result.pageable).isEqualTo(pageable)
-        assertThat(countSqlSlot.captured).contains("SELECT COUNT(*) FROM eventos.congregacao c")
+        assertThat(countSqlSlot.captured).contains("SELECT COUNT(*) FROM congregacao c")
         assertThat(countSqlSlot.captured).doesNotContain("WHERE")
-        assertThat(selectSqlSlot.captured).contains("SELECT * FROM eventos.congregacao c")
+        assertThat(selectSqlSlot.captured).contains("SELECT * FROM congregacao c")
         assertThat(selectSqlSlot.captured).doesNotContain("WHERE")
         assertThat(selectSqlSlot.captured).contains("ORDER BY c.nome ASC LIMIT ? OFFSET ?")
         verify(exactly = 1) { jdbcTemplate.queryForObject(any(), Long::class.java, *anyVararg()) }

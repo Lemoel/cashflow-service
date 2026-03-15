@@ -87,7 +87,7 @@ class MaquinaRepositoryImplTest {
         assertThat(result.items).isEmpty()
         assertThat(result.total).isEqualTo(0L)
         assertThat(countSqlSlot.captured).contains("SELECT COUNT(*)")
-        assertThat(countSqlSlot.captured).contains("FROM eventos.maquina m")
+        assertThat(countSqlSlot.captured).contains("FROM maquina m")
         assertThat(countSqlSlot.captured).doesNotContain("WHERE")
     }
 

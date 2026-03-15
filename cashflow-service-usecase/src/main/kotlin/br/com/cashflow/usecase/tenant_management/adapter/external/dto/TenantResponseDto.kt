@@ -20,6 +20,7 @@ fun TenantCreateRequestDto.toEntity(): Tenant {
         phone = phone?.trim(),
         email = email?.trim()?.lowercase(),
         active = active,
+        schemaName = "tenant_$digitsOnly",
     )
 }
 

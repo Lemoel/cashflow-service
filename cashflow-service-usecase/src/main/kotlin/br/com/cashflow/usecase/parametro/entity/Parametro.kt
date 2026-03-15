@@ -6,7 +6,7 @@ import org.springframework.data.relational.core.mapping.Table
 import java.time.Instant
 import java.util.UUID
 
-@Table(value = "parametro", schema = "eventos")
+@Table("parametro")
 class Parametro(
     @Id
     var id: UUID? = null,

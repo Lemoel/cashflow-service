@@ -14,7 +14,7 @@
 Create the database before running:
 
 ```sql
-CREATE DATABASE eventosdb;
+CREATE DATABASE cahsflowdb;
 ```
 
 ## Commands (Makefile)

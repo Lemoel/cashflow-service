@@ -12,7 +12,7 @@ interface MaquinaHistoricoRepository :
     MaquinaHistoricoRepositoryCustom {
     @Modifying
     @Query(
-        "UPDATE eventos.maquina_historico SET data_fim = CURRENT_TIMESTAMP WHERE maquina_id = :maquinaId AND data_fim IS NULL",
+        "UPDATE maquina_historico SET data_fim = CURRENT_TIMESTAMP WHERE maquina_id = :maquinaId AND data_fim IS NULL",
     )
     fun fecharPeriodoAtual(
         @Param("maquinaId") maquinaId: UUID,

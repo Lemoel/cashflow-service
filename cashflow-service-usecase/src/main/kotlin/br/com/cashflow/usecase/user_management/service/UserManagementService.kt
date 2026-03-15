@@ -55,6 +55,9 @@ class UserManagementService(
             )
         acessoOutputPort.save(acesso)
         acessoOutputPort.setCongregacaoForEmail(email, command.congregacaoId)
+        val congregation = requireNotNull(congregationOutputPort.findById(command.congregacaoId))
+        val tenantId = requireNotNull(congregation.tenantId) { "Congregation must have tenantId" }
+        acessoOutputPort.insertUserTenantMap(email, tenantId)
         val usuario =
             requireNotNull(acessoOutputPort.findListItemByEmail(email)) {
                 "Usuário criado mas não encontrado"

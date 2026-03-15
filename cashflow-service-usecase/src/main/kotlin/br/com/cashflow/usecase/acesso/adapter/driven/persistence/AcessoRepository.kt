@@ -12,8 +12,8 @@ interface AcessoRepository :
     AcessoRepositoryCustom {
     @Query(
         """
-        SELECT c.tenant_id FROM eventos.acesso_congregacao ac
-        INNER JOIN eventos.congregacao c ON c.id = ac.congregacao_id
+        SELECT c.tenant_id FROM acesso_congregacao ac
+        INNER JOIN congregacao c ON c.id = ac.congregacao_id
         WHERE ac.email = :email
         LIMIT 1
         """,
@@ -27,9 +27,9 @@ interface AcessoRepository :
             """
             SELECT a.email, a.nome, a.telefone, a.tipo_acesso, a.ativo, a.data, a.mod_date_time,
                    c.id AS congregacao_id, c.nome AS congregacao_nome
-            FROM eventos.acesso a
-            LEFT JOIN eventos.acesso_congregacao ac ON a.email = ac.email
-            LEFT JOIN eventos.congregacao c ON c.id = ac.congregacao_id
+            FROM acesso a
+            LEFT JOIN acesso_congregacao ac ON a.email = ac.email
+            LEFT JOIN congregacao c ON c.id = ac.congregacao_id
             WHERE a.email = :email
             LIMIT 1
             """,

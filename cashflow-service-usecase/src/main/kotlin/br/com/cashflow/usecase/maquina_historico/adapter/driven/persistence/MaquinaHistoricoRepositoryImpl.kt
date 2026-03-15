@@ -25,9 +25,9 @@ class MaquinaHistoricoRepositoryImpl(
                 d.nome AS departamento_nome,
                 h.data_inicio,
                 h.data_fim
-            FROM eventos.maquina_historico h
-            LEFT JOIN eventos.congregacao c ON h.congregacao_id = c.id
-            LEFT JOIN eventos.departamento d ON h.departamento_id = d.id
+            FROM maquina_historico h
+            LEFT JOIN congregacao c ON h.congregacao_id = c.id
+            LEFT JOIN departamento d ON h.departamento_id = d.id
             WHERE h.maquina_id = ?
             ORDER BY h.data_inicio DESC
             """.trimIndent()

@@ -25,4 +25,6 @@ interface TenantRepositoryCustom {
         filter: TenantFilter?,
         pageable: Pageable,
     ): Page<Tenant>
+
+    fun findAllSchemaNames(): List<String>
 }

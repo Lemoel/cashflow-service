@@ -245,13 +245,13 @@ class AcessoPersistenceAdapterTest {
 
         verify(exactly = 1) {
             jdbcTemplate.update(
-                "DELETE FROM eventos.acesso_congregacao WHERE email = ?",
+                "DELETE FROM acesso_congregacao WHERE email = ?",
                 email,
             )
         }
         verify(exactly = 1) {
             jdbcTemplate.update(
-                "INSERT INTO eventos.acesso_congregacao (email, congregacao_id) VALUES (?, ?)",
+                "INSERT INTO acesso_congregacao (email, congregacao_id) VALUES (?, ?)",
                 email,
                 congId,
             )
