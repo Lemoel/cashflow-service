@@ -3,6 +3,7 @@ package br.com.cashflow.usecase.tenant.port
 import br.com.cashflow.usecase.tenant.entity.Tenant
 import br.com.cashflow.usecase.tenant.model.TenantFilter
 import br.com.cashflow.usecase.tenant.model.TenantPage
+import br.com.cashflow.usecase.tenant.model.TenantSchemaInfo
 import java.util.UUID
 
 interface TenantOutputPort {
@@ -24,4 +25,8 @@ interface TenantOutputPort {
     fun findActiveOrderByTradeName(): List<Tenant>
 
     fun deleteById(id: UUID)
+
+    fun findTenantSchemaByEmail(email: String): TenantSchemaInfo?
+
+    fun findAllSchemaNames(): List<String>
 }

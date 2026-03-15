@@ -22,9 +22,9 @@ class AcessoRepositoryImpl(
             """
             SELECT a.email, a.nome, a.telefone, a.tipo_acesso, a.ativo, a.data, a.mod_date_time,
                    c.id AS congregacao_id, c.nome AS congregacao_nome
-            FROM eventos.acesso a
-            LEFT JOIN eventos.acesso_congregacao ac ON a.email = ac.email
-            LEFT JOIN eventos.congregacao c ON c.id = ac.congregacao_id
+            FROM acesso a
+            LEFT JOIN acesso_congregacao ac ON a.email = ac.email
+            LEFT JOIN congregacao c ON c.id = ac.congregacao_id
             ${where.clause}
             ORDER BY a.nome ASC
             LIMIT ? OFFSET ?
@@ -38,8 +38,8 @@ class AcessoRepositoryImpl(
         val sql =
             """
             SELECT COUNT(DISTINCT a.email)
-            FROM eventos.acesso a
-            LEFT JOIN eventos.acesso_congregacao ac ON a.email = ac.email
+            FROM acesso a
+            LEFT JOIN acesso_congregacao ac ON a.email = ac.email
             ${where.clause}
             """.trimIndent()
         return jdbcTemplate.queryForObject(sql, Long::class.java, *where.params.toTypedArray()) ?: 0L

@@ -1,5 +1,6 @@
 package br.com.cashflow.usecase.tenant_management.service
 
+import br.com.cashflow.commons.exception.BusinessException
 import br.com.cashflow.commons.exception.ConflictException
 import br.com.cashflow.commons.exception.ResourceNotFoundException
 import br.com.cashflow.usecase.tenant.entity.Tenant
@@ -11,9 +12,13 @@ import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantUpda
 import br.com.cashflow.usecase.tenant_management.adapter.external.dto.applyTo
 import br.com.cashflow.usecase.tenant_management.adapter.external.dto.toEntity
 import br.com.cashflow.usecase.tenant_management.port.TenantManagementInputPort
+import br.com.cashflow.usecase.tenant_management.port.TenantSchemaProvisionerPort
+import org.slf4j.LoggerFactory
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.support.TransactionSynchronization
+import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.util.UUID
 
 private const val CNPJ_DIGITS_LENGTH = 14
@@ -21,14 +26,45 @@ private const val CNPJ_DIGITS_LENGTH = 14
 @Service
 class TenantManagementService(
     private val tenantOutputPort: TenantOutputPort,
+    private val tenantSchemaProvisioner: TenantSchemaProvisionerPort,
 ) : TenantManagementInputPort {
+    @Transactional
     override fun create(request: TenantCreateRequestDto): Tenant {
         val entity = request.toEntity()
         requireCnpjLength(entity.cnpj)
         if (tenantOutputPort.existsByCnpjExcludingId(entity.cnpj, null)) {
             throw ConflictException("CNPJ already registered")
         }
-        return tenantOutputPort.save(entity)
+        val saved = tenantOutputPort.save(entity)
+        val schemaNameToProvision = saved.schemaName
+        require(schemaNameToProvision.isNotBlank()) { "Tenant schema name is blank" }
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(
+                object : TransactionSynchronization {
+                    override fun afterCommit() {
+                        runProvision(schemaNameToProvision)
+                    }
+                },
+            )
+        } else {
+            runProvision(schemaNameToProvision)
+        }
+        return saved
+    }
+
+    private fun runProvision(schemaName: String) {
+        try {
+            tenantSchemaProvisioner.provision(schemaName)
+        } catch (e: Exception) {
+            log.error("Falha ao provisionar schema do tenant: $schemaName", e)
+            throw BusinessException(
+                "Falha ao provisionar schema do tenant: ${e.message ?: e.javaClass.simpleName}",
+            )
+        }
+    }
+
+    companion object {
+        private val log = LoggerFactory.getLogger(TenantManagementService::class.java)
     }
 
     override fun update(

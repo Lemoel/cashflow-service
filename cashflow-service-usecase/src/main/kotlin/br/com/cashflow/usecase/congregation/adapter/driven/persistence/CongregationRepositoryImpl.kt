@@ -44,12 +44,12 @@ class CongregationRepositoryImpl(
                 " WHERE " +
                     conditions.joinToString(" AND ")
             }
-        val countSql = "SELECT COUNT(*) FROM eventos.congregacao c$whereClause"
+        val countSql = "SELECT COUNT(*) FROM congregacao c$whereClause"
         val total =
             jdbcTemplate.queryForObject(countSql, Long::class.java, *params.toTypedArray()) ?: 0L
         params.add(pageable.pageSize)
         params.add(pageable.offset)
-        val selectSql = "SELECT * FROM eventos.congregacao c$whereClause ORDER BY c.nome ASC LIMIT ? OFFSET ?"
+        val selectSql = "SELECT * FROM congregacao c$whereClause ORDER BY c.nome ASC LIMIT ? OFFSET ?"
         val items = jdbcTemplate.query(selectSql, CONGREGATION_ROW_MAPPER, *params.toTypedArray())
         return PageImpl(items, pageable, total)
     }

@@ -7,7 +7,7 @@ import org.springframework.data.relational.core.mapping.Table
 import java.time.Instant
 import java.util.UUID
 
-@Table(value = "maquina", schema = "eventos")
+@Table("maquina")
 class Maquina(
     @Id
     var id: UUID? = null,

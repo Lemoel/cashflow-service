@@ -1,5 +1,6 @@
 package br.com.cashflow.app.config
 
+import br.com.cashflow.app.filter.TenantContextFilter
 import br.com.cashflow.app.security.ApiKeyAuthFilter
 import br.com.cashflow.app.security.JwtAuthenticationFilter
 import br.com.cashflow.commons.auth.CurrentUser
@@ -55,7 +56,11 @@ class SecurityConfig(
     private val pagbankApiKey: String,
 ) {
     @Bean
-    fun jwtAuthenticationFilter(): JwtAuthenticationFilter = JwtAuthenticationFilter(tokenProvider, acessoOutputPort, jsonMapper)
+    fun tenantContextFilter(): TenantContextFilter = TenantContextFilter()
+
+    @Bean
+    fun jwtAuthenticationFilter(tenantSchemaResolver: br.com.cashflow.app.tenant.TenantSchemaResolver): JwtAuthenticationFilter =
+        JwtAuthenticationFilter(tokenProvider, acessoOutputPort, tenantSchemaResolver, jsonMapper)
 
     @Bean
     fun apiKeyAuthFilter(): ApiKeyAuthFilter = ApiKeyAuthFilter(pagbankApiKey)
@@ -64,6 +69,7 @@ class SecurityConfig(
     fun securityFilterChain(
         http: HttpSecurity,
         securityContextRepository: SecurityContextRepository,
+        tenantContextFilter: TenantContextFilter,
         jwtAuthenticationFilter: JwtAuthenticationFilter,
         apiKeyAuthFilter: ApiKeyAuthFilter,
     ): SecurityFilterChain {
@@ -77,6 +83,8 @@ class SecurityConfig(
             it.requireExplicitSave(true)
         }
         if (securityEnabled) {
+            http.addFilterBefore(tenantContextFilter, UsernamePasswordAuthenticationFilter::class.java)
+            http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
             http.authorizeHttpRequests {
                 it.requestMatchers("/actuator/**").permitAll()
                 it
@@ -89,13 +97,14 @@ class SecurityConfig(
                         org.springframework.http.HttpMethod.POST,
                         "/api/v1/auth/refresh",
                     ).permitAll()
+                it
+                    .requestMatchers(
+                        org.springframework.http.HttpMethod.POST,
+                        "/api/v1/bootstrap",
+                    ).permitAll()
                 it.anyRequest().authenticated()
             }
-            http.addFilterBefore(
-                jwtAuthenticationFilter,
-                UsernamePasswordAuthenticationFilter::class.java,
-            )
-            http.addFilterAfter(apiKeyAuthFilter, JwtAuthenticationFilter::class.java)
+            http.addFilterAfter(apiKeyAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
             http.exceptionHandling {
                 it.authenticationEntryPoint(json401EntryPoint())
             }

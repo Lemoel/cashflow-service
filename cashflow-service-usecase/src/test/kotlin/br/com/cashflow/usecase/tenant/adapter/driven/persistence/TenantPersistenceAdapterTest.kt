@@ -1,6 +1,7 @@
 package br.com.cashflow.usecase.tenant.adapter.driven.persistence
 
 import br.com.cashflow.usecase.tenant.entity.Tenant
+import br.com.cashflow.usecase.tenant.model.TenantSchemaInfo
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -15,11 +16,12 @@ import java.util.UUID
 
 class TenantPersistenceAdapterTest {
     private val tenantRepository: TenantRepository = mockk()
+    private val tenantJdbcRepository: TenantJdbcRepository = mockk()
     private lateinit var adapter: TenantPersistenceAdapter
 
     @BeforeEach
     fun setUp() {
-        adapter = TenantPersistenceAdapter(tenantRepository)
+        adapter = TenantPersistenceAdapter(tenantRepository, tenantJdbcRepository)
     }
 
     @Test
@@ -169,5 +171,39 @@ class TenantPersistenceAdapterTest {
         adapter.deleteById(id)
 
         verify(exactly = 1) { tenantRepository.deleteById(id) }
+    }
+
+    @Test
+    fun `findTenantSchemaByEmail delegates to jdbc repository and returns info when found`() {
+        val email = "admin@example.com"
+        val info = TenantSchemaInfo(tenantId = UUID.randomUUID(), schemaName = "tenant_12345678000190")
+        every { tenantJdbcRepository.findTenantSchemaByEmail(email) } returns info
+
+        val result = adapter.findTenantSchemaByEmail(email)
+
+        assertThat(result).isEqualTo(info)
+        verify(exactly = 1) { tenantJdbcRepository.findTenantSchemaByEmail(email) }
+    }
+
+    @Test
+    fun `findTenantSchemaByEmail returns null when jdbc repository returns null`() {
+        val email = "unknown@example.com"
+        every { tenantJdbcRepository.findTenantSchemaByEmail(email) } returns null
+
+        val result = adapter.findTenantSchemaByEmail(email)
+
+        assertThat(result).isNull()
+        verify(exactly = 1) { tenantJdbcRepository.findTenantSchemaByEmail(email) }
+    }
+
+    @Test
+    fun `findAllSchemaNames delegates to repository and returns list`() {
+        val schemaNames = listOf("tenant_test", "tenant_foo")
+        every { tenantRepository.findAllSchemaNames() } returns schemaNames
+
+        val result = adapter.findAllSchemaNames()
+
+        assertThat(result).isEqualTo(schemaNames)
+        verify(exactly = 1) { tenantRepository.findAllSchemaNames() }
     }
 }

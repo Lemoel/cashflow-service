@@ -28,10 +28,10 @@ class MaquinaRepositoryImpl(
                 m.version,
                 m.created_at,
                 m.updated_at
-            FROM eventos.maquina m
-            LEFT JOIN eventos.congregacao c ON m.congregacao_id = c.id
-            LEFT JOIN eventos.banco b ON m.banco_id = b.id
-            LEFT JOIN eventos.departamento d ON m.departamento_id = d.id
+            FROM maquina m
+            LEFT JOIN congregacao c ON m.congregacao_id = c.id
+            LEFT JOIN banco b ON m.banco_id = b.id
+            LEFT JOIN departamento d ON m.departamento_id = d.id
             WHERE m.id = ?
             """.trimIndent()
         val list = jdbcTemplate.query(sql, MAQUINA_COM_CONGREGACAO_ROW_MAPPER, id)
@@ -134,10 +134,10 @@ class MaquinaRepositoryImpl(
     companion object {
         private val MAQUINA_FROM_CLAUSE =
             """
-            FROM eventos.maquina m
-            LEFT JOIN eventos.congregacao c ON m.congregacao_id = c.id
-            LEFT JOIN eventos.banco b ON m.banco_id = b.id
-            LEFT JOIN eventos.departamento d ON m.departamento_id = d.id
+            FROM maquina m
+            LEFT JOIN congregacao c ON m.congregacao_id = c.id
+            LEFT JOIN banco b ON m.banco_id = b.id
+            LEFT JOIN departamento d ON m.departamento_id = d.id
             """.trimIndent()
 
         private val MAQUINA_SELECT_COLUMNS =

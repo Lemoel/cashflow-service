@@ -5,7 +5,7 @@ import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 import java.time.Instant
 
-@Table(value = "acesso", schema = "eventos")
+@Table("acesso")
 class Acesso(
     @Id
     var email: String? = null,

@@ -1,3 +1,3 @@
-DELETE FROM eventos.departamento;
-DELETE FROM eventos.congregacao;
-DELETE FROM core.tenants;
+SET search_path TO tenant_test;
+DELETE FROM departamento;
+DELETE FROM congregacao;

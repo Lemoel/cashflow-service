@@ -144,4 +144,57 @@ class TenantRepositoryImplTest {
         assertThat(result.content[0].tradeName).isEqualTo("T")
         assertThat(result.totalElements).isEqualTo(1L)
     }
+
+    @Test
+    fun `findAllSchemaNames delegates to queryForList and returns schema names`() {
+        every {
+            jdbcTemplate.queryForList("SELECT schema_name FROM core.tenants", String::class.java)
+        } returns listOf("tenant_test", "tenant_foo")
+
+        val result = repository.findAllSchemaNames()
+
+        assertThat(result).containsExactly("tenant_test", "tenant_foo")
+        verify(exactly = 1) {
+            jdbcTemplate.queryForList("SELECT schema_name FROM core.tenants", String::class.java)
+        }
+    }
+
+    @Test
+    fun `findFiltered with blank nome does not add nome condition`() {
+        val countSqlSlot = slot<String>()
+        every {
+            jdbcTemplate.queryForObject(
+                capture(countSqlSlot),
+                Long::class.java,
+                *anyVararg(),
+            )
+        } returns 0L
+        every {
+            jdbcTemplate.query(
+                any(),
+                any<RowMapper<Tenant>>(),
+                *anyVararg(),
+            )
+        } returns emptyList()
+
+        val filter = TenantFilter(nome = "  ", cnpj = null, active = null)
+        repository.findFiltered(filter, PageRequest.of(0, 10))
+
+        assertThat(countSqlSlot.captured).doesNotContain("nome_fantasia ILIKE")
+    }
+
+    @Test
+    fun `findFiltered when count returns null uses zero as total`() {
+        every {
+            jdbcTemplate.queryForObject(any(), Long::class.java, *anyVararg())
+        } returns null
+        every {
+            jdbcTemplate.query(any(), any<RowMapper<Tenant>>(), *anyVararg())
+        } returns emptyList()
+
+        val result = repository.findFiltered(null, PageRequest.of(0, 10))
+
+        assertThat(result.totalElements).isEqualTo(0L)
+        assertThat(result.content).isEmpty()
+    }
 }

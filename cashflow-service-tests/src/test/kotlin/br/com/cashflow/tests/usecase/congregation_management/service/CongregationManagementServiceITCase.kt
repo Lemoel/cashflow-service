@@ -6,11 +6,11 @@ import br.com.cashflow.commons.exception.ResourceNotFoundException
 import br.com.cashflow.tests.base.postgresql.PostgresqlBaseTest
 import br.com.cashflow.tests.base.postgresql.annotations.SqlSetUp
 import br.com.cashflow.tests.base.postgresql.annotations.SqlTearDown
+import br.com.cashflow.tests.config.TestTenantConfig
 import br.com.cashflow.usecase.congregation.model.CongregationFilterModel
 import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationCreateRequestDto
 import br.com.cashflow.usecase.congregation_management.adapter.external.dto.CongregationUpdateRequestDto
 import br.com.cashflow.usecase.congregation_management.port.CongregationManagementInputPort
-import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantCreateRequestDto
 import br.com.cashflow.usecase.tenant_management.port.TenantManagementInputPort
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -27,20 +27,7 @@ class CongregationManagementServiceITCase : PostgresqlBaseTest() {
     @Autowired
     private lateinit var tenantManagement: TenantManagementInputPort
 
-    private fun createTenant(): UUID {
-        val request =
-            TenantCreateRequestDto(
-                tradeName = "Tenant Cong IT",
-                cnpj = "12345678000190",
-                street = "Rua",
-                number = "1",
-                city = "Cidade",
-                state = "SP",
-                zipCode = "01234567",
-            )
-        val created = tenantManagement.create(request)
-        return created.id!!
-    }
+    private fun createTenant(): UUID = TestTenantConfig.TEST_TENANT_ID
 
     @Test
     fun should_CreateFindUpdateFindAllFindListForDropdownAndDelete_When_FullCrud() {

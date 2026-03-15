@@ -23,7 +23,7 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_DB: eventosdb
+          POSTGRES_DB: cashflowdb
           POSTGRES_USER: test
           POSTGRES_PASSWORD: test
         ports:

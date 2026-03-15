@@ -45,9 +45,9 @@ class ParametroRepositoryImplTest {
 
         assertThat(result.content).isEmpty()
         assertThat(result.totalElements).isEqualTo(0L)
-        assertThat(countSqlSlot.captured).contains("SELECT COUNT(*) FROM eventos.parametro p")
+        assertThat(countSqlSlot.captured).contains("SELECT COUNT(*) FROM parametro p")
         assertThat(countSqlSlot.captured).doesNotContain("WHERE")
-        assertThat(selectSqlSlot.captured).contains("SELECT * FROM eventos.parametro p")
+        assertThat(selectSqlSlot.captured).contains("SELECT * FROM parametro p")
         assertThat(selectSqlSlot.captured).contains("ORDER BY p.chave ASC LIMIT ? OFFSET ?")
         verify(exactly = 1) { jdbcTemplate.queryForObject(any(), Long::class.java, *anyVararg()) }
         verify(exactly = 1) { jdbcTemplate.query(any(), any<RowMapper<Parametro>>(), *anyVararg()) }

@@ -51,6 +51,8 @@ class TenantRepositoryImpl(
         return PageImpl(items, pageable, total)
     }
 
+    override fun findAllSchemaNames(): List<String> = jdbcTemplate.queryForList("SELECT schema_name FROM core.tenants", String::class.java)
+
     companion object {
         private val TENANT_ROW_MAPPER =
             RowMapper<Tenant> { rs: ResultSet, _: Int ->
@@ -73,6 +75,7 @@ class TenantRepositoryImpl(
                     modUserId = rs.getString("mod_user_id"),
                     createdAt = timestamp(rs, "created_at"),
                     updatedAt = timestamp(rs, "updated_at"),
+                    schemaName = rs.getString("schema_name") ?: "",
                 )
             }
 

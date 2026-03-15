@@ -13,11 +13,11 @@
 
 - Usar **springboot4-dotenv** para carregar `.env` na raiz.
 - `.env` não versionado; `.env.example` versionado sem valores sensíveis.
-- Exemplo: `DB_USER`, `DB_PASSWORD`, `DB_URL`, `DB_NAME`.
+- Exemplo: `DB_USER`, `DB_PASSWORD`, `DB_URL`, `DB_NAME`, `BOOTSTRAP_SECRET` (obrigatória em produção para usar o endpoint POST /api/v1/bootstrap).
 
 ## Banco de Dados
 
-- PostgreSQL; criar banco (ex.: `CREATE DATABASE eventosdb;`) antes de rodar a aplicação.
+- PostgreSQL; criar banco (ex.: `CREATE DATABASE cashflowdb;`) antes de rodar a aplicação.
 - Flyway: migrations em `database/src/main/resources/db/migration/` (V001, V002, V003...).
 - Spring Data JDBC não gera DDL; Flyway é a fonte da verdade do schema.
 

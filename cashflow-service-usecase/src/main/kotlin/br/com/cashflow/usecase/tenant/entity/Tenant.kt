@@ -44,4 +44,6 @@ class Tenant(
     var createdAt: Instant? = null,
     @Column("updated_at")
     var updatedAt: Instant? = null,
+    @Column("schema_name")
+    var schemaName: String = "",
 )

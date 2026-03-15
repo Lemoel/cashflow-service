@@ -44,9 +44,20 @@
 - **Via InputPort:** para entidades do domínio
 - **Via jdbcTemplate:** para dados auxiliares ou quando o InputPort não expõe o método necessário
 
+## Teardown e core.tenants
+
+- **ITs que usam apenas o tenant de teste** (ex.: Congregation, Department, Parametro): teardown deve limpar **apenas** tabelas do schema `tenant_test`. **Não** fazer `DELETE FROM core.tenants`.
+- **IT que gerencia tenants** (TenantManagementService): teardown pode apagar apenas tenants que **não** são o tenant de teste (ex.: `WHERE id <> '<TEST_TENANT_ID>'`). Antes, limpar `core.user_tenant_map` para esses tenants. O UUID em `tenant/teardown.sql` deve ser o mesmo de `TestTenantConfig.TEST_TENANT_ID`.
+
+## Schema nos scripts
+
+- Scripts que tocam tabelas do tenant devem começar com `SET search_path TO tenant_test;` (ou usar nome qualificado `tenant_test.<tabela>`).
+- O `@Sql` do Spring usa a conexão do DataSource; no PostgreSQL o `search_path` padrão é `public`, onde as tabelas do tenant não existem.
+
 ## Ordem do teardown
 
 - Respeitar dependências de FK: tabelas dependentes antes das referenciadas
+- Quando o teardown incluir `core.tenants`: (1) tabelas do tenant que referenciam `core.tenants` (ex.: congregacao, departamento no schema correto); (2) `core.user_tenant_map`; (3) `core.tenants` (com WHERE se for para preservar tenant_test)
 
 ```kotlin
 @SqlTearDown(value = ["/db/scripts/dependent/teardown.sql", "/db/scripts/referenced/teardown.sql"])

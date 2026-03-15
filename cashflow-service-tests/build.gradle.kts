@@ -10,6 +10,8 @@ dependencies {
     testImplementation(project(":cashflow-service-app"))
     testImplementation(project(":cashflow-service-usecase"))
     testImplementation("org.springframework.boot:spring-boot-starter-jdbc")
+    testImplementation("org.flywaydb:flyway-core")
+    testImplementation("org.flywaydb:flyway-database-postgresql")
     testImplementation(project(":cashflow-service-commons"))
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
