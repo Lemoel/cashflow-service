@@ -27,7 +27,6 @@ class MovimentoApiPersistenceAdapterTest {
             MovimentoApi(
                 id = id,
                 status = StatusProcessamentoEnum.RECEBIDO,
-                creationUserId = "CRON",
             )
         every { movimentoApiRepository.save(any()) } returns movimento
 

@@ -1,5 +1,6 @@
 package br.com.cashflow.usecase.acesso.entity
 
+import br.com.cashflow.commons.audit.Auditable
 import br.com.cashflow.usecase.congregation.entity.Congregation
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -8,7 +9,6 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.JoinTable
 import jakarta.persistence.ManyToMany
 import jakarta.persistence.Table
-import java.time.Instant
 
 @Entity
 @Table(name = "acesso")
@@ -18,12 +18,6 @@ class Acesso(
 
     @Column(name = "password")
     var password: String = "",
-
-    @Column(name = "data")
-    var data: Instant? = null,
-
-    @Column(name = "mod_date_time")
-    var modDateTime: Instant? = null,
 
     @Column(name = "nome")
     var nome: String? = null,
@@ -44,6 +38,6 @@ class Acesso(
         inverseJoinColumns = [JoinColumn(name = "congregacao_id")],
     )
     var congregacoes: MutableSet<Congregation> = mutableSetOf(),
-) {
+) : Auditable<String>() {
     fun perfil(): PerfilUsuario = PerfilUsuario.entries.find { it.name == tipoAcesso } ?: PerfilUsuario.USER
 }

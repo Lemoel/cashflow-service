@@ -7,11 +7,11 @@ CREATE TABLE parametro (
     valor_inteiro BIGINT,
     valor_decimal DOUBLE PRECISION,
     tipo VARCHAR(20) NOT NULL CHECK (tipo IN ('STRING', 'INTEGER', 'DOUBLE')),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     ativo BOOLEAN NOT NULL DEFAULT FALSE,
-    creation_user_id VARCHAR(255) NOT NULL,
-    mod_user_id VARCHAR(255),
+    created_by_id VARCHAR(113) NOT NULL,
+    dti_created_date TIMESTAMP NOT NULL,
+    last_modified_by_id VARCHAR(113) NOT NULL,
+    dti_last_modified_date TIMESTAMP NOT NULL,
     CONSTRAINT chk_somente_um_valor CHECK (
         ( (valor_texto IS NOT NULL)::int + (valor_inteiro IS NOT NULL)::int + (valor_decimal IS NOT NULL)::int ) = 1
     ),

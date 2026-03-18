@@ -28,8 +28,8 @@ fun Parametro.toResponse(): ParametroResponseDto {
         valor = valorStr ?: "",
         tipo = tipoEnum,
         ativo = ativo,
-        creationUserId = creationUserId,
-        createdAt = createdAt?.toString(),
+        creationUserId = createdBy ?: "",
+        createdAt = createdDate?.toString(),
     )
 }
 

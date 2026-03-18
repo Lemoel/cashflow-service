@@ -55,8 +55,8 @@ class UserManagementServiceTest {
             telefone = "11999990000",
             tipoAcesso = perfil,
             ativo = true,
-            data = Instant.now(),
-            modDateTime = null,
+            createdDate = Instant.now(),
+            lastModifiedDate = null,
             congregacaoId = congregacaoId,
             congregacaoNome = "SEDE",
         )
@@ -92,7 +92,6 @@ class UserManagementServiceTest {
         Acesso(
             email = email,
             password = "\$2a\$12\$hashedPassword",
-            data = Instant.now(),
             nome = "USUARIO TESTE",
             ativo = true,
             tipoAcesso = "ADMIN",

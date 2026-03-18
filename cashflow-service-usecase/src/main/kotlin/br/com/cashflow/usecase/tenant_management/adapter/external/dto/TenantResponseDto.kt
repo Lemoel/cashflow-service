@@ -88,8 +88,8 @@ fun Tenant.toResponse(): TenantResponseDto =
         phone = phone,
         email = email,
         active = active,
-        createdAt = createdAt?.toString() ?: "",
-        updatedAt = updatedAt?.toString(),
+        createdAt = createdDate?.toString() ?: "",
+        updatedAt = lastModifiedDate?.toString(),
     )
 
 fun Tenant.toListOption(): TenantListOption =

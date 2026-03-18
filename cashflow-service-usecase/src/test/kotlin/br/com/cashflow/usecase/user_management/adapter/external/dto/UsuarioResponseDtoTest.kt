@@ -20,8 +20,8 @@ class UsuarioResponseDtoTest {
                 telefone = "11999999999",
                 tipoAcesso = "ADMIN",
                 ativo = true,
-                data = createdAt,
-                modDateTime = updatedAt,
+                createdDate = createdAt,
+                lastModifiedDate = updatedAt,
                 congregacaoId = congId,
                 congregacaoNome = "Congregacao A",
             )
@@ -49,8 +49,8 @@ class UsuarioResponseDtoTest {
                 telefone = null,
                 tipoAcesso = "USER",
                 ativo = false,
-                data = null,
-                modDateTime = null,
+                createdDate = null,
+                lastModifiedDate = null,
                 congregacaoId = null,
                 congregacaoNome = null,
             )
@@ -78,8 +78,8 @@ class UsuarioResponseDtoTest {
                 telefone = "11988887777",
                 tipoAcesso = "GESTOR_CONGREGACAO",
                 ativo = true,
-                data = createdAt,
-                modDateTime = null,
+                createdDate = createdAt,
+                lastModifiedDate = null,
                 congregacaoId = congId,
                 congregacaoNome = "Sede",
             )
@@ -109,8 +109,8 @@ class UsuarioResponseDtoTest {
                 telefone = null,
                 tipoAcesso = "ADMIN",
                 ativo = true,
-                data = null,
-                modDateTime = null,
+                createdDate = null,
+                lastModifiedDate = null,
                 congregacaoId = null,
                 congregacaoNome = null,
             )

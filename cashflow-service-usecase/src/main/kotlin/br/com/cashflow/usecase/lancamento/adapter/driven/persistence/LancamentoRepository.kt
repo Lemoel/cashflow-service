@@ -21,7 +21,8 @@ interface LancamentoRepository : JpaRepository<Lancamento, UUID> {
                 meio_pagamento, estabelecimento, pagamento_prazo, taxa_intermediacao,
                 numero_serie_leitor, valor_total_transacao, data_inicial_transacao, hora_inicial_transacao,
                 data_prevista_pagamento, valor_liquido_transacao, valor_original_transacao,
-                maquina_id, congregacao_id, departamento_id, creation_user_id, created_at
+                maquina_id, congregacao_id, departamento_id,
+                created_by_id, dti_created_date, last_modified_by_id, dti_last_modified_date
             ) VALUES (
                 gen_random_uuid(),
                 :nsu,
@@ -45,8 +46,10 @@ interface LancamentoRepository : JpaRepository<Lancamento, UUID> {
                 :maquinaId,
                 :congregacaoId,
                 :departamentoId,
-                :creationUserId,
-                NOW()
+                :createdBy,
+                CURRENT_TIMESTAMP,
+                :lastModifiedBy,
+                CURRENT_TIMESTAMP
             )
             ON CONFLICT (codigo_transacao, tipo_evento, parcela) DO NOTHING
             """,
@@ -74,6 +77,7 @@ interface LancamentoRepository : JpaRepository<Lancamento, UUID> {
         @Param("maquinaId") maquinaId: UUID?,
         @Param("congregacaoId") congregacaoId: UUID?,
         @Param("departamentoId") departamentoId: UUID?,
-        @Param("creationUserId") creationUserId: String,
+        @Param("createdBy") createdBy: String,
+        @Param("lastModifiedBy") lastModifiedBy: String,
     )
 }

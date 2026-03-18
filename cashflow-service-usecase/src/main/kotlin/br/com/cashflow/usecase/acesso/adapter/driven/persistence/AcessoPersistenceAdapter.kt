@@ -84,8 +84,8 @@ class AcessoPersistenceAdapter(
             telefone = proj.getTelefone(),
             tipoAcesso = proj.getTipoAcesso(),
             ativo = proj.getAtivo(),
-            data = proj.getData(),
-            modDateTime = proj.getModDateTime(),
+            createdDate = proj.getCreatedDate(),
+            lastModifiedDate = proj.getLastModifiedDate(),
             congregacaoId = proj.getCongregacaoId(),
             congregacaoNome = proj.getCongregacaoNome(),
         )
@@ -97,9 +97,14 @@ class AcessoPersistenceAdapter(
     ) {
         entityManager
             .createNativeQuery(
-                "INSERT INTO core.user_tenant_map (email, tenant_id) VALUES (:email, :tenantId)",
+                """
+                INSERT INTO core.user_tenant_map (email, tenant_id, created_by_id, dti_created_date, last_modified_by_id, dti_last_modified_date)
+                VALUES (:email, :tenantId, :createdBy, CURRENT_TIMESTAMP, :lastModifiedBy, CURRENT_TIMESTAMP)
+                """.trimIndent(),
             ).setParameter("email", email)
             .setParameter("tenantId", tenantId)
+            .setParameter("createdBy", "system")
+            .setParameter("lastModifiedBy", "system")
             .executeUpdate()
     }
 }

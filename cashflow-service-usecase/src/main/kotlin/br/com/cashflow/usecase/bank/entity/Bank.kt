@@ -1,5 +1,6 @@
 package br.com.cashflow.usecase.bank.entity
 
+import br.com.cashflow.commons.audit.Auditable
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
@@ -26,4 +27,4 @@ class Bank(
 
     @Column(name = "ativo")
     var ativo: Boolean = true,
-)
+) : Auditable<String>()

@@ -55,11 +55,11 @@ class TestTenantConfig {
                         INSERT INTO core.tenants (
                             id, cnpj, nome_fantasia, razao_social, logradouro, numero,
                             complemento, bairro, cidade, uf, cep, telefone, email, ativo,
-                            creation_user_id, mod_user_id, schema_name
+                            created_by_id, dti_created_date, last_modified_by_id, dti_last_modified_date, schema_name
                         ) VALUES (
                             '$TEST_TENANT_ID', '12345678000190', 'Test', 'Test Razao',
                             'Rua', '1', NULL, 'Bairro', 'Cidade', 'SP', '01234567',
-                            NULL, NULL, TRUE, 'test', NULL, '$TEST_SCHEMA_NAME'
+                            NULL, NULL, TRUE, 'test', CURRENT_TIMESTAMP, 'test', CURRENT_TIMESTAMP, '$TEST_SCHEMA_NAME'
                         ) ON CONFLICT (id) DO NOTHING
                         """.trimIndent(),
                     )

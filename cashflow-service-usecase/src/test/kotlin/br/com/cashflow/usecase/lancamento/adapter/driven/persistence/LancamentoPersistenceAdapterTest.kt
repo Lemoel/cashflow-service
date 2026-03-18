@@ -39,10 +39,12 @@ class LancamentoPersistenceAdapterTest {
                 dataPrevistaPagamento = LocalDate.now(),
                 valorLiquidoTransacao = BigDecimal.TEN,
                 valorOriginalTransacao = BigDecimal.TEN,
-                creationUserId = "BOT",
             )
+        lancamento.createdBy = "BOT"
+        lancamento.lastModifiedBy = "BOT"
         justRun {
             lancamentoRepository.insertIgnorandoDuplicata(
+                any(),
                 any(),
                 any(),
                 any(),
@@ -72,6 +74,7 @@ class LancamentoPersistenceAdapterTest {
 
         verify(exactly = 1) {
             lancamentoRepository.insertIgnorandoDuplicata(
+                any(),
                 any(),
                 any(),
                 any(),

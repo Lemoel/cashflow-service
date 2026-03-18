@@ -17,7 +17,6 @@ import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.Instant
 import java.util.UUID
 
 @Service
@@ -41,13 +40,10 @@ class UserManagementService(
                 .replace("-", "")
                 .take(12)
         val passwordHash = checkNotNull(passwordEncoder.encode(senhaTemporaria)) { "Falha ao codificar senha" }
-        val now = Instant.now()
         val acesso =
             Acesso(
                 email = email,
                 password = passwordHash,
-                data = now,
-                modDateTime = null,
                 nome = command.nome.trim().uppercase(),
                 telefone = command.telefone?.trim()?.takeIf { it.isNotBlank() },
                 ativo = command.ativo,
@@ -79,13 +75,11 @@ class UserManagementService(
         }
         validateCongregacaoExists(command.congregacaoId)
         validatePerfil(command.perfil)
-        val now = Instant.now()
         if (id == newEmail) {
             existing.nome = command.nome.trim().uppercase()
             existing.telefone = command.telefone?.trim()?.takeIf { it.isNotBlank() }
             existing.tipoAcesso = command.perfil.trim().uppercase()
             existing.ativo = command.ativo
-            existing.modDateTime = now
             acessoOutputPort.save(existing)
             acessoOutputPort.setCongregacaoForEmail(newEmail, command.congregacaoId)
         } else {
@@ -93,8 +87,6 @@ class UserManagementService(
                 Acesso(
                     email = newEmail,
                     password = existing.password,
-                    data = existing.data,
-                    modDateTime = now,
                     nome = command.nome.trim().uppercase(),
                     telefone = command.telefone?.trim()?.takeIf { it.isNotBlank() },
                     ativo = command.ativo,

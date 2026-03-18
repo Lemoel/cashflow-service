@@ -51,8 +51,8 @@ fun AcessoListItem.toUsuarioResponseDto(): UsuarioResponseDto =
         congregacaoId = congregacaoId?.toString(),
         congregacaoNome = congregacaoNome,
         ativo = ativo,
-        createdAt = data?.toString(),
-        updatedAt = modDateTime?.toString(),
+        createdAt = createdDate?.toString(),
+        updatedAt = lastModifiedDate?.toString(),
     )
 
 fun UsuarioCriadoResult.toUsuarioCriadoResponseDto(): UsuarioCriadoResponseDto =
@@ -65,7 +65,7 @@ fun UsuarioCriadoResult.toUsuarioCriadoResponseDto(): UsuarioCriadoResponseDto =
         congregacaoId = usuario.congregacaoId?.toString(),
         congregacaoNome = usuario.congregacaoNome,
         ativo = usuario.ativo,
-        createdAt = usuario.data?.toString(),
-        updatedAt = usuario.modDateTime?.toString(),
+        createdAt = usuario.createdDate?.toString(),
+        updatedAt = usuario.lastModifiedDate?.toString(),
         senhaTemporaria = senhaTemporaria,
     )

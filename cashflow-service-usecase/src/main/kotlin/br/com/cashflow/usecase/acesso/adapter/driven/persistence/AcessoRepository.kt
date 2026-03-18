@@ -27,7 +27,7 @@ interface AcessoRepository :
         value =
             """
             SELECT a.email AS email, a.nome AS nome, a.telefone AS telefone, a.tipo_acesso AS tipoAcesso, a.ativo AS ativo,
-                   a.data AS data, a.mod_date_time AS modDateTime,
+                   a.dti_created_date AS createdDate, a.dti_last_modified_date AS lastModifiedDate,
                    c.id AS congregacaoId, c.nome AS congregacaoNome
             FROM acesso a
             LEFT JOIN acesso_congregacao ac ON a.email = ac.email

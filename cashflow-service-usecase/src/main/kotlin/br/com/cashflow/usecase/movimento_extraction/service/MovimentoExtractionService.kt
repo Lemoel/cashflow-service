@@ -187,7 +187,6 @@ class MovimentoExtractionService(
                 totalElementos = totalElementos,
                 totalPaginas = totalPaginas,
                 dataLeitura = dataLeitura,
-                creationUserId = CREATION_USER_CRON,
             )
         movimentoApiOutputPort.save(movimento)
     }
@@ -195,6 +194,5 @@ class MovimentoExtractionService(
     companion object {
         private val log = LoggerFactory.getLogger(MovimentoExtractionService::class.java)
         private const val CODIGO_PAGBANK = "290"
-        private const val CREATION_USER_CRON = "CRON"
     }
 }

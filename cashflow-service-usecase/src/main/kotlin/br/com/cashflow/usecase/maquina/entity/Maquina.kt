@@ -1,21 +1,16 @@
 package br.com.cashflow.usecase.maquina.entity
 
+import br.com.cashflow.commons.audit.Auditable
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
-import jakarta.persistence.EntityListeners
 import jakarta.persistence.Id
 import jakarta.persistence.PrePersist
 import jakarta.persistence.Table
 import jakarta.persistence.Version
-import org.springframework.data.annotation.CreatedBy
-import org.springframework.data.annotation.LastModifiedBy
-import org.springframework.data.jpa.domain.support.AuditingEntityListener
-import java.time.Instant
 import java.util.UUID
 
 @Entity
 @Table(name = "maquina")
-@EntityListeners(AuditingEntityListener::class)
 class Maquina(
     @Id
     var id: UUID? = null,
@@ -38,21 +33,7 @@ class Maquina(
     @Version
     @Column(name = "version")
     var version: Long? = null,
-
-    @Column(name = "created_at")
-    var createdAt: Instant? = null,
-
-    @Column(name = "updated_at")
-    var updatedAt: Instant? = null,
-
-    @CreatedBy
-    @Column(name = "creation_user_id")
-    var creationUserId: String = "",
-
-    @LastModifiedBy
-    @Column(name = "mod_user_id")
-    var modUserId: String? = null,
-) {
+) : Auditable<String>() {
     @PrePersist
     fun onPrePersist() {
         if (id == null) id = UUID.randomUUID()

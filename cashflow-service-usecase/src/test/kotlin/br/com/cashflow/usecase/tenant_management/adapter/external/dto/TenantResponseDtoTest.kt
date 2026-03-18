@@ -4,6 +4,8 @@ import br.com.cashflow.usecase.tenant.entity.Tenant
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.util.UUID
 
 class TenantResponseDtoTest {
@@ -28,11 +30,12 @@ class TenantResponseDtoTest {
                 phone = "11999999999",
                 email = "a@b.com",
                 active = true,
-                creationUserId = "user1",
-                modUserId = "user2",
-                createdAt = createdAt,
-                updatedAt = updatedAt,
+                schemaName = "tenant_12345678000190",
             )
+        tenant.createdBy = "user1"
+        tenant.lastModifiedBy = "user2"
+        tenant.createdDate = LocalDateTime.ofInstant(createdAt, ZoneOffset.UTC)
+        tenant.lastModifiedDate = LocalDateTime.ofInstant(updatedAt, ZoneOffset.UTC)
 
         val result = tenant.toResponse()
 
@@ -50,8 +53,8 @@ class TenantResponseDtoTest {
         assertThat(result.phone).isEqualTo("11999999999")
         assertThat(result.email).isEqualTo("a@b.com")
         assertThat(result.active).isTrue()
-        assertThat(result.createdAt).isEqualTo(createdAt.toString())
-        assertThat(result.updatedAt).isEqualTo(updatedAt.toString())
+        assertThat(result.createdAt).isEqualTo(tenant.createdDate.toString())
+        assertThat(result.updatedAt).isEqualTo(tenant.lastModifiedDate.toString())
     }
 
     @Test
@@ -67,6 +70,7 @@ class TenantResponseDtoTest {
                 city = "C",
                 state = "SP",
                 zipCode = "01234567",
+                schemaName = "tenant_1",
             )
 
         val result = tenant.toListOption()
@@ -151,6 +155,7 @@ class TenantResponseDtoTest {
                 state = "RJ",
                 zipCode = "20000000",
                 active = true,
+                schemaName = "tenant_old",
             )
         val request =
             TenantUpdateRequestDto(

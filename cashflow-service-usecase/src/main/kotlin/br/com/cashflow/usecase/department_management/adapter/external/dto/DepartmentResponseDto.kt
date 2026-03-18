@@ -31,8 +31,8 @@ fun Department.toResponse(tenantNome: String? = null): DepartmentResponse =
         tenantNome = tenantNome,
         nome = nome,
         ativo = ativo,
-        createdAt = createdAt?.toString() ?: "",
-        updatedAt = updatedAt?.toString(),
+        createdAt = createdDate?.toString() ?: "",
+        updatedAt = lastModifiedDate?.toString(),
     )
 
 fun Department.toListOption(): DepartmentListOption =

@@ -15,10 +15,10 @@ CREATE TABLE core.tenants (
     telefone VARCHAR(20),
     email VARCHAR(100),
     ativo BOOLEAN DEFAULT TRUE,
-    creation_user_id VARCHAR(255) NOT NULL,
-    mod_user_id VARCHAR(255),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    created_by_id VARCHAR(113) NOT NULL,
+    dti_created_date TIMESTAMP NOT NULL,
+    last_modified_by_id VARCHAR(113) NOT NULL,
+    dti_last_modified_date TIMESTAMP NOT NULL,
     schema_name VARCHAR(100) NOT NULL
 );
 
@@ -27,8 +27,10 @@ CREATE INDEX idx_tenants_cnpj ON core.tenants(cnpj);
 CREATE TABLE core.user_tenant_map (
     email VARCHAR(255) PRIMARY KEY,
     tenant_id UUID NOT NULL REFERENCES core.tenants(id) ON DELETE RESTRICT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_by_id VARCHAR(113) NOT NULL,
+    dti_created_date TIMESTAMP NOT NULL,
+    last_modified_by_id VARCHAR(113) NOT NULL,
+    dti_last_modified_date TIMESTAMP NOT NULL
 );
 
 CREATE INDEX idx_user_tenant_map_tenant_id ON core.user_tenant_map(tenant_id);
-

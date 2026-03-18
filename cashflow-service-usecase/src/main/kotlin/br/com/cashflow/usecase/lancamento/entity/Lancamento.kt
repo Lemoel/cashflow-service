@@ -1,5 +1,6 @@
 package br.com.cashflow.usecase.lancamento.entity
 
+import br.com.cashflow.commons.audit.Auditable
 import br.com.cashflow.usecase.lancamento.enum.MeioCapturaEnum
 import br.com.cashflow.usecase.lancamento.enum.MeioPagamentoEnum
 import br.com.cashflow.usecase.lancamento.enum.TipoEventoEnum
@@ -10,7 +11,6 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import java.math.BigDecimal
-import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
@@ -85,16 +85,4 @@ class Lancamento(
 
     @Column(name = "departamento_id")
     val departamentoId: UUID? = null,
-
-    @Column(name = "creation_user_id")
-    val creationUserId: String = "",
-
-    @Column(name = "created_at")
-    var createdAt: Instant? = null,
-
-    @Column(name = "updated_at")
-    var updatedAt: Instant? = null,
-
-    @Column(name = "mod_user_id")
-    val modUserId: String? = null,
-)
+) : Auditable<String>()

@@ -14,9 +14,9 @@ interface AcessoListItemProjection {
 
     fun getAtivo(): Boolean
 
-    fun getData(): Instant?
+    fun getCreatedDate(): Instant?
 
-    fun getModDateTime(): Instant?
+    fun getLastModifiedDate(): Instant?
 
     fun getCongregacaoId(): UUID?
 

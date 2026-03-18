@@ -31,7 +31,8 @@ class LancamentoPersistenceAdapter(
             maquinaId = lancamento.maquinaId,
             congregacaoId = lancamento.congregacaoId,
             departamentoId = lancamento.departamentoId,
-            creationUserId = lancamento.creationUserId,
+            createdBy = lancamento.createdBy ?: "system",
+            lastModifiedBy = lancamento.lastModifiedBy ?: lancamento.createdBy ?: "system",
         )
     }
 }

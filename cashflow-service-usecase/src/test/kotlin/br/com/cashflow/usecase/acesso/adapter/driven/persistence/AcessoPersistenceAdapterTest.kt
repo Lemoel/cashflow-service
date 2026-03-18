@@ -191,8 +191,8 @@ class AcessoPersistenceAdapterTest {
                 telefone = null,
                 tipoAcesso = "ADMIN",
                 ativo = true,
-                data = Instant.now(),
-                modDateTime = null,
+                createdDate = Instant.now(),
+                lastModifiedDate = null,
                 congregacaoId = UUID.randomUUID(),
                 congregacaoNome = "Cong A",
             )
@@ -264,8 +264,8 @@ class AcessoPersistenceAdapterTest {
         every { proj.getTelefone() } returns null
         every { proj.getTipoAcesso() } returns "ADMIN"
         every { proj.getAtivo() } returns true
-        every { proj.getData() } returns null
-        every { proj.getModDateTime() } returns null
+        every { proj.getCreatedDate() } returns null
+        every { proj.getLastModifiedDate() } returns null
         every { proj.getCongregacaoId() } returns null
         every { proj.getCongregacaoNome() } returns null
         every { acessoRepository.findListItemByEmail("user@test.com") } returns proj

@@ -3,14 +3,14 @@ package br.com.cashflow.usecase.parametro_management.adapter.external.dto
 import br.com.cashflow.usecase.parametro.entity.Parametro
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import java.time.Instant
+import java.time.LocalDateTime
 import java.util.UUID
 
 class ParametroResponseDtoTest {
     @Test
     fun `toResponse maps STRING tipo and valorTexto`() {
         val id = UUID.randomUUID()
-        val createdAt = Instant.now()
+        val createdAt = LocalDateTime.now()
         val parametro =
             Parametro(
                 id = id,
@@ -20,9 +20,9 @@ class ParametroResponseDtoTest {
                 valorDecimal = null,
                 tipo = "STRING",
                 ativo = true,
-                creationUserId = "user1",
-                createdAt = createdAt,
             )
+        parametro.createdBy = "user1"
+        parametro.createdDate = createdAt
 
         val result = parametro.toResponse()
 
@@ -47,8 +47,8 @@ class ParametroResponseDtoTest {
                 valorDecimal = null,
                 tipo = "INTEGER",
                 ativo = false,
-                creationUserId = "u",
             )
+        parametro.createdBy = "u"
 
         val result = parametro.toResponse()
 
@@ -69,8 +69,8 @@ class ParametroResponseDtoTest {
                 valorDecimal = 3.14,
                 tipo = "DOUBLE",
                 ativo = true,
-                creationUserId = "u",
             )
+        parametro.createdBy = "u"
 
         val result = parametro.toResponse()
 
@@ -88,8 +88,8 @@ class ParametroResponseDtoTest {
                 valorTexto = "x",
                 tipo = "UNKNOWN",
                 ativo = true,
-                creationUserId = "u",
             )
+        parametro.createdBy = "u"
 
         val result = parametro.toResponse()
 

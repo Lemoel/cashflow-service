@@ -1,5 +1,6 @@
 package br.com.cashflow.usecase.maquina_historico.entity
 
+import br.com.cashflow.commons.audit.Auditable
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
@@ -27,4 +28,4 @@ class MaquinaHistorico(
 
     @Column(name = "data_fim")
     var dataFim: Instant? = null,
-)
+) : Auditable<String>()

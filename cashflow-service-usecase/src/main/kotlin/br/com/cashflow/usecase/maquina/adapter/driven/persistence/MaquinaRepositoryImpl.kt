@@ -24,8 +24,8 @@ class MaquinaRepositoryImpl(
                 d.nome AS departamento_nome,
                 m.ativo,
                 m.version,
-                m.created_at,
-                m.updated_at
+                m.dti_created_date,
+                m.dti_last_modified_date
             FROM maquina m
             LEFT JOIN congregacao c ON m.congregacao_id = c.id
             LEFT JOIN banco b ON m.banco_id = b.id
@@ -178,8 +178,8 @@ class MaquinaRepositoryImpl(
             d.nome AS departamento_nome,
             m.ativo,
             m.version,
-            m.created_at,
-            m.updated_at
+            m.dti_created_date,
+            m.dti_last_modified_date
             """.trimIndent()
     }
 }

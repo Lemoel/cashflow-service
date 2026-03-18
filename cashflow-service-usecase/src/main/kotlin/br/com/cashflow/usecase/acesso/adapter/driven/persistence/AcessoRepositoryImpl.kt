@@ -22,7 +22,7 @@ class AcessoRepositoryImpl(
         val where = buildWhere(filter)
         val sql =
             """
-            SELECT a.email, a.nome, a.telefone, a.tipo_acesso, a.ativo, a.data, a.mod_date_time,
+            SELECT a.email, a.nome, a.telefone, a.tipo_acesso, a.ativo, a.dti_created_date, a.dti_last_modified_date,
                    c.id AS congregacao_id, c.nome AS congregacao_nome
             FROM acesso a
             LEFT JOIN acesso_congregacao ac ON a.email = ac.email
@@ -109,8 +109,8 @@ class AcessoRepositoryImpl(
             telefone = str(2),
             tipoAcesso = str(3) ?: "",
             ativo = (row.getOrNull(4) as? Boolean) ?: false,
-            data = instant(5),
-            modDateTime = instant(6),
+            createdDate = instant(5),
+            lastModifiedDate = instant(6),
             congregacaoId = uuid(7),
             congregacaoNome = str(8),
         )

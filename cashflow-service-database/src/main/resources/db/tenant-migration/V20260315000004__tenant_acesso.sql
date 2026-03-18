@@ -7,6 +7,8 @@ CREATE TABLE acesso (
     telefone VARCHAR(20),
     ativo BOOLEAN DEFAULT TRUE,
     tipo_acesso VARCHAR(20) NOT NULL DEFAULT 'USER',
-    data TIMESTAMP NOT NULL,
-    mod_date_time TIMESTAMP
+    created_by_id VARCHAR(113) NOT NULL,
+    dti_created_date TIMESTAMP NOT NULL,
+    last_modified_by_id VARCHAR(113) NOT NULL,
+    dti_last_modified_date TIMESTAMP NOT NULL
 );

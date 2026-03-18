@@ -9,8 +9,8 @@ data class AcessoListItem(
     val telefone: String?,
     val tipoAcesso: String,
     val ativo: Boolean,
-    val data: Instant?,
-    val modDateTime: Instant?,
+    val createdDate: Instant?,
+    val lastModifiedDate: Instant?,
     val congregacaoId: UUID?,
     val congregacaoNome: String?,
 )
