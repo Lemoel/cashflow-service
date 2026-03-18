@@ -12,7 +12,6 @@ import java.util.UUID
 @Component
 class TenantPersistenceAdapter(
     private val tenantRepository: TenantRepository,
-    private val tenantJdbcRepository: TenantJdbcRepository,
 ) : TenantOutputPort {
     override fun save(tenant: Tenant): Tenant = tenantRepository.save(tenant)
 
@@ -49,7 +48,13 @@ class TenantPersistenceAdapter(
         tenantRepository.deleteById(id)
     }
 
-    override fun findTenantSchemaByEmail(email: String): TenantSchemaInfo? = tenantJdbcRepository.findTenantSchemaByEmail(email)
+    override fun findTenantSchemaByEmail(email: String): TenantSchemaInfo? {
+        val proj = tenantRepository.findTenantSchemaByEmail(email) ?: return null
+        return TenantSchemaInfo(
+            tenantId = proj.getTenantId(),
+            schemaName = proj.getSchemaName(),
+        )
+    }
 
     override fun findAllSchemaNames(): List<String> = tenantRepository.findAllSchemaNames()
 }

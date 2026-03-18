@@ -86,6 +86,7 @@ class SecurityConfig(
             http.addFilterBefore(tenantContextFilter, UsernamePasswordAuthenticationFilter::class.java)
             http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
             http.authorizeHttpRequests {
+                it.requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                 it.requestMatchers("/actuator/**").permitAll()
                 it
                     .requestMatchers(

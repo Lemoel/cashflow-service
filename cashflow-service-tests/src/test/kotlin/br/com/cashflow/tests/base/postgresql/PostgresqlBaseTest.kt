@@ -34,6 +34,11 @@ abstract class PostgresqlBaseTest : CashflowDataSource() {
                 CashflowDataSource.POSTGRES_CONTAINER::getPassword,
             )
             registry.add("spring.flyway.enabled") { true }
+            registry.add("spring.jpa.hibernate.ddl-auto") { "none" }
+            registry.add("spring.jpa.open-in-view") { "false" }
+            registry.add("spring.jpa.properties.hibernate.dialect") {
+                "org.hibernate.dialect.PostgreSQLDialect"
+            }
         }
     }
 

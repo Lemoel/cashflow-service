@@ -1,27 +1,29 @@
 package br.com.cashflow.usecase.bank.entity
 
-import org.springframework.data.annotation.Id
-import org.springframework.data.relational.core.mapping.Column
-import org.springframework.data.relational.core.mapping.Table
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.Id
+import jakarta.persistence.Table
 import java.util.UUID
 
-@Table("banco")
+@Entity
+@Table(name = "banco")
 class Bank(
     @Id
     var id: UUID? = null,
 
-    @Column("nome")
+    @Column(name = "nome")
     var nome: String? = null,
 
-    @Column("codigo")
+    @Column(name = "codigo")
     var codigo: String = "",
 
-    @Column("endereco_completo")
+    @Column(name = "endereco_completo")
     var enderecoCompleto: String = "",
 
-    @Column("tipo_integracao")
+    @Column(name = "tipo_integracao")
     var tipoIntegracao: String = "",
 
-    @Column("ativo")
+    @Column(name = "ativo")
     var ativo: Boolean = true,
 )

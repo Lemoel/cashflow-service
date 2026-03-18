@@ -1,7 +1,6 @@
 package br.com.cashflow.usecase.tenant.adapter.driven.persistence
 
 import br.com.cashflow.usecase.tenant.entity.Tenant
-import br.com.cashflow.usecase.tenant.model.TenantSchemaInfo
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -16,12 +15,11 @@ import java.util.UUID
 
 class TenantPersistenceAdapterTest {
     private val tenantRepository: TenantRepository = mockk()
-    private val tenantJdbcRepository: TenantJdbcRepository = mockk()
     private lateinit var adapter: TenantPersistenceAdapter
 
     @BeforeEach
     fun setUp() {
-        adapter = TenantPersistenceAdapter(tenantRepository, tenantJdbcRepository)
+        adapter = TenantPersistenceAdapter(tenantRepository)
     }
 
     @Test
@@ -174,26 +172,32 @@ class TenantPersistenceAdapterTest {
     }
 
     @Test
-    fun `findTenantSchemaByEmail delegates to jdbc repository and returns info when found`() {
+    fun `findTenantSchemaByEmail delegates to repository and returns info when found`() {
         val email = "admin@example.com"
-        val info = TenantSchemaInfo(tenantId = UUID.randomUUID(), schemaName = "tenant_12345678000190")
-        every { tenantJdbcRepository.findTenantSchemaByEmail(email) } returns info
+        val tenantId = UUID.randomUUID()
+        val schemaName = "tenant_12345678000190"
+        val proj = mockk<TenantSchemaInfoProjection>()
+        every { proj.getTenantId() } returns tenantId
+        every { proj.getSchemaName() } returns schemaName
+        every { tenantRepository.findTenantSchemaByEmail(email) } returns proj
 
         val result = adapter.findTenantSchemaByEmail(email)
 
-        assertThat(result).isEqualTo(info)
-        verify(exactly = 1) { tenantJdbcRepository.findTenantSchemaByEmail(email) }
+        assertThat(result).isNotNull
+        assertThat(result!!.tenantId).isEqualTo(tenantId)
+        assertThat(result.schemaName).isEqualTo(schemaName)
+        verify(exactly = 1) { tenantRepository.findTenantSchemaByEmail(email) }
     }
 
     @Test
-    fun `findTenantSchemaByEmail returns null when jdbc repository returns null`() {
+    fun `findTenantSchemaByEmail returns null when repository returns null`() {
         val email = "unknown@example.com"
-        every { tenantJdbcRepository.findTenantSchemaByEmail(email) } returns null
+        every { tenantRepository.findTenantSchemaByEmail(email) } returns null
 
         val result = adapter.findTenantSchemaByEmail(email)
 
         assertThat(result).isNull()
-        verify(exactly = 1) { tenantJdbcRepository.findTenantSchemaByEmail(email) }
+        verify(exactly = 1) { tenantRepository.findTenantSchemaByEmail(email) }
     }
 
     @Test

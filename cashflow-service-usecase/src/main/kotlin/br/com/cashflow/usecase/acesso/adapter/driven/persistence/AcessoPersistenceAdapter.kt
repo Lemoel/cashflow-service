@@ -5,18 +5,21 @@ import br.com.cashflow.usecase.acesso.model.AcessoFilter
 import br.com.cashflow.usecase.acesso.model.AcessoListItem
 import br.com.cashflow.usecase.acesso.model.AcessoPage
 import br.com.cashflow.usecase.acesso.port.AcessoOutputPort
-import org.springframework.dao.DuplicateKeyException
+import br.com.cashflow.usecase.congregation.adapter.driven.persistence.CongregationRepository
+import jakarta.persistence.EntityManager
+import jakarta.persistence.PersistenceContext
 import org.springframework.data.domain.PageRequest
-import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Component
-import java.sql.Timestamp
 import java.util.UUID
 
 @Component
 class AcessoPersistenceAdapter(
     private val acessoRepository: AcessoRepository,
-    private val jdbcTemplate: JdbcTemplate,
+    private val congregationRepository: CongregationRepository,
 ) : AcessoOutputPort {
+    @PersistenceContext
+    private lateinit var entityManager: EntityManager
+
     override fun findByEmail(email: String): Acesso? = acessoRepository.findById(email).orElse(null)
 
     override fun updatePassword(
@@ -30,37 +33,7 @@ class AcessoPersistenceAdapter(
 
     override fun findTenantIdByEmail(email: String): UUID? = acessoRepository.findTenantIdByEmail(email)
 
-    override fun save(acesso: Acesso): Acesso {
-        val email = requireNotNull(acesso.email) { "Email não pode ser nulo" }
-        return if (!acessoRepository.existsById(email)) {
-            try {
-                jdbcTemplate.update(
-                    """
-                    INSERT INTO acesso (email, password, nome, telefone, ativo, tipo_acesso, data, mod_date_time)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                    """.trimIndent(),
-                    email,
-                    acesso.password,
-                    acesso.nome,
-                    acesso.telefone,
-                    acesso.ativo,
-                    acesso.tipoAcesso,
-                    acesso.data?.let { Timestamp.from(it) },
-                    acesso.modDateTime?.let { Timestamp.from(it) },
-                )
-            } catch (error: DuplicateKeyException) {
-                throw org.springframework.dao.DataIntegrityViolationException(
-                    "Já existe um usuário com o e-mail '$email'.",
-                    error,
-                )
-            }
-            acessoRepository.findById(email).orElseThrow {
-                IllegalStateException("Falha ao recuperar acesso após inserção")
-            }
-        } else {
-            acessoRepository.save(acesso)
-        }
-    }
+    override fun save(acesso: Acesso): Acesso = acessoRepository.save(acesso)
 
     override fun existsByEmailExcluding(
         emailToCheck: String,
@@ -94,27 +67,39 @@ class AcessoPersistenceAdapter(
         email: String,
         congregacaoId: UUID,
     ) {
-        jdbcTemplate.update(
-            "DELETE FROM acesso_congregacao WHERE email = ?",
-            email,
-        )
-        jdbcTemplate.update(
-            "INSERT INTO acesso_congregacao (email, congregacao_id) VALUES (?, ?)",
-            email,
-            congregacaoId,
-        )
+        val acesso =
+            acessoRepository.findById(email).orElse(null)
+                ?: return
+        val congregation = congregationRepository.getReferenceById(congregacaoId)
+        acesso.congregacoes.clear()
+        acesso.congregacoes.add(congregation)
+        acessoRepository.save(acesso)
     }
 
-    override fun findListItemByEmail(email: String): AcessoListItem? = acessoRepository.findListItemByEmail(email)
+    override fun findListItemByEmail(email: String): AcessoListItem? {
+        val proj = acessoRepository.findListItemByEmail(email) ?: return null
+        return AcessoListItem(
+            email = proj.getEmail(),
+            nome = proj.getNome(),
+            telefone = proj.getTelefone(),
+            tipoAcesso = proj.getTipoAcesso(),
+            ativo = proj.getAtivo(),
+            data = proj.getData(),
+            modDateTime = proj.getModDateTime(),
+            congregacaoId = proj.getCongregacaoId(),
+            congregacaoNome = proj.getCongregacaoNome(),
+        )
+    }
 
     override fun insertUserTenantMap(
         email: String,
         tenantId: UUID,
     ) {
-        jdbcTemplate.update(
-            "INSERT INTO core.user_tenant_map (email, tenant_id) VALUES (?, ?)",
-            email,
-            tenantId,
-        )
+        entityManager
+            .createNativeQuery(
+                "INSERT INTO core.user_tenant_map (email, tenant_id) VALUES (:email, :tenantId)",
+            ).setParameter("email", email)
+            .setParameter("tenantId", tenantId)
+            .executeUpdate()
     }
 }

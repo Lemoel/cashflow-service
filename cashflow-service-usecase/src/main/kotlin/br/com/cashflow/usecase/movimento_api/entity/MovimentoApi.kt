@@ -1,44 +1,66 @@
 package br.com.cashflow.usecase.movimento_api.entity
 
-import org.springframework.data.annotation.Id
-import org.springframework.data.relational.core.mapping.Column
-import org.springframework.data.relational.core.mapping.Table
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.EntityListeners
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
+import jakarta.persistence.Id
+import jakarta.persistence.PrePersist
+import jakarta.persistence.Table
+import org.springframework.data.annotation.CreatedBy
+import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.annotation.LastModifiedBy
+import org.springframework.data.annotation.LastModifiedDate
+import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
-@Table("movimento_api")
+@Entity
+@Table(name = "movimento_api")
+@EntityListeners(AuditingEntityListener::class)
 class MovimentoApi(
     @Id
     var id: UUID? = null,
 
-    @Column("payload")
+    @Column(name = "payload")
     val payload: String? = null,
 
-    @Column("status")
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
     var status: StatusProcessamentoEnum = StatusProcessamentoEnum.RECEBIDO,
 
-    @Column("pagina")
+    @Column(name = "pagina")
     val pagina: Int = 1,
 
-    @Column("total_elementos")
+    @Column(name = "total_elementos")
     val totalElementos: Int = 0,
 
-    @Column("total_paginas")
+    @Column(name = "total_paginas")
     val totalPaginas: Int = 1,
 
-    @Column("data_leitura")
+    @Column(name = "data_leitura")
     val dataLeitura: LocalDate? = null,
 
-    @Column("created_at")
+    @CreatedDate
+    @Column(name = "created_at")
     var createdAt: Instant? = null,
 
-    @Column("updated_at")
+    @LastModifiedDate
+    @Column(name = "updated_at")
     var updatedAt: Instant? = null,
 
-    @Column("creation_user_id")
-    val creationUserId: String = "",
+    @CreatedBy
+    @Column(name = "creation_user_id")
+    var creationUserId: String = "",
 
-    @Column("mod_user_id")
-    val modUserId: String? = null,
-)
+    @LastModifiedBy
+    @Column(name = "mod_user_id")
+    var modUserId: String? = null,
+) {
+    @PrePersist
+    fun onPrePersist() {
+        if (id == null) id = UUID.randomUUID()
+    }
+}

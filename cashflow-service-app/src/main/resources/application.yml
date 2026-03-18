@@ -16,6 +16,15 @@ spring:
     name: cashflow-service
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
+  jpa:
+    hibernate:
+      # Multitenancy: tabelas tenant ficam em schemas por tenant (search_path em runtime).
+      # Validação de schema no startup não vê essas tabelas; Flyway gerencia o DDL.
+      ddl-auto: none
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
   flyway:
     enabled: true
     locations: classpath:db/migration

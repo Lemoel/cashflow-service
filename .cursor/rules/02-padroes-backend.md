@@ -2,7 +2,7 @@
 
 ## Stack
 
-- Kotlin 2.2.0, Spring Boot 4.0.3, Spring Data JDBC, PostgreSQL, Flyway, MockK, JUnit 5.
+- Kotlin 2.2.0, Spring Boot 4.0.3, Spring Data JPA, PostgreSQL, Flyway, MockK, JUnit 5.
 - Em ambiente de desenvolvimento, o servidor roda na porta **8081** (configurável via `SERVER_PORT`).
 
 ## Estrutura de Pacotes (usecase)
@@ -14,10 +14,10 @@
 
 ## Nomenclatura
 
-- **Entidade**: `Example` (sem sufixo), classe (não data class) para compatibilidade com Spring Data JDBC.
+- **Entidade**: `Example` (sem sufixo), classe (não data class) para compatibilidade com Spring Data JPA.
 - **InputPort**: `ExampleInputPort`; **OutputPort**: `ExampleOutputPort`.
 - **Service**: `ExampleService` (implementa InputPort).
-- **Repository**: `ExampleRepository` (estende `BaseRepository<Example, UUID>`).
+- **Repository**: `ExampleRepository` (estende `JpaRepository<Example, UUID>`).
 - **PersistenceAdapter**: `ExamplePersistenceAdapter` (implementa OutputPort).
 - **Controller**: `ExampleController` — fica em `usecase/(fluxo)/adapter/external/controller`.
 - **DTO**: Request/Response — ficam em `usecase/(fluxo)/adapter/external/dto`.
@@ -30,23 +30,23 @@
 - Preferir construtor com injeção de dependências (ex.: `class ExampleService(private val outputPort: ExampleOutputPort)`).
 - Serviços: usar `@Service` e `@Transactional` em métodos de escrita.
 - Adapters: usar `@Component`.
-- Repositories: interface com `@NoRepositoryBean` em `BaseRepository`; preferir métodos derivados (ver seção Spring Data JDBC).
+- Repositories: interface estendendo `JpaRepository`; preferir métodos derivados e `JpaSpecificationExecutor` para filtros dinâmicos (ver seção Spring Data JPA).
 
-## Entidade Spring Data JDBC
+## Entidade JPA
 
-- **Todas as entidades** que representam dados persistidos devem herdar de `Auditable` (obrigatório). Import: `br.com.cashflow.commons.audit.Auditable`. Exceção: entidades que mapeiam tabelas legadas sem colunas de auditoria (created_by, created_date, last_modified_by, last_modified_date) não precisam estender Auditable — exemplo: `Acesso` (tabela `eventos.acesso` com `data`, `mod_date_time`).
-- Entidades que estendem `Auditable` devem ser `class` (não data class) — mutabilidade necessária para auditoria.
-- Usar `@Table("example")`, `@Id`, `@Column("coluna")` de `org.springframework.data.relational.core.mapping`.
-- UUID: implementar `BeforeConvertCallback<T>` para gerar `UUID.randomUUID()` quando `id == null`; registrar como `@Component`.
-- Auditoria: `@EnableJdbcAuditing` na aplicação; `@CreatedDate`, `@LastModifiedDate` (e opcionalmente `@CreatedBy`, `@LastModifiedBy`) em `Auditable`.
-- Schema: criar tabelas via Flyway; JDBC não gera DDL.
+- **Todas as entidades** que representam dados persistidos devem usar auditoria JPA quando a tabela tiver colunas de auditoria (`@CreatedDate`, `@LastModifiedDate`, `@CreatedBy`, `@LastModifiedBy`). Import: `br.com.cashflow.commons.audit.Auditable` para campos comuns; anotações de `org.springframework.data.annotation` e `@EntityListeners(AuditingEntityListener::class)`. Exceção: entidades que mapeiam tabelas sem colunas de auditoria (ex.: `Acesso` com `data`, `mod_date_time`).
+- Entidades com auditoria devem ser `class` (não data class) — mutabilidade necessária para auditoria.
+- Usar `@Entity`, `@Table(name = "example")`, `@Id`, `@Column` de `jakarta.persistence`.
+- UUID: usar `@PrePersist` para gerar `UUID.randomUUID()` quando `id == null`, ou `@GeneratedValue` quando aplicável.
+- Auditoria: `@EnableJpaAuditing` na aplicação; `@CreatedDate`, `@LastModifiedDate`, `@CreatedBy`, `@LastModifiedBy` e `@EntityListeners(AuditingEntityListener::class)` nas entidades.
+- Schema: criar tabelas via Flyway; JPA com `ddl-auto: none` (multitenancy) ou `validate` em testes; não gerar DDL pelo Hibernate em produção.
 
-## Spring Data JDBC: prioridade e métodos derivados
+## Spring Data JPA: prioridade e métodos
 
-- **Prioridade de acesso a dados:** Qualquer busca ou operação em banco de dados deve ser criada **primordialmente** usando Spring Data JDBC (interface estendendo `CrudRepository`, métodos derivados ou `@Query`). Só em **último caso**, quando não for possível atender aos critérios de busca com Spring Data JDBC (consultas complexas, joins, agregações ou SQL nativo indispensável), pode-se usar `JdbcTemplate` em uma implementação customizada (ex.: `ExampleRepositoryImpl`).
-- Preferir sempre que possível os métodos derivados (nomes de método transformados em SQL automaticamente).
-- Preferir nomes como `findByClassIdOrderByStartDateDesc`, `findFirstByTeacherIdAndClassId` em vez de `@Query` explícita.
-- Usar `@Query` com SQL explícita apenas quando o nome do método derivado ficar muito longo ou a lógica for complexa (ex.: overlap de datas, condições OR compostas).
+- **Prioridade de acesso a dados:** JpaRepository, métodos derivados, `@Query` (JPQL ou `nativeQuery = true`), `JpaSpecificationExecutor` + `Specification` para filtros dinâmicos. Em **último caso**, para consultas nativas que retornam DTOs ou tabelas sem entidade, usar `EntityManager.createNativeQuery` em implementação customizada (ex.: `ExampleRepositoryImpl`).
+- Preferir métodos derivados: `findByX`, `findByXAndY`, `findFirstByX`, `findByXOrderByYDesc`, `existsByX`.
+- Para listagens paginadas com filtros opcionais: `JpaSpecificationExecutor` e classe `XxxSpecification` que monta `Specification<E>` a partir do modelo de filtro; no repositório, método default que chama `findAll(Specification, Pageable)`.
+- Usar `@Query` com JPQL ou SQL nativa quando o método derivado não bastar; `@Modifying` para UPDATE/INSERT nativos.
 - Exemplos: `findByX`, `findByXAndY`, `findFirstByX`, `findByXOrderByYDesc`, `existsByX`.
 
 ## Controllers
@@ -63,12 +63,12 @@
 
 ## Estilo Kotlin e princípios
 
-- Usar data class quando fizer sentido; para entidades persistidas que estendem Auditable, usar sempre class.
+- Usar data class quando fizer sentido; para entidades JPA com auditoria, usar sempre class.
 - Preferir funções de extensão para conversões.
 - Evitar nullable desnecessário. Evitar `var` quando puder ser `val`.
 - Usar nomes claros e sem abreviações.
 - O projeto deve ser: simples, testável, independente de framework (domínio sem anotações de framework), fácil de evoluir, fácil de entender em menos de 5 minutos. Em caso de dúvida, optar pela solução mais simples e previsível.
-- Proibido: misturar camadas; colocar regra de negócio em adapter; usar `@Entity` ou anotações de persistência no domínio; criar código mágico; criar dependências desnecessárias.
+- Proibido: misturar camadas; colocar regra de negócio em adapter; usar anotações de persistência no domínio puro; criar código mágico; criar dependências desnecessárias.
 
 ## Testes
 

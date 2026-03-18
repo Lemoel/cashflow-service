@@ -1,45 +1,60 @@
 package br.com.cashflow.usecase.maquina.entity
 
-import org.springframework.data.annotation.Id
-import org.springframework.data.annotation.Version
-import org.springframework.data.relational.core.mapping.Column
-import org.springframework.data.relational.core.mapping.Table
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.EntityListeners
+import jakarta.persistence.Id
+import jakarta.persistence.PrePersist
+import jakarta.persistence.Table
+import jakarta.persistence.Version
+import org.springframework.data.annotation.CreatedBy
+import org.springframework.data.annotation.LastModifiedBy
+import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.Instant
 import java.util.UUID
 
-@Table("maquina")
+@Entity
+@Table(name = "maquina")
+@EntityListeners(AuditingEntityListener::class)
 class Maquina(
     @Id
     var id: UUID? = null,
 
-    @Column("numero_serie_leitor")
+    @Column(name = "numero_serie_leitor")
     var numeroSerieLeitor: String? = null,
 
-    @Column("congregacao_id")
+    @Column(name = "congregacao_id")
     var congregacaoId: UUID? = null,
 
-    @Column("banco_id")
+    @Column(name = "banco_id")
     var bancoId: UUID? = null,
 
-    @Column("departamento_id")
+    @Column(name = "departamento_id")
     var departamentoId: UUID? = null,
 
-    @Column("ativo")
+    @Column(name = "ativo")
     var ativo: Boolean = true,
 
     @Version
-    @Column("version")
+    @Column(name = "version")
     var version: Long? = null,
 
-    @Column("created_at")
+    @Column(name = "created_at")
     var createdAt: Instant? = null,
 
-    @Column("updated_at")
+    @Column(name = "updated_at")
     var updatedAt: Instant? = null,
 
-    @Column("creation_user_id")
+    @CreatedBy
+    @Column(name = "creation_user_id")
     var creationUserId: String = "",
 
-    @Column("mod_user_id")
+    @LastModifiedBy
+    @Column(name = "mod_user_id")
     var modUserId: String? = null,
-)
+) {
+    @PrePersist
+    fun onPrePersist() {
+        if (id == null) id = UUID.randomUUID()
+    }
+}

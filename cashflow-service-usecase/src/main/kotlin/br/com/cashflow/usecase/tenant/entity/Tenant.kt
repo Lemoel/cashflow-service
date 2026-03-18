@@ -1,49 +1,86 @@
 package br.com.cashflow.usecase.tenant.entity
 
-import org.springframework.data.annotation.Id
-import org.springframework.data.relational.core.mapping.Column
-import org.springframework.data.relational.core.mapping.Table
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.EntityListeners
+import jakarta.persistence.Id
+import jakarta.persistence.PrePersist
+import jakarta.persistence.Table
+import org.springframework.data.annotation.CreatedBy
+import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.annotation.LastModifiedBy
+import org.springframework.data.annotation.LastModifiedDate
+import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.Instant
 import java.util.UUID
 
-@Table(value = "tenants", schema = "core")
+@Entity
+@Table(name = "tenants", schema = "core")
+@EntityListeners(AuditingEntityListener::class)
 class Tenant(
     @Id
     var id: UUID? = null,
-    @Column("cnpj")
+
+    @Column(name = "cnpj")
     var cnpj: String = "",
-    @Column("nome_fantasia")
+
+    @Column(name = "nome_fantasia")
     var tradeName: String = "",
-    @Column("razao_social")
+
+    @Column(name = "razao_social")
     var companyName: String? = null,
-    @Column("logradouro")
+
+    @Column(name = "logradouro")
     var street: String = "",
-    @Column("numero")
+
+    @Column(name = "numero")
     var number: String = "",
-    @Column("complemento")
+
+    @Column(name = "complemento")
     var complement: String? = null,
-    @Column("bairro")
+
+    @Column(name = "bairro")
     var neighborhood: String? = null,
-    @Column("cidade")
+
+    @Column(name = "cidade")
     var city: String = "",
-    @Column("uf")
+
+    @Column(name = "uf", length = 2)
     var state: String = "",
-    @Column("cep")
+
+    @Column(name = "cep")
     var zipCode: String = "",
-    @Column("telefone")
+
+    @Column(name = "telefone")
     var phone: String? = null,
-    @Column("email")
+
+    @Column(name = "email")
     var email: String? = null,
-    @Column("ativo")
+
+    @Column(name = "ativo")
     var active: Boolean = true,
-    @Column("creation_user_id")
+
+    @CreatedBy
+    @Column(name = "creation_user_id")
     var creationUserId: String = "",
-    @Column("mod_user_id")
+
+    @LastModifiedBy
+    @Column(name = "mod_user_id")
     var modUserId: String? = null,
-    @Column("created_at")
+
+    @CreatedDate
+    @Column(name = "created_at")
     var createdAt: Instant? = null,
-    @Column("updated_at")
+
+    @LastModifiedDate
+    @Column(name = "updated_at")
     var updatedAt: Instant? = null,
-    @Column("schema_name")
+
+    @Column(name = "schema_name")
     var schemaName: String = "",
-)
+) {
+    @PrePersist
+    fun onPrePersist() {
+        if (id == null) id = UUID.randomUUID()
+    }
+}

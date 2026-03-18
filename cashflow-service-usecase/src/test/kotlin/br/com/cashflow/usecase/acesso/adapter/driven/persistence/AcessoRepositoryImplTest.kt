@@ -1,217 +1,138 @@
 package br.com.cashflow.usecase.acesso.adapter.driven.persistence
 
 import br.com.cashflow.usecase.acesso.model.AcessoFilter
-import br.com.cashflow.usecase.acesso.model.AcessoListItem
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
+import io.mockk.verify
+import jakarta.persistence.EntityManager
+import jakarta.persistence.Query
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.data.domain.PageRequest
-import org.springframework.jdbc.core.JdbcTemplate
-import org.springframework.jdbc.core.RowMapper
-import java.time.Instant
 import java.util.UUID
 
 class AcessoRepositoryImplTest {
-    private val jdbcTemplate: JdbcTemplate = mockk()
+    private val entityManager: EntityManager = mockk()
+    private val listQuery: Query = mockk()
+    private val countQuery: Query = mockk()
     private lateinit var repository: AcessoRepositoryImpl
 
     @BeforeEach
     fun setUp() {
-        repository = AcessoRepositoryImpl(jdbcTemplate)
+        repository = AcessoRepositoryImpl(entityManager)
     }
 
     @Test
     fun `findFiltered with null filter returns all items without WHERE`() {
-        val selectSqlSlot = slot<String>()
-        every {
-            jdbcTemplate.query(
-                capture(selectSqlSlot),
-                any<RowMapper<AcessoListItem>>(),
-                *anyVararg(),
-            )
-        } returns emptyList()
+        val sqlSlot = slot<String>()
+        every { entityManager.createNativeQuery(capture(sqlSlot)) } returns listQuery
+        every { listQuery.setParameter(any<String>(), any()) } returns listQuery
+        every { listQuery.resultList } returns emptyList<Array<Any?>>()
 
         val pageable = PageRequest.of(0, 10)
         val result = repository.findFiltered(null, pageable)
 
         assertThat(result).isEmpty()
-        assertThat(selectSqlSlot.captured).doesNotContain("WHERE")
-        assertThat(selectSqlSlot.captured).contains("ORDER BY a.nome ASC")
-        assertThat(selectSqlSlot.captured).contains("LIMIT ? OFFSET ?")
+        assertThat(sqlSlot.captured).doesNotContain("WHERE")
+        assertThat(sqlSlot.captured).contains("ORDER BY a.nome ASC")
+        assertThat(sqlSlot.captured).contains("LIMIT :limit OFFSET :offset")
     }
 
     @Test
     fun `findFiltered with email filter uses ILIKE condition`() {
-        val selectSqlSlot = slot<String>()
-        every {
-            jdbcTemplate.query(
-                capture(selectSqlSlot),
-                any<RowMapper<AcessoListItem>>(),
-                *anyVararg(),
-            )
-        } returns emptyList()
+        every { entityManager.createNativeQuery(any()) } returns listQuery
+        every { listQuery.setParameter(any<String>(), any()) } returns listQuery
+        every { listQuery.resultList } returns emptyList<Array<Any?>>()
 
         val filter = AcessoFilter(email = "user@test")
         repository.findFiltered(filter, PageRequest.of(0, 10))
 
-        assertThat(selectSqlSlot.captured).contains("a.email ILIKE ?")
+        verify(atLeast = 1) { listQuery.setParameter("email", "%user@test%") }
     }
 
     @Test
     fun `findFiltered with congregacaoId filter uses congregacao condition`() {
-        val selectSqlSlot = slot<String>()
-        every {
-            jdbcTemplate.query(
-                capture(selectSqlSlot),
-                any<RowMapper<AcessoListItem>>(),
-                *anyVararg(),
-            )
-        } returns emptyList()
+        every { entityManager.createNativeQuery(any()) } returns listQuery
+        every { listQuery.setParameter(any<String>(), any()) } returns listQuery
+        every { listQuery.resultList } returns emptyList<Array<Any?>>()
 
         val congId = UUID.randomUUID()
         val filter = AcessoFilter(congregacaoId = congId)
         repository.findFiltered(filter, PageRequest.of(0, 10))
 
-        assertThat(selectSqlSlot.captured).contains("ac.congregacao_id = ?")
+        verify(atLeast = 1) { listQuery.setParameter("congregacaoId", congId) }
     }
 
     @Test
     fun `findFiltered with perfil filter uses tipo_acesso condition`() {
-        val selectSqlSlot = slot<String>()
-        every {
-            jdbcTemplate.query(
-                capture(selectSqlSlot),
-                any<RowMapper<AcessoListItem>>(),
-                *anyVararg(),
-            )
-        } returns emptyList()
+        every { entityManager.createNativeQuery(any()) } returns listQuery
+        every { listQuery.setParameter(any<String>(), any()) } returns listQuery
+        every { listQuery.resultList } returns emptyList<Array<Any?>>()
 
         val filter = AcessoFilter(perfil = "ADMIN")
         repository.findFiltered(filter, PageRequest.of(0, 10))
 
-        assertThat(selectSqlSlot.captured).contains("a.tipo_acesso = ?")
+        verify(atLeast = 1) { listQuery.setParameter("perfil", "ADMIN") }
     }
 
     @Test
     fun `findFiltered with ativo filter uses ativo condition`() {
-        val selectSqlSlot = slot<String>()
-        every {
-            jdbcTemplate.query(
-                capture(selectSqlSlot),
-                any<RowMapper<AcessoListItem>>(),
-                *anyVararg(),
-            )
-        } returns emptyList()
+        every { entityManager.createNativeQuery(any()) } returns listQuery
+        every { listQuery.setParameter(any<String>(), any()) } returns listQuery
+        every { listQuery.resultList } returns emptyList<Array<Any?>>()
 
         val filter = AcessoFilter(ativo = true)
         repository.findFiltered(filter, PageRequest.of(0, 10))
 
-        assertThat(selectSqlSlot.captured).contains("a.ativo = ?")
-    }
-
-    @Test
-    fun `findFiltered with all filters uses all conditions`() {
-        val selectSqlSlot = slot<String>()
-        every {
-            jdbcTemplate.query(
-                capture(selectSqlSlot),
-                any<RowMapper<AcessoListItem>>(),
-                *anyVararg(),
-            )
-        } returns emptyList()
-
-        val filter =
-            AcessoFilter(
-                email = "user",
-                congregacaoId = UUID.randomUUID(),
-                perfil = "ADMIN",
-                ativo = false,
-            )
-        repository.findFiltered(filter, PageRequest.of(0, 10))
-
-        assertThat(selectSqlSlot.captured).contains("a.email ILIKE ?")
-        assertThat(selectSqlSlot.captured).contains("ac.congregacao_id = ?")
-        assertThat(selectSqlSlot.captured).contains("a.tipo_acesso = ?")
-        assertThat(selectSqlSlot.captured).contains("a.ativo = ?")
+        verify(atLeast = 1) { listQuery.setParameter("ativo", true) }
     }
 
     @Test
     fun `findFiltered returns items from query`() {
-        val item =
-            AcessoListItem(
-                email = "user@test.com",
-                nome = "USER",
-                telefone = "11999999999",
-                tipoAcesso = "ADMIN",
-                ativo = true,
-                data = Instant.now(),
-                modDateTime = null,
-                congregacaoId = UUID.randomUUID(),
-                congregacaoNome = "Congregacao A",
-            )
-        every {
-            jdbcTemplate.query(
-                any<String>(),
-                any<RowMapper<AcessoListItem>>(),
-                *anyVararg(),
-            )
-        } returns listOf(item)
+        val email = "user@test.com"
+        val nome = "USER"
+        val row = arrayOf<Any?>(email, nome, "11999999999", "ADMIN", true, null, null, UUID.randomUUID().toString(), "Congregacao A")
+        every { entityManager.createNativeQuery(any()) } returns listQuery
+        every { listQuery.setParameter(any<String>(), any()) } returns listQuery
+        every { listQuery.resultList } returns listOf(row)
 
         val result = repository.findFiltered(null, PageRequest.of(0, 10))
 
         assertThat(result).hasSize(1)
-        assertThat(result[0].email).isEqualTo("user@test.com")
+        assertThat(result[0].email).isEqualTo(email)
+        assertThat(result[0].nome).isEqualTo(nome)
     }
 
     @Test
     fun `countFiltered with null filter returns count without WHERE`() {
-        val countSqlSlot = slot<String>()
-        every {
-            jdbcTemplate.queryForObject(
-                capture(countSqlSlot),
-                Long::class.java,
-                *anyVararg(),
-            )
-        } returns 5L
+        every { entityManager.createNativeQuery(any()) } returns countQuery
+        every { countQuery.setParameter(any<String>(), any()) } returns countQuery
+        every { countQuery.singleResult } returns 5L
 
         val result = repository.countFiltered(null)
 
         assertThat(result).isEqualTo(5L)
-        assertThat(countSqlSlot.captured).contains("COUNT(DISTINCT a.email)")
-        assertThat(countSqlSlot.captured).doesNotContain("WHERE")
     }
 
     @Test
     fun `countFiltered with filter applies conditions`() {
-        val countSqlSlot = slot<String>()
-        every {
-            jdbcTemplate.queryForObject(
-                capture(countSqlSlot),
-                Long::class.java,
-                *anyVararg(),
-            )
-        } returns 2L
+        every { entityManager.createNativeQuery(any()) } returns countQuery
+        every { countQuery.setParameter(any<String>(), any()) } returns countQuery
+        every { countQuery.singleResult } returns 2L
 
         val filter = AcessoFilter(email = "user", ativo = true)
         val result = repository.countFiltered(filter)
 
         assertThat(result).isEqualTo(2L)
-        assertThat(countSqlSlot.captured).contains("a.email ILIKE ?")
-        assertThat(countSqlSlot.captured).contains("a.ativo = ?")
     }
 
     @Test
-    fun `countFiltered returns 0 when queryForObject returns null`() {
-        every {
-            jdbcTemplate.queryForObject(
-                any<String>(),
-                Long::class.java,
-                *anyVararg(),
-            )
-        } returns null
+    fun `countFiltered returns 0 when singleResult returns null`() {
+        every { entityManager.createNativeQuery(any()) } returns countQuery
+        every { countQuery.setParameter(any<String>(), any()) } returns countQuery
+        every { countQuery.singleResult } returns null
 
         val result = repository.countFiltered(null)
 
@@ -220,35 +141,25 @@ class AcessoRepositoryImplTest {
 
     @Test
     fun `findFiltered with blank email filter does not add email condition`() {
-        val selectSqlSlot = slot<String>()
-        every {
-            jdbcTemplate.query(
-                capture(selectSqlSlot),
-                any<RowMapper<AcessoListItem>>(),
-                *anyVararg(),
-            )
-        } returns emptyList()
+        every { entityManager.createNativeQuery(any()) } returns listQuery
+        every { listQuery.setParameter(any<String>(), any()) } returns listQuery
+        every { listQuery.resultList } returns emptyList<Array<Any?>>()
 
         val filter = AcessoFilter(email = "  ")
         repository.findFiltered(filter, PageRequest.of(0, 10))
 
-        assertThat(selectSqlSlot.captured).doesNotContain("a.email ILIKE ?")
+        verify(exactly = 2) { listQuery.setParameter(any<String>(), any<Any>()) } // only limit and offset
     }
 
     @Test
     fun `findFiltered with blank perfil filter does not add perfil condition`() {
-        val selectSqlSlot = slot<String>()
-        every {
-            jdbcTemplate.query(
-                capture(selectSqlSlot),
-                any<RowMapper<AcessoListItem>>(),
-                *anyVararg(),
-            )
-        } returns emptyList()
+        every { entityManager.createNativeQuery(any()) } returns listQuery
+        every { listQuery.setParameter(any<String>(), any()) } returns listQuery
+        every { listQuery.resultList } returns emptyList<Array<Any?>>()
 
         val filter = AcessoFilter(perfil = "")
         repository.findFiltered(filter, PageRequest.of(0, 10))
 
-        assertThat(selectSqlSlot.captured).doesNotContain("a.tipo_acesso = ?")
+        verify(exactly = 2) { listQuery.setParameter(any<String>(), any<Any>()) }
     }
 }

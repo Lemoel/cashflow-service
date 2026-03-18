@@ -14,6 +14,8 @@ server:
   port: ${SERVER_PORT:8081}
 
 spring:
+  jpa:
+    show-sql: true
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/cashflowdb}
     username: ${DB_USER:admin}
