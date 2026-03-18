@@ -5,22 +5,20 @@ import br.com.cashflow.usecase.acesso.model.AcessoFilter
 import br.com.cashflow.usecase.acesso.model.AcessoListItem
 import br.com.cashflow.usecase.acesso.model.AcessoPage
 import br.com.cashflow.usecase.acesso.port.AcessoOutputPort
-import br.com.cashflow.usecase.congregation.adapter.driven.persistence.CongregationRepository
 import jakarta.persistence.EntityManager
-import jakarta.persistence.PersistenceContext
 import org.springframework.data.domain.PageRequest
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
 import java.util.UUID
 
 @Component
 class AcessoPersistenceAdapter(
     private val acessoRepository: AcessoRepository,
-    private val congregationRepository: CongregationRepository,
+    private val entityManager: EntityManager,
 ) : AcessoOutputPort {
-    @PersistenceContext
-    private lateinit var entityManager: EntityManager
-
     override fun findByEmail(email: String): Acesso? = acessoRepository.findById(email).orElse(null)
+
+    override fun existsByEmail(email: String): Boolean = acessoRepository.existsById(email)
 
     override fun updatePassword(
         email: String,
@@ -67,13 +65,16 @@ class AcessoPersistenceAdapter(
         email: String,
         congregacaoId: UUID,
     ) {
-        val acesso =
-            acessoRepository.findById(email).orElse(null)
-                ?: return
-        val congregation = congregationRepository.getReferenceById(congregacaoId)
-        acesso.congregacoes.clear()
-        acesso.congregacoes.add(congregation)
-        acessoRepository.save(acesso)
+        entityManager
+            .createNativeQuery("DELETE FROM acesso_congregacao WHERE email = :email")
+            .setParameter("email", email)
+            .executeUpdate()
+        entityManager
+            .createNativeQuery(
+                "INSERT INTO acesso_congregacao (email, congregacao_id) VALUES (:email, :congregacaoId)",
+            ).setParameter("email", email)
+            .setParameter("congregacaoId", congregacaoId)
+            .executeUpdate()
     }
 
     override fun findListItemByEmail(email: String): AcessoListItem? {
@@ -95,6 +96,8 @@ class AcessoPersistenceAdapter(
         email: String,
         tenantId: UUID,
     ) {
+        val auditUser =
+            SecurityContextHolder.getContext().authentication?.name ?: "system"
         entityManager
             .createNativeQuery(
                 """
@@ -103,8 +106,8 @@ class AcessoPersistenceAdapter(
                 """.trimIndent(),
             ).setParameter("email", email)
             .setParameter("tenantId", tenantId)
-            .setParameter("createdBy", "system")
-            .setParameter("lastModifiedBy", "system")
+            .setParameter("createdBy", auditUser)
+            .setParameter("lastModifiedBy", auditUser)
             .executeUpdate()
     }
 }

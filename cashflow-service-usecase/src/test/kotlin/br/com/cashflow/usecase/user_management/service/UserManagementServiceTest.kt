@@ -343,7 +343,7 @@ class UserManagementServiceTest {
 
     @Test
     fun `delete removes user when found`() {
-        every { acessoOutputPort.findByEmail("user@test.com") } returns buildAcesso()
+        every { acessoOutputPort.existsByEmail("user@test.com") } returns true
         every { acessoOutputPort.deleteByEmail("user@test.com") } just runs
 
         service.delete("user@test.com")
@@ -353,7 +353,7 @@ class UserManagementServiceTest {
 
     @Test
     fun `delete throws ResourceNotFoundException when user not found`() {
-        every { acessoOutputPort.findByEmail("unknown@test.com") } returns null
+        every { acessoOutputPort.existsByEmail("unknown@test.com") } returns false
 
         assertThatThrownBy { service.delete("unknown@test.com") }
             .isInstanceOf(ResourceNotFoundException::class.java)
@@ -362,7 +362,7 @@ class UserManagementServiceTest {
 
     @Test
     fun `delete throws ConflictException when user has dependent records`() {
-        every { acessoOutputPort.findByEmail("user@test.com") } returns buildAcesso()
+        every { acessoOutputPort.existsByEmail("user@test.com") } returns true
         every { acessoOutputPort.deleteByEmail("user@test.com") } throws
             DataIntegrityViolationException("FK violation")
 

@@ -6,6 +6,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.PrePersist
 import jakarta.persistence.Table
+import java.math.BigDecimal
 import java.util.UUID
 
 @Entity
@@ -23,8 +24,8 @@ class Parametro(
     @Column(name = "valor_inteiro")
     var valorInteiro: Long? = null,
 
-    @Column(name = "valor_decimal")
-    var valorDecimal: Double? = null,
+    @Column(name = "valor_decimal", precision = 15, scale = 4)
+    var valorDecimal: BigDecimal? = null,
 
     @Column(name = "tipo")
     var tipo: String = "",

@@ -9,4 +9,14 @@ data class UsuarioCommand(
     val perfil: String,
     val congregacaoId: UUID,
     val ativo: Boolean,
-)
+) {
+    fun sanitized(): UsuarioCommand =
+        UsuarioCommand(
+            nome = nome.trim().uppercase(),
+            email = email.trim().lowercase(),
+            telefone = telefone?.trim()?.takeIf { it.isNotBlank() },
+            perfil = perfil.trim().uppercase(),
+            congregacaoId = congregacaoId,
+            ativo = ativo,
+        )
+}

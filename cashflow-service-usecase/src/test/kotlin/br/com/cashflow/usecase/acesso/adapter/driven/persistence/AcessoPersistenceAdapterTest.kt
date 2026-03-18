@@ -5,10 +5,11 @@ import br.com.cashflow.usecase.acesso.entity.PerfilUsuario
 import br.com.cashflow.usecase.acesso.model.AcessoFilter
 import br.com.cashflow.usecase.acesso.model.AcessoListItem
 import br.com.cashflow.usecase.acesso.model.AcessoPage
-import br.com.cashflow.usecase.congregation.adapter.driven.persistence.CongregationRepository
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import jakarta.persistence.EntityManager
+import jakarta.persistence.Query
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -18,12 +19,31 @@ import java.util.UUID
 
 class AcessoPersistenceAdapterTest {
     private val acessoRepository: AcessoRepository = mockk()
-    private val congregationRepository: CongregationRepository = mockk(relaxed = true)
+    private val entityManager: EntityManager = mockk()
     private lateinit var adapter: AcessoPersistenceAdapter
 
     @BeforeEach
     fun setUp() {
-        adapter = AcessoPersistenceAdapter(acessoRepository, congregationRepository)
+        adapter = AcessoPersistenceAdapter(acessoRepository, entityManager)
+    }
+
+    @Test
+    fun `existsByEmail delegates to repository existsById`() {
+        every { acessoRepository.existsById("user@test.com") } returns true
+
+        val result = adapter.existsByEmail("user@test.com")
+
+        assertThat(result).isTrue()
+        verify(exactly = 1) { acessoRepository.existsById("user@test.com") }
+    }
+
+    @Test
+    fun `existsByEmail returns false when repository returns false`() {
+        every { acessoRepository.existsById("missing@test.com") } returns false
+
+        val result = adapter.existsByEmail("missing@test.com")
+
+        assertThat(result).isFalse()
     }
 
     @Test
@@ -232,28 +252,30 @@ class AcessoPersistenceAdapterTest {
     }
 
     @Test
-    fun `setCongregacaoForEmail loads acesso updates congregacoes and saves`() {
+    fun `setCongregacaoForEmail executes delete and insert via native query`() {
         val email = "user@test.com"
         val congId = UUID.randomUUID()
-        val acesso =
-            Acesso(
-                email = email,
-                password = "",
-                ativo = true,
-                tipoAcesso = PerfilUsuario.USER.name,
+        val deleteQuery = mockk<Query>(relaxed = true)
+        val insertQuery = mockk<Query>(relaxed = true)
+        every { deleteQuery.setParameter(any<String>(), any()) } returns deleteQuery
+        every { deleteQuery.executeUpdate() } returns 0
+        every { insertQuery.setParameter(any<String>(), any()) } returns insertQuery
+        every { insertQuery.executeUpdate() } returns 1
+        every {
+            entityManager.createNativeQuery("DELETE FROM acesso_congregacao WHERE email = :email")
+        } returns deleteQuery
+        every {
+            entityManager.createNativeQuery(
+                "INSERT INTO acesso_congregacao (email, congregacao_id) VALUES (:email, :congregacaoId)",
             )
-        val congregation =
-            br.com.cashflow.usecase.congregation.entity
-                .Congregation(id = congId, nome = "C")
-        every { acessoRepository.findById(email) } returns Optional.of(acesso)
-        every { congregationRepository.getReferenceById(congId) } returns congregation
-        every { acessoRepository.save(any()) } returns acesso
+        } returns insertQuery
 
         adapter.setCongregacaoForEmail(email, congId)
 
-        verify(exactly = 1) { acessoRepository.findById(email) }
-        verify(exactly = 1) { congregationRepository.getReferenceById(congId) }
-        verify(exactly = 1) { acessoRepository.save(acesso) }
+        verify(exactly = 1) { deleteQuery.executeUpdate() }
+        verify(exactly = 1) { insertQuery.executeUpdate() }
+        verify(exactly = 0) { acessoRepository.findById(any()) }
+        verify(exactly = 0) { acessoRepository.save(any<Acesso>()) }
     }
 
     @Test

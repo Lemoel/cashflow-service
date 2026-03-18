@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
+import org.springframework.data.jpa.repository.Query
 import java.util.UUID
 
 interface ParametroRepository :
@@ -30,4 +31,7 @@ interface ParametroRepository :
     ): Boolean
 
     fun findAllByOrderByChaveAsc(): List<Parametro>
+
+    @Query("SELECT p.chave FROM Parametro p ORDER BY p.chave")
+    fun findAllChaveOrderByChaveAsc(): List<String>
 }

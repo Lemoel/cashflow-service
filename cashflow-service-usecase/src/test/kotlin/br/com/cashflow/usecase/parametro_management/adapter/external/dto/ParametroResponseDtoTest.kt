@@ -3,6 +3,7 @@ package br.com.cashflow.usecase.parametro_management.adapter.external.dto
 import br.com.cashflow.usecase.parametro.entity.Parametro
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -23,6 +24,8 @@ class ParametroResponseDtoTest {
             )
         parametro.createdBy = "user1"
         parametro.createdDate = createdAt
+        val updatedAt = LocalDateTime.now().plusHours(1)
+        parametro.lastModifiedDate = updatedAt
 
         val result = parametro.toResponse()
 
@@ -33,6 +36,7 @@ class ParametroResponseDtoTest {
         assertThat(result.ativo).isTrue()
         assertThat(result.creationUserId).isEqualTo("user1")
         assertThat(result.createdAt).isEqualTo(createdAt.toString())
+        assertThat(result.updatedAt).isEqualTo(updatedAt.toString())
     }
 
     @Test
@@ -66,7 +70,7 @@ class ParametroResponseDtoTest {
                 chave = "K",
                 valorTexto = null,
                 valorInteiro = null,
-                valorDecimal = 3.14,
+                valorDecimal = BigDecimal("3.14"),
                 tipo = "DOUBLE",
                 ativo = true,
             )

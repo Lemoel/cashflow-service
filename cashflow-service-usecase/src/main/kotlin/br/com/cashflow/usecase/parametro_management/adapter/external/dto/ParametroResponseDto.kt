@@ -11,6 +11,7 @@ data class ParametroResponseDto(
     val ativo: Boolean,
     val creationUserId: String,
     val createdAt: String?,
+    val updatedAt: String?,
 )
 
 fun Parametro.toResponse(): ParametroResponseDto {
@@ -30,6 +31,7 @@ fun Parametro.toResponse(): ParametroResponseDto {
         ativo = ativo,
         creationUserId = createdBy ?: "",
         createdAt = createdDate?.toString(),
+        updatedAt = lastModifiedDate?.toString(),
     )
 }
 

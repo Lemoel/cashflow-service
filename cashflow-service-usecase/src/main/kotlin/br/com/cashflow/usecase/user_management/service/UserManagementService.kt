@@ -9,6 +9,7 @@ import br.com.cashflow.usecase.acesso.model.AcessoFilter
 import br.com.cashflow.usecase.acesso.model.AcessoListItem
 import br.com.cashflow.usecase.acesso.model.AcessoPage
 import br.com.cashflow.usecase.acesso.port.AcessoOutputPort
+import br.com.cashflow.usecase.congregation.entity.Congregation
 import br.com.cashflow.usecase.congregation.port.CongregationOutputPort
 import br.com.cashflow.usecase.user_management.port.UserManagementInputPort
 import br.com.cashflow.usecase.user_management.port.UsuarioCommand
@@ -27,12 +28,12 @@ class UserManagementService(
 ) : UserManagementInputPort {
     @Transactional
     override fun create(command: UsuarioCommand): UsuarioCriadoResult {
-        val email = command.email.trim().lowercase()
-        if (acessoOutputPort.existsByEmailExcluding(email, null)) {
+        val cmd = command.sanitized()
+        if (acessoOutputPort.existsByEmailExcluding(cmd.email, null)) {
             throw ConflictException("Já existe um usuário com este e-mail.")
         }
-        validateCongregacaoExists(command.congregacaoId)
-        validatePerfil(command.perfil)
+        val congregation = findCongregationOrThrow(cmd.congregacaoId)
+        validatePerfil(cmd.perfil)
         val senhaTemporaria =
             UUID
                 .randomUUID()
@@ -42,20 +43,19 @@ class UserManagementService(
         val passwordHash = checkNotNull(passwordEncoder.encode(senhaTemporaria)) { "Falha ao codificar senha" }
         val acesso =
             Acesso(
-                email = email,
+                email = cmd.email,
                 password = passwordHash,
-                nome = command.nome.trim().uppercase(),
-                telefone = command.telefone?.trim()?.takeIf { it.isNotBlank() },
-                ativo = command.ativo,
-                tipoAcesso = command.perfil.trim().uppercase(),
+                nome = cmd.nome,
+                telefone = cmd.telefone,
+                ativo = cmd.ativo,
+                tipoAcesso = cmd.perfil,
             )
         acessoOutputPort.save(acesso)
-        acessoOutputPort.setCongregacaoForEmail(email, command.congregacaoId)
-        val congregation = requireNotNull(congregationOutputPort.findById(command.congregacaoId))
+        acessoOutputPort.setCongregacaoForEmail(cmd.email, cmd.congregacaoId)
         val tenantId = requireNotNull(congregation.tenantId) { "Congregation must have tenantId" }
-        acessoOutputPort.insertUserTenantMap(email, tenantId)
+        acessoOutputPort.insertUserTenantMap(cmd.email, tenantId)
         val usuario =
-            requireNotNull(acessoOutputPort.findListItemByEmail(email)) {
+            requireNotNull(acessoOutputPort.findListItemByEmail(cmd.email)) {
                 "Usuário criado mas não encontrado"
             }
         return UsuarioCriadoResult(usuario = usuario, senhaTemporaria = senhaTemporaria)
@@ -69,34 +69,34 @@ class UserManagementService(
         val existing =
             acessoOutputPort.findByEmail(id)
                 ?: throw ResourceNotFoundException("Usuário não encontrado.")
-        val newEmail = command.email.trim().lowercase()
-        if (acessoOutputPort.existsByEmailExcluding(newEmail, id)) {
+        val cmd = command.sanitized()
+        if (acessoOutputPort.existsByEmailExcluding(cmd.email, id)) {
             throw ConflictException("Já existe um usuário com este e-mail.")
         }
-        validateCongregacaoExists(command.congregacaoId)
-        validatePerfil(command.perfil)
-        if (id == newEmail) {
-            existing.nome = command.nome.trim().uppercase()
-            existing.telefone = command.telefone?.trim()?.takeIf { it.isNotBlank() }
-            existing.tipoAcesso = command.perfil.trim().uppercase()
-            existing.ativo = command.ativo
+        findCongregationOrThrow(cmd.congregacaoId)
+        validatePerfil(cmd.perfil)
+        if (id == cmd.email) {
+            existing.nome = cmd.nome
+            existing.telefone = cmd.telefone
+            existing.tipoAcesso = cmd.perfil
+            existing.ativo = cmd.ativo
             acessoOutputPort.save(existing)
-            acessoOutputPort.setCongregacaoForEmail(newEmail, command.congregacaoId)
+            acessoOutputPort.setCongregacaoForEmail(cmd.email, cmd.congregacaoId)
         } else {
             val newAcesso =
                 Acesso(
-                    email = newEmail,
+                    email = cmd.email,
                     password = existing.password,
-                    nome = command.nome.trim().uppercase(),
-                    telefone = command.telefone?.trim()?.takeIf { it.isNotBlank() },
-                    ativo = command.ativo,
-                    tipoAcesso = command.perfil.trim().uppercase(),
+                    nome = cmd.nome,
+                    telefone = cmd.telefone,
+                    ativo = cmd.ativo,
+                    tipoAcesso = cmd.perfil,
                 )
             acessoOutputPort.save(newAcesso)
-            acessoOutputPort.setCongregacaoForEmail(newEmail, command.congregacaoId)
+            acessoOutputPort.setCongregacaoForEmail(cmd.email, cmd.congregacaoId)
             acessoOutputPort.deleteByEmail(id)
         }
-        return requireNotNull(acessoOutputPort.findListItemByEmail(newEmail)) {
+        return requireNotNull(acessoOutputPort.findListItemByEmail(cmd.email)) {
             "Usuário atualizado mas não encontrado"
         }
     }
@@ -123,8 +123,9 @@ class UserManagementService(
 
     @Transactional
     override fun delete(id: String) {
-        acessoOutputPort.findByEmail(id)
-            ?: throw ResourceNotFoundException("Usuário não encontrado.")
+        if (!acessoOutputPort.existsByEmail(id)) {
+            throw ResourceNotFoundException("Usuário não encontrado.")
+        }
         try {
             acessoOutputPort.deleteByEmail(id)
         } catch (error: DataIntegrityViolationException) {
@@ -139,11 +140,9 @@ class UserManagementService(
         excludeId: String?,
     ): Boolean = !acessoOutputPort.existsByEmailExcluding(email, excludeId)
 
-    private fun validateCongregacaoExists(congregacaoId: UUID) {
-        if (congregationOutputPort.findById(congregacaoId) == null) {
-            throw BusinessException("Congregação não encontrada.")
-        }
-    }
+    private fun findCongregationOrThrow(congregacaoId: UUID): Congregation =
+        congregationOutputPort.findById(congregacaoId)
+            ?: throw BusinessException("Congregação não encontrada.")
 
     private fun validatePerfil(perfil: String) {
         runCatching { PerfilUsuario.valueOf(perfil.trim().uppercase()) }

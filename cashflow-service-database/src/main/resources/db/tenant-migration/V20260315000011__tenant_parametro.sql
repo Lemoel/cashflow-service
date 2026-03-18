@@ -5,9 +5,9 @@ CREATE TABLE parametro (
     chave VARCHAR(100) NOT NULL UNIQUE,
     valor_texto TEXT,
     valor_inteiro BIGINT,
-    valor_decimal DOUBLE PRECISION,
+    valor_decimal NUMERIC(15,4),
     tipo VARCHAR(20) NOT NULL CHECK (tipo IN ('STRING', 'INTEGER', 'DOUBLE')),
-    ativo BOOLEAN NOT NULL DEFAULT FALSE,
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
     created_by_id VARCHAR(113) NOT NULL,
     dti_created_date TIMESTAMP NOT NULL,
     last_modified_by_id VARCHAR(113) NOT NULL,
@@ -21,3 +21,5 @@ CREATE TABLE parametro (
         OR (tipo = 'DOUBLE'  AND valor_decimal IS NOT NULL AND valor_texto IS NULL AND valor_inteiro IS NULL)
     )
 );
+
+CREATE INDEX idx_parametro_ativo ON parametro(ativo);

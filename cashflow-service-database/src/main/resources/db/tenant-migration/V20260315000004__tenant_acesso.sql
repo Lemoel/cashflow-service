@@ -12,3 +12,6 @@ CREATE TABLE acesso (
     last_modified_by_id VARCHAR(113) NOT NULL,
     dti_last_modified_date TIMESTAMP NOT NULL
 );
+
+CREATE INDEX idx_acesso_nome ON acesso(nome);
+CREATE INDEX idx_acesso_ativo_tipo_acesso ON acesso(ativo, tipo_acesso);
