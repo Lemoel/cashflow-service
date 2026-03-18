@@ -11,7 +11,7 @@ object CongregationSpecification {
             if (filter == null) return@Specification cb.conjunction()
             val predicates = mutableListOf<Predicate>()
             filter.nome?.takeIf { it.isNotBlank() }?.let {
-                predicates.add(cb.equal(root.get<String>("nome"), it))
+                predicates.add(cb.like(cb.upper(root.get<String>("nome")), "%${it.uppercase()}%"))
             }
             filter.cnpj?.takeIf { it.isNotBlank() }?.let {
                 predicates.add(cb.equal(root.get<String>("cnpj"), it))

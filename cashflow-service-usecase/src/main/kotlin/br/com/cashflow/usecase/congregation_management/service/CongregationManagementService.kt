@@ -26,9 +26,10 @@ class CongregationManagementService(
     private val congregationOutputPort: CongregationOutputPort,
     private val tenantOutputPort: TenantOutputPort,
 ) : CongregationManagementInputPort {
+    @Transactional
     override fun create(request: CongregationCreateRequestDto): Congregation {
         if (tenantOutputPort.findById(request.tenantId) == null) {
-            throw BusinessException("Usuário não possui congregação vinculada!")
+            throw BusinessException("Tenant não encontrado.")
         }
         val entity = request.toEntity()
         validateRequiredFields(entity)
@@ -46,6 +47,7 @@ class CongregationManagementService(
         }
     }
 
+    @Transactional
     override fun update(
         id: UUID,
         request: CongregationUpdateRequestDto,
@@ -69,25 +71,21 @@ class CongregationManagementService(
         }
     }
 
+    @Transactional(readOnly = true)
     override fun findById(id: UUID): Congregation? = congregationOutputPort.findById(id)
 
+    @Transactional(readOnly = true)
     override fun findAll(
         filter: CongregationFilterModel?,
         page: Int,
         size: Int,
     ): CongregationPageModel = congregationOutputPort.findAll(filter, page, size)
 
-    override fun findListForDropdown(): List<Pair<UUID, String>> =
-        congregationOutputPort.findAllOrderByNome().map {
-            it.id!! to
-                it.nome
-        }
+    @Transactional(readOnly = true)
+    override fun findListForDropdown(): List<Pair<UUID, String>> = congregationOutputPort.findAllOrderByNome()
 
-    override fun findSetoriais(): List<Pair<UUID, String>> =
-        congregationOutputPort.findSetoriais().map {
-            it.id!! to
-                it.nome
-        }
+    @Transactional(readOnly = true)
+    override fun findSetoriais(): List<Pair<UUID, String>> = congregationOutputPort.findSetoriais()
 
     @Transactional
     override fun delete(id: UUID) {

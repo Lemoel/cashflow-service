@@ -32,4 +32,8 @@ interface CongregationRepository :
     fun findAllByOrderByNomeAsc(): List<Congregation>
 
     fun findBySetorialIdIsNullAndAtivoTrueOrderByNomeAsc(): List<Congregation>
+
+    fun findAllProjectedByOrderByNomeAsc(): List<CongregationIdNameProjection>
+
+    fun findProjectedBySetorialIdIsNullAndAtivoTrueOrderByNomeAsc(): List<CongregationIdNameProjection>
 }

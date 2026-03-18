@@ -95,7 +95,7 @@ class CongregationManagementServiceTest {
 
         assertThatThrownBy { service.create(request) }
             .isInstanceOf(BusinessException::class.java)
-            .hasMessageContaining("congregação vinculada")
+            .hasMessageContaining("Tenant não encontrado")
         verify(exactly = 0) { congregationOutputPort.save(any()) }
     }
 
@@ -330,22 +330,9 @@ class CongregationManagementServiceTest {
     }
 
     @Test
-    fun `findListForDropdown maps to pairs`() {
+    fun `findListForDropdown returns pairs from output port`() {
         val id = UUID.randomUUID()
-        val list =
-            listOf(
-                Congregation(
-                    id = id,
-                    tenantId = UUID.randomUUID(),
-                    nome = "Cong",
-                    logradouro = "R",
-                    bairro = "B",
-                    numero = "1",
-                    cidade = "C",
-                    uf = "SP",
-                    cep = "01234567",
-                ),
-            )
+        val list = listOf(id to "Cong")
         every { congregationOutputPort.findAllOrderByNome() } returns list
 
         val result = service.findListForDropdown()
@@ -354,22 +341,9 @@ class CongregationManagementServiceTest {
     }
 
     @Test
-    fun `findSetoriais delegates to output port`() {
+    fun `findSetoriais returns pairs from output port`() {
         val id = UUID.randomUUID()
-        val list =
-            listOf(
-                Congregation(
-                    id = id,
-                    tenantId = UUID.randomUUID(),
-                    nome = "Setorial",
-                    logradouro = "R",
-                    bairro = "B",
-                    numero = "1",
-                    cidade = "C",
-                    uf = "SP",
-                    cep = "01234567",
-                ),
-            )
+        val list = listOf(id to "Setorial")
         every { congregationOutputPort.findSetoriais() } returns list
 
         val result = service.findSetoriais()

@@ -26,15 +26,17 @@ class CongregationSpecificationTest {
     }
 
     @Test
-    fun `fromFilter with nome adds equal predicate`() {
+    fun `fromFilter with nome adds like predicate for case insensitive partial match`() {
         val filter = CongregationFilterModel(nome = "Cong A")
         val spec = CongregationSpecification.fromFilter(filter)
         val root = mockk<Root<Congregation>>()
         val path = mockk<Path<String>>()
+        val upperPath = mockk<Path<String>>()
         every { root.get<String>("nome") } returns path
         val query = mockk<CriteriaQuery<*>>()
         val cb = mockk<CriteriaBuilder>()
-        every { cb.equal(path, "Cong A") } returns mockk()
+        every { cb.upper(path) } returns upperPath
+        every { cb.like(upperPath, "%CONG A%") } returns mockk()
         every { cb.and(any<Predicate>()) } returns mockk()
         spec.toPredicate(root, query, cb)
     }

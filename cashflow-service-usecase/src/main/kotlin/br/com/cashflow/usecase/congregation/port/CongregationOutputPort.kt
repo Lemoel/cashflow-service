@@ -16,9 +16,9 @@ interface CongregationOutputPort {
         size: Int,
     ): CongregationPageModel
 
-    fun findAllOrderByNome(): List<Congregation>
+    fun findAllOrderByNome(): List<Pair<UUID, String>>
 
-    fun findSetoriais(): List<Congregation>
+    fun findSetoriais(): List<Pair<UUID, String>>
 
     fun existsByCnpjExcludingId(
         cnpj: String,
