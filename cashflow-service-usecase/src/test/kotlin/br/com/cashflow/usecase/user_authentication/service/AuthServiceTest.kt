@@ -80,6 +80,7 @@ class AuthServiceTest {
 
         assertThat(result.token).isEqualTo("jwt-token")
         assertThat(result.refreshToken).isEqualTo("refresh-token")
+        assertThat(result.expiresIn).isEqualTo(3600L)
         assertThat(result.usuario.email).isEqualTo(email)
         assertThat(result.usuario.perfil).isEqualTo("ADMIN")
         verify { tenantOutputPort.findTenantSchemaByEmail(email) }
@@ -226,6 +227,8 @@ class AuthServiceTest {
         val result = service.refresh("valid-refresh")
 
         assertThat(result.token).isEqualTo("new-token")
+        assertThat(result.refreshToken).isEqualTo("new-refresh")
+        assertThat(result.expiresIn).isEqualTo(3600L)
         assertThat(result.usuario.email).isEqualTo(email)
     }
 

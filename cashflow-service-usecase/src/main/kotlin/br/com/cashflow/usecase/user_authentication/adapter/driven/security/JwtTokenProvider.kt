@@ -16,9 +16,9 @@ import javax.crypto.SecretKey
 class JwtTokenProvider(
     @param:Value("\${app.jwt.secret:default-secret-key-min-256-bits-for-hs256-algorithm}")
     private val secret: String,
-    @param:Value("\${app.jwt.expiration-ms:3600000}")
+    @param:Value("\${app.jwt.expiration-ms:900000}")
     private val expirationMs: Long,
-    @param:Value("\${app.jwt.refresh-expiration-ms:604800000}")
+    @param:Value("\${app.jwt.refresh-expiration-ms:86400000}")
     private val refreshExpirationMs: Long,
 ) : TokenProvider {
     private val secretKey: SecretKey by lazy {
