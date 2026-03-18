@@ -1,6 +1,8 @@
 package br.com.cashflow.usecase.tenant.adapter.driven.persistence
 
+import br.com.cashflow.usecase.tenant.adapter.driven.persistence.TenantListProjection
 import br.com.cashflow.usecase.tenant.entity.Tenant
+import br.com.cashflow.usecase.tenant.model.TenantIdName
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -139,26 +141,17 @@ class TenantPersistenceAdapterTest {
     }
 
     @Test
-    fun `findActiveOrderByTradeName delegates to repository`() {
-        val list =
-            listOf(
-                Tenant(
-                    id = UUID.randomUUID(),
-                    cnpj = "1",
-                    tradeName = "A",
-                    street = "S",
-                    number = "1",
-                    city = "C",
-                    state = "SP",
-                    zipCode = "01234567",
-                ),
-            )
-        every { tenantRepository.findByActiveTrueOrderByTradeNameAsc() } returns list
+    fun `findActiveOrderByTradeName maps projection to TenantIdName`() {
+        val id = UUID.randomUUID()
+        val proj = mockk<TenantListProjection>()
+        every { proj.getId() } returns id
+        every { proj.getTradeName() } returns "Church A"
+        every { tenantRepository.findActiveIdAndTradeName() } returns listOf(proj)
 
         val result = adapter.findActiveOrderByTradeName()
 
-        assertThat(result).isEqualTo(list)
-        verify(exactly = 1) { tenantRepository.findByActiveTrueOrderByTradeNameAsc() }
+        assertThat(result).containsExactly(TenantIdName(id = id, name = "Church A"))
+        verify(exactly = 1) { tenantRepository.findActiveIdAndTradeName() }
     }
 
     @Test

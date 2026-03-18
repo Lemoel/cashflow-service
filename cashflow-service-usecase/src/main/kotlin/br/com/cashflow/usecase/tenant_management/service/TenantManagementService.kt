@@ -5,6 +5,7 @@ import br.com.cashflow.commons.exception.ConflictException
 import br.com.cashflow.commons.exception.ResourceNotFoundException
 import br.com.cashflow.usecase.tenant.entity.Tenant
 import br.com.cashflow.usecase.tenant.model.TenantFilter
+import br.com.cashflow.usecase.tenant.model.TenantIdName
 import br.com.cashflow.usecase.tenant.model.TenantPage
 import br.com.cashflow.usecase.tenant.port.TenantOutputPort
 import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantCreateRequestDto
@@ -31,32 +32,38 @@ class TenantManagementService(
     @Transactional
     override fun create(request: TenantCreateRequestDto): Tenant {
         val entity = request.toEntity()
+        entity.schemaName = "tenant_${entity.cnpj}"
         requireCnpjLength(entity.cnpj)
         if (tenantOutputPort.existsByCnpjExcludingId(entity.cnpj, null)) {
             throw ConflictException("CNPJ already registered")
         }
         val saved = tenantOutputPort.save(entity)
         val schemaNameToProvision = saved.schemaName
+        val tenantIdToCompensate = saved.id
         require(schemaNameToProvision.isNotBlank()) { "Tenant schema name is blank" }
         if (TransactionSynchronizationManager.isSynchronizationActive()) {
             TransactionSynchronizationManager.registerSynchronization(
                 object : TransactionSynchronization {
                     override fun afterCommit() {
-                        runProvision(schemaNameToProvision)
+                        runProvision(schemaNameToProvision, tenantIdToCompensate)
                     }
                 },
             )
         } else {
-            runProvision(schemaNameToProvision)
+            runProvision(schemaNameToProvision, tenantIdToCompensate)
         }
         return saved
     }
 
-    private fun runProvision(schemaName: String) {
+    private fun runProvision(
+        schemaName: String,
+        tenantIdToCompensate: UUID?,
+    ) {
         try {
             tenantSchemaProvisioner.provision(schemaName)
         } catch (e: Exception) {
             log.error("Falha ao provisionar schema do tenant: $schemaName", e)
+            tenantIdToCompensate?.let { tenantOutputPort.deleteById(it) }
             throw BusinessException(
                 "Falha ao provisionar schema do tenant: ${e.message ?: e.javaClass.simpleName}",
             )
@@ -67,6 +74,7 @@ class TenantManagementService(
         private val log = LoggerFactory.getLogger(TenantManagementService::class.java)
     }
 
+    @Transactional
     override fun update(
         id: UUID,
         request: TenantUpdateRequestDto,
@@ -75,23 +83,23 @@ class TenantManagementService(
             tenantOutputPort.findById(id)
                 ?: throw ResourceNotFoundException("Tenant not found: $id")
         request.applyTo(existing)
-        requireCnpjLength(existing.cnpj)
-        if (tenantOutputPort.existsByCnpjExcludingId(existing.cnpj, id)) {
-            throw ConflictException("CNPJ already registered")
-        }
         return tenantOutputPort.save(existing)
     }
 
+    @Transactional(readOnly = true)
     override fun findById(id: UUID): Tenant? = tenantOutputPort.findById(id)
 
+    @Transactional(readOnly = true)
     override fun findAll(
         filter: TenantFilter?,
         page: Int,
         size: Int,
     ): TenantPage = tenantOutputPort.findAll(filter, page, size)
 
-    override fun findActiveForList(): List<Tenant> = tenantOutputPort.findActiveOrderByTradeName()
+    @Transactional(readOnly = true)
+    override fun findActiveForList(): List<TenantIdName> = tenantOutputPort.findActiveOrderByTradeName()
 
+    @Transactional(readOnly = true)
     override fun isCnpjAvailable(
         cnpj: String,
         excludeId: UUID?,
@@ -106,11 +114,22 @@ class TenantManagementService(
         val existing =
             tenantOutputPort.findById(id)
                 ?: throw ResourceNotFoundException("Tenant not found: $id")
+        val schemaNameToDrop = existing.schemaName
         try {
             tenantOutputPort.deleteById(id)
         } catch (error: DataIntegrityViolationException) {
             throw ConflictException(
                 "Cannot delete tenant: there are dependent congregations or departments",
+            )
+        }
+        if (schemaNameToDrop.isNotBlank() && TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(
+                object : TransactionSynchronization {
+                    override fun afterCommit() {
+                        runCatching { tenantSchemaProvisioner.dropSchema(schemaNameToDrop) }
+                            .onFailure { log.warn("Falha ao remover schema do tenant: $schemaNameToDrop", it) }
+                    }
+                },
             )
         }
     }

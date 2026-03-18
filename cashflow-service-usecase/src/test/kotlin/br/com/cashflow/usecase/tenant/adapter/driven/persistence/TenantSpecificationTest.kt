@@ -6,6 +6,7 @@ import io.mockk.every
 import io.mockk.mockk
 import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.CriteriaQuery
+import jakarta.persistence.criteria.Expression
 import jakarta.persistence.criteria.Path
 import jakarta.persistence.criteria.Predicate
 import jakarta.persistence.criteria.Root
@@ -34,6 +35,36 @@ class TenantSpecificationTest {
         val query = mockk<CriteriaQuery<*>>()
         val cb = mockk<CriteriaBuilder>()
         every { cb.equal(path, false) } returns mockk()
+        every { cb.and(any<Predicate>()) } returns mockk()
+        spec.toPredicate(root, query, cb)
+    }
+
+    @Test
+    fun `fromFilter with nome adds LIKE predicate`() {
+        val filter = TenantFilter(nome = "church")
+        val spec = TenantSpecification.fromFilter(filter)
+        val root = mockk<Root<Tenant>>()
+        val tradeNamePath = mockk<Path<String>>()
+        val lowerPath = mockk<Path<String>>()
+        every { root.get<String>("tradeName") } returns tradeNamePath
+        val query = mockk<CriteriaQuery<*>>()
+        val cb = mockk<CriteriaBuilder>()
+        every { cb.lower(tradeNamePath) } returns lowerPath
+        every { cb.like(any<Expression<String>>(), any<String>()) } returns mockk()
+        every { cb.and(any<Predicate>()) } returns mockk()
+        spec.toPredicate(root, query, cb)
+    }
+
+    @Test
+    fun `fromFilter with cnpj adds equal predicate`() {
+        val filter = TenantFilter(cnpj = "12345678000190")
+        val spec = TenantSpecification.fromFilter(filter)
+        val root = mockk<Root<Tenant>>()
+        val path = mockk<Path<String>>()
+        every { root.get<String>("cnpj") } returns path
+        val query = mockk<CriteriaQuery<*>>()
+        val cb = mockk<CriteriaBuilder>()
+        every { cb.equal(path, "12345678000190") } returns mockk()
         every { cb.and(any<Predicate>()) } returns mockk()
         spec.toPredicate(root, query, cb)
     }

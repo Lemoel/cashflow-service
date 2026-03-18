@@ -2,6 +2,7 @@ package br.com.cashflow.usecase.tenant.adapter.driven.persistence
 
 import br.com.cashflow.usecase.tenant.entity.Tenant
 import br.com.cashflow.usecase.tenant.model.TenantFilter
+import br.com.cashflow.usecase.tenant.model.TenantIdName
 import br.com.cashflow.usecase.tenant.model.TenantPage
 import br.com.cashflow.usecase.tenant.model.TenantSchemaInfo
 import br.com.cashflow.usecase.tenant.port.TenantOutputPort
@@ -42,7 +43,10 @@ class TenantPersistenceAdapter(
             tenantRepository.existsByCnpj(cnpj)
         }
 
-    override fun findActiveOrderByTradeName(): List<Tenant> = tenantRepository.findByActiveTrueOrderByTradeNameAsc()
+    override fun findActiveOrderByTradeName(): List<TenantIdName> =
+        tenantRepository.findActiveIdAndTradeName().map { p ->
+            TenantIdName(id = p.getId(), name = p.getTradeName())
+        }
 
     override fun deleteById(id: UUID) {
         tenantRepository.deleteById(id)

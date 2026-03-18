@@ -2,6 +2,7 @@ package br.com.cashflow.usecase.tenant_management.port
 
 import br.com.cashflow.usecase.tenant.entity.Tenant
 import br.com.cashflow.usecase.tenant.model.TenantFilter
+import br.com.cashflow.usecase.tenant.model.TenantIdName
 import br.com.cashflow.usecase.tenant.model.TenantPage
 import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantCreateRequestDto
 import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantUpdateRequestDto
@@ -23,7 +24,7 @@ interface TenantManagementInputPort {
         size: Int,
     ): TenantPage
 
-    fun findActiveForList(): List<Tenant>
+    fun findActiveForList(): List<TenantIdName>
 
     fun delete(id: UUID)
 

@@ -1,6 +1,7 @@
 package br.com.cashflow.usecase.tenant_management.adapter.external.dto
 
 import br.com.cashflow.usecase.tenant.entity.Tenant
+import br.com.cashflow.usecase.tenant.model.TenantIdName
 
 private fun normalizeCnpj(value: String): String = value.filter { it.isDigit() }
 
@@ -20,13 +21,10 @@ fun TenantCreateRequestDto.toEntity(): Tenant {
         phone = phone?.trim(),
         email = email?.trim()?.lowercase(),
         active = active,
-        schemaName = "tenant_$digitsOnly",
     )
 }
 
 fun TenantUpdateRequestDto.applyTo(tenant: Tenant) {
-    val digitsOnly = normalizeCnpj(cnpj)
-    tenant.cnpj = digitsOnly
     tenant.tradeName = tradeName.trim().uppercase()
     tenant.companyName = companyName?.trim()?.uppercase()
     tenant.street = street.trim().uppercase()
@@ -74,7 +72,7 @@ data class TenantListResponse(
 
 fun Tenant.toResponse(): TenantResponseDto =
     TenantResponseDto(
-        id = id!!.toString(),
+        id = requireNotNull(id) { "Tenant id must not be null" }.toString(),
         cnpj = cnpj,
         tradeName = tradeName,
         companyName = companyName,
@@ -94,6 +92,12 @@ fun Tenant.toResponse(): TenantResponseDto =
 
 fun Tenant.toListOption(): TenantListOption =
     TenantListOption(
-        id = id!!.toString(),
+        id = requireNotNull(id) { "Tenant id must not be null" }.toString(),
         name = tradeName,
+    )
+
+fun TenantIdName.toListOption(): TenantListOption =
+    TenantListOption(
+        id = id.toString(),
+        name = name,
     )

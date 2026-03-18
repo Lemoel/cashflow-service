@@ -31,6 +31,15 @@ class TenantSchemaProvisioner(
         flyway.migrate()
     }
 
+    override fun dropSchema(schemaName: String) {
+        require(schemaName.matches(VALID_SCHEMA_NAME_REGEX)) { "Invalid schema name: $schemaName" }
+        dataSource.connection.use { conn ->
+            conn.createStatement().use { stmt ->
+                stmt.execute("DROP SCHEMA IF EXISTS $schemaName CASCADE")
+            }
+        }
+    }
+
     companion object {
         private val VALID_SCHEMA_NAME_REGEX = Regex("^[a-zA-Z0-9_]+$")
     }

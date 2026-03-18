@@ -114,7 +114,6 @@ class TenantResponseDtoTest {
         assertThat(result.phone).isEqualTo("11999999999")
         assertThat(result.email).isEqualTo("a@b.com")
         assertThat(result.active).isFalse()
-        assertThat(result.schemaName).isEqualTo("tenant_12345678000190")
     }
 
     @Test
@@ -138,7 +137,6 @@ class TenantResponseDtoTest {
         assertThat(result.phone).isNull()
         assertThat(result.email).isNull()
         assertThat(result.active).isTrue()
-        assertThat(result.schemaName).isEqualTo("tenant_11111111000191")
     }
 
     @Test
@@ -161,7 +159,6 @@ class TenantResponseDtoTest {
             TenantUpdateRequestDto(
                 tradeName = "  new name  ",
                 companyName = "  new company  ",
-                cnpj = "98.765.432/0001-10",
                 street = "  new street  ",
                 number = " 2 ",
                 complement = " sala ",
@@ -176,7 +173,7 @@ class TenantResponseDtoTest {
 
         request.applyTo(tenant)
 
-        assertThat(tenant.cnpj).isEqualTo("98765432000110")
+        assertThat(tenant.cnpj).isEqualTo("old")
         assertThat(tenant.tradeName).isEqualTo("NEW NAME")
         assertThat(tenant.companyName).isEqualTo("NEW COMPANY")
         assertThat(tenant.street).isEqualTo("NEW STREET")

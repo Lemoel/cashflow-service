@@ -13,7 +13,6 @@ import java.time.LocalDateTime
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener::class)
 abstract class Auditable<T> {
-
     @CreatedBy
     @Column(name = "created_by_id", updatable = false)
     open var createdBy: T? = null

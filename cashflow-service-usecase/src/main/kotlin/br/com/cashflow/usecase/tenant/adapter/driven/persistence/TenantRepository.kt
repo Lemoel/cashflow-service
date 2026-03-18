@@ -33,6 +33,11 @@ interface TenantRepository :
 
     fun findByActiveTrueOrderByTradeNameAsc(): List<Tenant>
 
+    @Query(
+        "SELECT t.id AS id, t.tradeName AS tradeName FROM Tenant t WHERE t.active = true ORDER BY t.tradeName",
+    )
+    fun findActiveIdAndTradeName(): List<TenantListProjection>
+
     @Query(value = "SELECT schema_name FROM core.tenants", nativeQuery = true)
     fun findAllSchemaNames(): List<String>
 

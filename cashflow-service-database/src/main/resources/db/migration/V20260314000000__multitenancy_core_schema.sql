@@ -10,7 +10,7 @@ CREATE TABLE core.tenants (
     complemento VARCHAR(50),
     bairro VARCHAR(50),
     cidade VARCHAR(60) NOT NULL,
-    uf CHAR(2) NOT NULL,
+    uf VARCHAR(2) NOT NULL,
     cep VARCHAR(9) NOT NULL,
     telefone VARCHAR(20),
     email VARCHAR(100),
@@ -34,3 +34,13 @@ CREATE TABLE core.user_tenant_map (
 );
 
 CREATE INDEX idx_user_tenant_map_tenant_id ON core.user_tenant_map(tenant_id);
+
+CREATE INDEX idx_tenants_ativo_nome_fantasia
+    ON core.tenants(ativo, nome_fantasia)
+    WHERE ativo = true;
+
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+CREATE INDEX idx_tenants_nome_fantasia_trgm
+    ON core.tenants
+    USING gin (LOWER(nome_fantasia) gin_trgm_ops);

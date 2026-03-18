@@ -39,6 +39,14 @@ class TestTenantConfig {
                     .load()
                     .migrate()
             }
+
+            override fun dropSchema(schemaName: String) {
+                dataSource.connection.use { conn ->
+                    conn.createStatement().use { stmt ->
+                        stmt.execute("DROP SCHEMA IF EXISTS $schemaName CASCADE")
+                    }
+                }
+            }
         }
 
     @Bean
