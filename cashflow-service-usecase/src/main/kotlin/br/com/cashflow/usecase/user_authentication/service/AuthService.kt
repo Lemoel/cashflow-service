@@ -93,7 +93,9 @@ class AuthService(
     }
 
     private fun getTenantInfo(email: String): Pair<UUID?, String?> {
-        val tenantId = acessoOutputPort.findTenantIdByEmail(email)
+        val tenantId =
+            tenantOutputPort.findTenantSchemaByEmail(email)?.tenantId
+                ?: acessoOutputPort.findTenantIdByEmail(email)
         val tenantNome = tenantId?.let { tenantOutputPort.findById(it)?.tradeName }
         return Pair(tenantId, tenantNome)
     }

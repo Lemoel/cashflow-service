@@ -4,8 +4,6 @@ app:
     secret: ${BOOTSTRAP_SECRET:}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:8080}
-  security:
-    enabled: ${APP_SECURITY_ENABLED:true}
   jwt:
     secret: ${JWT_SECRET:default-secret-key-min-256-bits-for-hs256-algorithm}
     expiration-ms: ${JWT_EXPIRATION_MS:3600000}

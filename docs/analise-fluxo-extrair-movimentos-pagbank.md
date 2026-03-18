@@ -1077,18 +1077,6 @@ ResponseEntity.accepted() com tempo de execucao
   - Resposta: HTTP 200 com body `"Movimento {id} enviado para ser processado."`.
   - O fluxo de reprocessamento utiliza `MovimentoApiAdapter.reprocessar()` que chama `converterLancamento()` da mesma forma que o fluxo de extracao.
 
-### Regra RN-022 - Seguranca Desabilitada em Ambiente de Desenvolvimento
-
-- **Descricao:**
-  Quando a configuracao `eventos.app.security.enabled` esta como `false`, toda a seguranca (incluindo o `ApiKeyAuthFilter`) e desabilitada. Qualquer requisicao a `/api/**` e permitida sem autenticacao.
-
-- **Contexto de aplicacao:**
-  `WebSecurityConfig.securityFilterChain()`.
-
-- **Comportamento esperado:**
-  - Se `securityEnabled = false`: CSRF desabilitado, todas as requisicoes permitidas (`anyRequest().permitAll()`), sem filtro de API key.
-  - Se `securityEnabled = true`: o `ApiKeyAuthFilter` e adicionado antes do `UsernamePasswordAuthenticationFilter`, e `/api/**` esta como `permitAll` no Spring Security (mas protegido pelo filtro de API key).
-
 ### Regra RN-019 - Resiliencia no Processamento Transacional
 
 - **Descricao:**
