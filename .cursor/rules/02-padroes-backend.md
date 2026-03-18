@@ -54,6 +54,10 @@
 - Controller apenas recebe Request e retorna Response.
 - Toda regra de negócio deve estar no domínio (não no controller nem no adapter).
 - Controller apenas chama InputPort (não acessa serviço nem repositório diretamente).
+- **InputPorts recebem DTOs diretamente** (`*CreateRequestDto`, `*UpdateRequestDto`) para operações de create/update. O Controller repassa o DTO recebido via `@RequestBody` ao InputPort sem conversão intermediária.
+- **Não usar Command pattern** como padrão geral. Exceções pontuais (ex.: `UsuarioCommand`, `BootstrapCommand`) existem por necessidades específicas desses fluxos.
+- **Filtros de listagem** usam modelos de domínio (ex.: `TenantFilter`, `DepartmentFilter`) ou parâmetros primitivos.
+- **Retornos** dos InputPorts são entidades de domínio ou modelos de apresentação (ex.: `MaquinaComCongregacao`), nunca DTOs de response.
 
 ## Mapeamento de objetos
 

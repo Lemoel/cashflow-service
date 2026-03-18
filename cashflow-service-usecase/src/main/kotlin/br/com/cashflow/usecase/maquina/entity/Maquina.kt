@@ -21,8 +21,8 @@ class Maquina(
     @Column(name = "congregacao_id")
     var congregacaoId: UUID? = null,
 
-    @Column(name = "banco_id")
-    var bancoId: UUID? = null,
+    @Column(name = "banco_id", nullable = false)
+    var bancoId: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000"),
 
     @Column(name = "departamento_id")
     var departamentoId: UUID? = null,

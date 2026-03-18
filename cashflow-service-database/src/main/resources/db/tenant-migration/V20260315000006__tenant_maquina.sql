@@ -1,4 +1,4 @@
-SET search_path TO "${tenant_schema}";
+SET search_path TO "${tenant_schema}", public;
 
 CREATE TABLE maquina (
     id UUID PRIMARY KEY,
@@ -19,5 +19,5 @@ CREATE TABLE maquina (
 
 CREATE INDEX idx_maquina_congregacao_id ON maquina(congregacao_id);
 CREATE INDEX idx_maquina_banco_id ON maquina(banco_id);
-CREATE INDEX idx_maquina_numero_serie_leitor ON maquina(numero_serie_leitor) WHERE numero_serie_leitor IS NOT NULL AND numero_serie_leitor != '';
+CREATE INDEX idx_maquina_numero_serie_trgm ON maquina USING gin (LOWER(numero_serie_leitor) gin_trgm_ops);
 CREATE INDEX idx_maquina_departamento_id ON maquina(departamento_id);

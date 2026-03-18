@@ -94,7 +94,7 @@ class LancamentoProcessingService(
             val novaMaquina =
                 Maquina(
                     numeroSerieLeitor = serie,
-                    bancoId = pagBank.id,
+                    bancoId = pagBank.id!!,
                     ativo = true,
                 )
             val salva = maquinaOutputPort.save(novaMaquina)

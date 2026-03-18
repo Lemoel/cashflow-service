@@ -15,3 +15,4 @@ CREATE TABLE maquina_historico (
 
 CREATE INDEX idx_maquina_historico_maquina_id ON maquina_historico(maquina_id);
 CREATE INDEX idx_maquina_historico_maquina_data ON maquina_historico(maquina_id, data_inicio);
+CREATE INDEX idx_maquina_historico_open ON maquina_historico(maquina_id) WHERE data_fim IS NULL;

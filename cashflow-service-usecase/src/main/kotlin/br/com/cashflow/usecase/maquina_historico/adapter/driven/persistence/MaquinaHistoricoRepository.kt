@@ -10,6 +10,8 @@ import java.util.UUID
 interface MaquinaHistoricoRepository :
     JpaRepository<MaquinaHistorico, UUID>,
     MaquinaHistoricoRepositoryCustom {
+    fun deleteByMaquinaId(maquinaId: UUID)
+
     @Modifying
     @Query(
         value = "UPDATE maquina_historico SET data_fim = CURRENT_TIMESTAMP WHERE maquina_id = :maquinaId AND data_fim IS NULL",

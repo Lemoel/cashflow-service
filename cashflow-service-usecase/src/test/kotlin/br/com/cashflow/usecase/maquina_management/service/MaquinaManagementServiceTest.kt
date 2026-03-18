@@ -7,9 +7,10 @@ import br.com.cashflow.usecase.bank.entity.Bank
 import br.com.cashflow.usecase.bank.port.BankOutputPort
 import br.com.cashflow.usecase.congregation.entity.Congregation
 import br.com.cashflow.usecase.congregation.port.CongregationOutputPort
+import br.com.cashflow.usecase.department.entity.Department
 import br.com.cashflow.usecase.department.port.DepartmentOutputPort
 import br.com.cashflow.usecase.maquina.entity.Maquina
-import br.com.cashflow.usecase.maquina.model.MaquinaComCongregacao
+import br.com.cashflow.usecase.maquina.model.MaquinaPage
 import br.com.cashflow.usecase.maquina.port.MaquinaOutputPort
 import br.com.cashflow.usecase.maquina_historico.model.MaquinaHistoricoItemModel
 import br.com.cashflow.usecase.maquina_historico.port.MaquinaHistoricoOutputPort
@@ -67,31 +68,17 @@ class MaquinaManagementServiceTest {
                 departamentoId = null,
                 ativo = true,
             )
-        val detalhes =
-            MaquinaComCongregacao(
-                id = saved.id!!,
-                maquinaId = "ABC123",
-                congregacaoId = congregacaoId,
-                congregacaoNome = "Cong",
-                bancoId = bancoId,
-                bancoNome = "Banco",
-                departamentoId = null,
-                departamentoNome = null,
-                ativo = true,
-                version = 0L,
-                createdAt = Instant.now(),
-                updatedAt = null,
-            )
         every { congregationOutputPort.findById(congregacaoId) } returns
             Congregation(id = congregacaoId, nome = "Cong")
         every { bankOutputPort.findById(bancoId) } returns Bank(id = bancoId, nome = "Banco")
         every { maquinaOutputPort.existsByNumeroSerieLeitor("ABC123") } returns false
-        every { maquinaOutputPort.save(match { true }) } returns saved
-        every { maquinaOutputPort.findByIdWithDetalhes(match { true }) } returns detalhes
+        every { maquinaOutputPort.save(any()) } returns saved
 
         val result = service.create(request)
 
         assertThat(result.maquinaId).isEqualTo("ABC123")
+        assertThat(result.congregacaoNome).isEqualTo("Cong")
+        assertThat(result.bancoNome).isEqualTo("Banco")
     }
 
     @Test
@@ -109,22 +96,66 @@ class MaquinaManagementServiceTest {
         assertThatThrownBy { service.create(request) }
             .isInstanceOf(ConflictException::class.java)
             .hasMessageContaining("Já existe uma máquina com este ID")
-        verify(exactly = 0) { maquinaOutputPort.save(match { true }) }
+        verify(exactly = 0) { maquinaOutputPort.save(any()) }
     }
 
     @Test
-    fun `create throws BusinessException when congregacaoId is null`() {
+    fun `create throws BusinessException when congregacao not found`() {
+        val congregacaoId = UUID.randomUUID()
         val request =
             MaquinaCreateRequestDto(
                 maquinaId = "X",
-                congregacaoId = UUID.randomUUID(),
+                congregacaoId = congregacaoId,
                 bancoId = UUID.randomUUID(),
             )
-        every { congregationOutputPort.findById(request.congregacaoId) } returns null
+        every { congregationOutputPort.findById(congregacaoId) } returns null
 
         assertThatThrownBy { service.create(request) }
             .isInstanceOf(BusinessException::class.java)
             .hasMessageContaining("Congregação da máquina não encontrada")
+    }
+
+    @Test
+    fun `create throws BusinessException when banco not found`() {
+        val congregacaoId = UUID.randomUUID()
+        val bancoId = UUID.randomUUID()
+        val request =
+            MaquinaCreateRequestDto(
+                maquinaId = "X",
+                congregacaoId = congregacaoId,
+                bancoId = bancoId,
+            )
+        every { congregationOutputPort.findById(congregacaoId) } returns Congregation(id = congregacaoId, nome = "C")
+        every { bankOutputPort.findById(bancoId) } returns null
+
+        assertThatThrownBy { service.create(request) }
+            .isInstanceOf(BusinessException::class.java)
+            .hasMessageContaining("Banco não encontrado")
+    }
+
+    @Test
+    fun `create throws BusinessException when department belongs to different tenant`() {
+        val congregacaoId = UUID.randomUUID()
+        val tenantId = UUID.randomUUID()
+        val departamentoId = UUID.randomUUID()
+        val otherTenantId = UUID.randomUUID()
+        val request =
+            MaquinaCreateRequestDto(
+                maquinaId = "X",
+                congregacaoId = congregacaoId,
+                bancoId = UUID.randomUUID(),
+                departamentoId = departamentoId,
+                ativo = true,
+            )
+        every { congregationOutputPort.findById(congregacaoId) } returns
+            Congregation(id = congregacaoId, tenantId = tenantId, nome = "C")
+        every { bankOutputPort.findById(any()) } returns Bank(id = UUID.randomUUID(), nome = "B")
+        every { departmentOutputPort.findById(departamentoId) } returns
+            Department(id = departamentoId, tenantId = otherTenantId, nome = "D")
+
+        assertThatThrownBy { service.create(request) }
+            .isInstanceOf(BusinessException::class.java)
+            .hasMessageContaining("deve pertencer ao mesmo tenant")
     }
 
     @Test
@@ -159,26 +190,10 @@ class MaquinaManagementServiceTest {
                 departamentoId = null,
                 ativo = true,
             )
-        val detalhes =
-            MaquinaComCongregacao(
-                id = id,
-                maquinaId = "X",
-                congregacaoId = newCong,
-                congregacaoNome = "N",
-                bancoId = bancoId,
-                bancoNome = "B",
-                departamentoId = null,
-                departamentoNome = null,
-                ativo = true,
-                version = 0L,
-                createdAt = null,
-                updatedAt = null,
-            )
         every { maquinaOutputPort.findById(id) } returns existing
-        every { congregationOutputPort.findById(newCong) } returns Congregation(id = newCong)
-        every { bankOutputPort.findById(bancoId) } returns Bank(id = bancoId)
-        every { maquinaOutputPort.save(match { true }) } answers { firstArg() }
-        every { maquinaOutputPort.findByIdWithDetalhes(match { true }) } returns detalhes
+        every { congregationOutputPort.findById(newCong) } returns Congregation(id = newCong, nome = "N")
+        every { bankOutputPort.findById(bancoId) } returns Bank(id = bancoId, nome = "B")
+        every { maquinaOutputPort.save(any()) } answers { firstArg() }
 
         val result =
             service.update(
@@ -187,6 +202,32 @@ class MaquinaManagementServiceTest {
             )
 
         assertThat(result.congregacaoId).isEqualTo(newCong)
+        assertThat(result.congregacaoNome).isEqualTo("N")
+    }
+
+    @Test
+    fun `update does not call fecharPeriodoAtual when congregacao and departamento unchanged`() {
+        val id = UUID.randomUUID()
+        val congregacaoId = UUID.randomUUID()
+        val bancoId = UUID.randomUUID()
+        val existing =
+            Maquina(
+                id = id,
+                numeroSerieLeitor = "X",
+                congregacaoId = congregacaoId,
+                bancoId = bancoId,
+                departamentoId = null,
+                ativo = true,
+            )
+        every { maquinaOutputPort.findById(id) } returns existing
+        every { congregationOutputPort.findById(congregacaoId) } returns Congregation(id = congregacaoId, nome = "C")
+        every { bankOutputPort.findById(bancoId) } returns Bank(id = bancoId, nome = "B")
+        every { maquinaOutputPort.save(any()) } answers { firstArg() }
+
+        service.update(id, MaquinaUpdateRequestDto(congregacaoId = congregacaoId, bancoId = bancoId, ativo = false))
+
+        verify(exactly = 0) { maquinaHistoricoOutputPort.fecharPeriodoAtual(any()) }
+        verify(exactly = 0) { maquinaHistoricoOutputPort.inserirPeriodo(any(), any(), any()) }
     }
 
     @Test
@@ -220,6 +261,58 @@ class MaquinaManagementServiceTest {
         every { maquinaOutputPort.findByIdWithDetalhes(id) } returns null
 
         assertThat(service.findById(id)).isNull()
+    }
+
+    @Test
+    fun `search delegates to maquinaOutputPort findWithFiltersComDetalhes`() {
+        val pageResult = MaquinaPage(items = emptyList(), total = 0L, page = 0, pageSize = 10)
+        every { maquinaOutputPort.findWithFiltersComDetalhes(any(), any(), any(), any(), 0, 10) } returns pageResult
+
+        val result = service.search("x", "y", "z", null, 0, 10)
+
+        assertThat(result.total).isEqualTo(0L)
+        assertThat(result.items).isEmpty()
+    }
+
+    @Test
+    fun `listForOptions delegates to maquinaOutputPort findParaSelecaoHistorico`() {
+        val pageResult = MaquinaPage(items = emptyList(), total = 0L, page = 0, pageSize = 10)
+        every { maquinaOutputPort.findParaSelecaoHistorico(any(), any(), any(), 0, 10) } returns pageResult
+
+        val result = service.listForOptions(null, null, null, 0, 10)
+
+        assertThat(result.total).isEqualTo(0L)
+    }
+
+    @Test
+    fun `listOrSearch returns search result when search filters present`() {
+        val pageResult = MaquinaPage(items = emptyList(), total = 1L, page = 0, pageSize = 10)
+        every { maquinaOutputPort.findWithFiltersComDetalhes(any(), any(), any(), any(), 0, 10) } returns pageResult
+
+        val result = service.listOrSearch("abc", null, null, null, null, null, null, 0, 10)
+
+        assertThat(result.total).isEqualTo(1L)
+    }
+
+    @Test
+    fun `listOrSearch returns listForOptions when no search filters`() {
+        val pageResult = MaquinaPage(items = emptyList(), total = 0L, page = 0, pageSize = 10)
+        every { maquinaOutputPort.findParaSelecaoHistorico(any(), any(), any(), 0, 10) } returns pageResult
+
+        val result = service.listOrSearch(null, null, null, null, null, null, null, 0, 10)
+
+        assertThat(result.total).isEqualTo(0L)
+    }
+
+    @Test
+    fun `delete succeeds when maquina exists`() {
+        val id = UUID.randomUUID()
+        every { maquinaOutputPort.findById(id) } returns Maquina(id = id, bancoId = UUID.randomUUID())
+        every { maquinaOutputPort.deleteById(id) } returns Unit
+
+        service.delete(id)
+
+        verify(exactly = 1) { maquinaOutputPort.deleteById(id) }
     }
 
     @Test

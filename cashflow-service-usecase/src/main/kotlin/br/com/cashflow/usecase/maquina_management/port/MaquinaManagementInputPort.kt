@@ -34,6 +34,18 @@ interface MaquinaManagementInputPort {
         size: Int,
     ): MaquinaPage
 
+    fun listOrSearch(
+        maquinaId: String?,
+        congregacao: String?,
+        banco: String?,
+        departamentoId: UUID?,
+        tenantId: UUID?,
+        congregacaoId: UUID?,
+        numeroSerie: String?,
+        page: Int,
+        size: Int,
+    ): MaquinaPage
+
     fun listHistoricoByMaquinaId(maquinaId: UUID): List<MaquinaHistoricoItemModel>
 
     fun delete(id: UUID)

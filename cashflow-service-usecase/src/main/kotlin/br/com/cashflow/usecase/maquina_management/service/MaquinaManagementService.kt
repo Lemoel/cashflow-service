@@ -3,8 +3,11 @@ package br.com.cashflow.usecase.maquina_management.service
 import br.com.cashflow.commons.exception.BusinessException
 import br.com.cashflow.commons.exception.ConflictException
 import br.com.cashflow.commons.exception.ResourceNotFoundException
+import br.com.cashflow.usecase.bank.entity.Bank
 import br.com.cashflow.usecase.bank.port.BankOutputPort
+import br.com.cashflow.usecase.congregation.entity.Congregation
 import br.com.cashflow.usecase.congregation.port.CongregationOutputPort
+import br.com.cashflow.usecase.department.entity.Department
 import br.com.cashflow.usecase.department.port.DepartmentOutputPort
 import br.com.cashflow.usecase.maquina.entity.Maquina
 import br.com.cashflow.usecase.maquina.model.MaquinaComCongregacao
@@ -18,10 +21,12 @@ import br.com.cashflow.usecase.maquina_management.port.MaquinaManagementInputPor
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.ZoneId
 import java.util.Locale
 import java.util.UUID
 
 @Service
+@Transactional(readOnly = true)
 class MaquinaManagementService(
     private val maquinaOutputPort: MaquinaOutputPort,
     private val maquinaHistoricoOutputPort: MaquinaHistoricoOutputPort,
@@ -32,11 +37,7 @@ class MaquinaManagementService(
     @Transactional
     override fun create(request: MaquinaCreateRequestDto): MaquinaComCongregacao {
         validarMaquinaIdObrigatorio(request.maquinaId)
-        validarCongregacaoObrigatoria(request.congregacaoId)
-        validarBancoObrigatorio(request.bancoId)
-        request.departamentoId?.let {
-            validarDepartamentoMesmoTenantDaCongregacao(request.congregacaoId, it)
-        }
+        val refs = validateAndLoadReferences(request.congregacaoId, request.bancoId, request.departamentoId)
         val numeroSerieNormalizado = request.maquinaId.trim().uppercase(Locale.ROOT)
         if (maquinaOutputPort.existsByNumeroSerieLeitor(numeroSerieNormalizado)) {
             throw ConflictException("Já existe uma máquina com este ID")
@@ -55,7 +56,7 @@ class MaquinaManagementService(
             saved.congregacaoId,
             saved.departamentoId,
         )
-        return maquinaOutputPort.findByIdWithDetalhes(saved.id!!)!!
+        return buildMaquinaComCongregacao(saved, refs.congregation, refs.bank, refs.department)
     }
 
     @Transactional
@@ -66,11 +67,7 @@ class MaquinaManagementService(
         val existing =
             maquinaOutputPort.findById(id)
                 ?: throw ResourceNotFoundException("Máquina não encontrada")
-        validarCongregacaoObrigatoria(request.congregacaoId)
-        validarBancoObrigatorio(request.bancoId)
-        request.departamentoId?.let {
-            validarDepartamentoMesmoTenantDaCongregacao(request.congregacaoId, it)
-        }
+        val refs = validateAndLoadReferences(request.congregacaoId, request.bancoId, request.departamentoId)
         val congregacaoMudou = existing.congregacaoId != request.congregacaoId
         val departamentoMudou = existing.departamentoId != request.departamentoId
         if (congregacaoMudou || departamentoMudou) {
@@ -80,15 +77,15 @@ class MaquinaManagementService(
         existing.bancoId = request.bancoId
         existing.departamentoId = request.departamentoId
         existing.ativo = request.ativo
-        maquinaOutputPort.save(existing)
+        val saved = maquinaOutputPort.save(existing)
         if (congregacaoMudou || departamentoMudou) {
             maquinaHistoricoOutputPort.inserirPeriodo(
-                existing.id!!,
-                existing.congregacaoId,
-                existing.departamentoId,
+                saved.id!!,
+                saved.congregacaoId,
+                saved.departamentoId,
             )
         }
-        return maquinaOutputPort.findByIdWithDetalhes(id)!!
+        return buildMaquinaComCongregacao(saved, refs.congregation, refs.bank, refs.department)
     }
 
     override fun findById(id: UUID): MaquinaComCongregacao? = maquinaOutputPort.findByIdWithDetalhes(id)
@@ -125,6 +122,29 @@ class MaquinaManagementService(
             size,
         )
 
+    override fun listOrSearch(
+        maquinaId: String?,
+        congregacao: String?,
+        banco: String?,
+        departamentoId: UUID?,
+        tenantId: UUID?,
+        congregacaoId: UUID?,
+        numeroSerie: String?,
+        page: Int,
+        size: Int,
+    ): MaquinaPage {
+        val hasSearchFilters =
+            !maquinaId.isNullOrBlank() ||
+                !congregacao.isNullOrBlank() ||
+                !banco.isNullOrBlank() ||
+                departamentoId != null
+        return if (hasSearchFilters) {
+            search(maquinaId, congregacao, banco, departamentoId, page, size)
+        } else {
+            listForOptions(tenantId, congregacaoId, numeroSerie, page, size)
+        }
+    }
+
     override fun listHistoricoByMaquinaId(maquinaId: UUID): List<MaquinaHistoricoItemModel> = maquinaHistoricoOutputPort.listarPorMaquinaId(maquinaId)
 
     @Transactional
@@ -132,6 +152,7 @@ class MaquinaManagementService(
         if (maquinaOutputPort.findById(id) == null) {
             throw ResourceNotFoundException("Máquina não encontrada")
         }
+        maquinaHistoricoOutputPort.deletarPorMaquinaId(id)
         try {
             maquinaOutputPort.deleteById(id)
         } catch (error: DataIntegrityViolationException) {
@@ -147,38 +168,62 @@ class MaquinaManagementService(
         }
     }
 
-    private fun validarCongregacaoObrigatoria(congregacaoId: UUID?) {
+    private data class MaquinaReferences(
+        val congregation: Congregation,
+        val bank: Bank,
+        val department: Department?,
+    )
+
+    private fun validateAndLoadReferences(
+        congregacaoId: UUID?,
+        bancoId: UUID?,
+        departamentoId: UUID?,
+    ): MaquinaReferences {
         if (congregacaoId == null) {
             throw BusinessException("É necessário selecionar uma congregação")
         }
-        if (congregationOutputPort.findById(congregacaoId) == null) {
-            throw BusinessException("Congregação da máquina não encontrada")
-        }
-    }
-
-    private fun validarBancoObrigatorio(bancoId: UUID?) {
         if (bancoId == null) {
             throw BusinessException("É necessário selecionar um banco")
         }
-        if (bankOutputPort.findById(bancoId) == null) {
-            throw BusinessException("Banco não encontrado")
-        }
-    }
-
-    private fun validarDepartamentoMesmoTenantDaCongregacao(
-        congregacaoId: UUID,
-        departamentoId: UUID,
-    ) {
-        val congregacao =
+        val congregation =
             congregationOutputPort.findById(congregacaoId)
                 ?: throw BusinessException("Congregação da máquina não encontrada")
-        val departamento =
-            departmentOutputPort.findById(departamentoId)
-                ?: throw BusinessException("Departamento não encontrado")
-        if (departamento.tenantId != congregacao.tenantId) {
-            throw BusinessException(
-                "O departamento deve pertencer ao mesmo tenant da congregação da máquina",
-            )
+        val bank =
+            bankOutputPort.findById(bancoId)
+                ?: throw BusinessException("Banco não encontrado")
+        val department =
+            departamentoId?.let { id ->
+                departmentOutputPort.findById(id)
+                    ?: throw BusinessException("Departamento não encontrado")
+            }
+        department?.let {
+            if (it.tenantId != congregation.tenantId) {
+                throw BusinessException(
+                    "O departamento deve pertencer ao mesmo tenant da congregação da máquina",
+                )
+            }
         }
+        return MaquinaReferences(congregation, bank, department)
     }
+
+    private fun buildMaquinaComCongregacao(
+        maquina: Maquina,
+        congregation: Congregation,
+        bank: Bank,
+        department: Department?,
+    ): MaquinaComCongregacao =
+        MaquinaComCongregacao(
+            id = maquina.id!!,
+            maquinaId = maquina.numeroSerieLeitor ?: "",
+            congregacaoId = maquina.congregacaoId,
+            congregacaoNome = congregation.nome.ifBlank { "Não informada" },
+            bancoId = maquina.bancoId,
+            bancoNome = (bank.nome?.takeIf { it.isNotBlank() }) ?: "Não informado",
+            departamentoId = maquina.departamentoId,
+            departamentoNome = department?.nome,
+            ativo = maquina.ativo,
+            version = maquina.version,
+            createdAt = maquina.createdDate?.atZone(ZoneId.systemDefault())?.toInstant(),
+            updatedAt = maquina.lastModifiedDate?.atZone(ZoneId.systemDefault())?.toInstant(),
+        )
 }

@@ -4,6 +4,7 @@ import br.com.cashflow.commons.audit.Auditable
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
+import jakarta.persistence.PrePersist
 import jakarta.persistence.Table
 import java.time.Instant
 import java.util.UUID
@@ -28,4 +29,9 @@ class MaquinaHistorico(
 
     @Column(name = "data_fim")
     var dataFim: Instant? = null,
-) : Auditable<String>()
+) : Auditable<String>() {
+    @PrePersist
+    fun onPrePersist() {
+        if (id == null) id = UUID.randomUUID()
+    }
+}

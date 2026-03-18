@@ -50,7 +50,7 @@ class MaquinaRepositoryImpl(
         val conditions = mutableListOf<String>()
         val params = mutableMapOf<String, Any?>()
         if (!maquinaId.isNullOrBlank()) {
-            conditions.add("(m.numero_serie_leitor::text ILIKE :maquinaId)")
+            conditions.add("(m.numero_serie_leitor ILIKE :maquinaId)")
             params["maquinaId"] = "%$maquinaId%"
         }
         if (!congregacao.isNullOrBlank()) {
@@ -86,7 +86,7 @@ class MaquinaRepositoryImpl(
             params["congregacaoId"] = congregacaoId
         }
         if (!numeroSerieLeitor.isNullOrBlank()) {
-            conditions.add("(m.numero_serie_leitor::text ILIKE :numeroSerieLeitor)")
+            conditions.add("(m.numero_serie_leitor ILIKE :numeroSerieLeitor)")
             params["numeroSerieLeitor"] = "%$numeroSerieLeitor%"
         }
         return findMaquinaComCongregacaoPaginated(conditions, params, page, size)
@@ -100,7 +100,8 @@ class MaquinaRepositoryImpl(
     ): MaquinaQueryResult {
         val whereClause =
             if (conditions.isEmpty()) "" else " WHERE " + conditions.joinToString(" AND ")
-        val countSql = "SELECT COUNT(*) $MAQUINA_FROM_CLAUSE$whereClause"
+        val countFromClause = buildCountFromClause(conditions)
+        val countSql = "SELECT COUNT(*) $countFromClause$whereClause"
         val countQuery = entityManager.createNativeQuery(countSql)
         params.forEach { (k, v) -> if (v != null) countQuery.setParameter(k, v) }
         val total = (countQuery.singleResult as Number).toLong()
@@ -155,6 +156,18 @@ class MaquinaRepositoryImpl(
             createdAt = instant(10),
             updatedAt = instant(11),
         )
+    }
+
+    private fun buildCountFromClause(conditions: List<String>): String {
+        val needsCongregacao = conditions.any { it.contains("c.") }
+        val needsBanco = conditions.any { it.contains("b.") }
+        val needsDepartamento = conditions.any { it.contains("d.") }
+        return buildString {
+            append("FROM maquina m")
+            if (needsCongregacao) append(" LEFT JOIN congregacao c ON m.congregacao_id = c.id")
+            if (needsBanco) append(" LEFT JOIN banco b ON m.banco_id = b.id")
+            if (needsDepartamento) append(" LEFT JOIN departamento d ON m.departamento_id = d.id")
+        }
     }
 
     companion object {

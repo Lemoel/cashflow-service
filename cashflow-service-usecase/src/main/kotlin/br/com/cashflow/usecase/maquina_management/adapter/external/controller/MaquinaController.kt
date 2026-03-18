@@ -45,24 +45,19 @@ class MaquinaController(
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "10") size: Int,
     ): MaquinaListResponse {
-        val hasSearchFilters =
-            !maquinaId.isNullOrBlank() ||
-                !congregacao.isNullOrBlank() ||
-                !banco.isNullOrBlank() ||
-                departamentoId != null
+        val tenantEfetivo = currentUser?.tenantId ?: tenantId
         val pageResult =
-            if (!hasSearchFilters) {
-                val tenantEfetivo = currentUser?.tenantId ?: tenantId
-                maquinaManagement.listForOptions(
-                    tenantEfetivo,
-                    congregacaoId,
-                    numeroSerie,
-                    page,
-                    size,
-                )
-            } else {
-                maquinaManagement.search(maquinaId, congregacao, banco, departamentoId, page, size)
-            }
+            maquinaManagement.listOrSearch(
+                maquinaId,
+                congregacao,
+                banco,
+                departamentoId,
+                tenantEfetivo,
+                congregacaoId,
+                numeroSerie,
+                page,
+                size,
+            )
         return MaquinaListResponse(
             items = pageResult.items.map { it.toResponse() },
             total = pageResult.total,
