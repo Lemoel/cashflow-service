@@ -9,7 +9,7 @@ import java.util.UUID
 class JwtTokenProviderTest {
     private val secret = "default-secret-key-min-256-bits-for-hs256-algorithm"
     private val expirationMs = 3600000L
-    private val refreshExpirationMs = 604800000L
+    private val refreshExpirationMs = 86400000L
     private lateinit var provider: JwtTokenProvider
 
     @BeforeEach
