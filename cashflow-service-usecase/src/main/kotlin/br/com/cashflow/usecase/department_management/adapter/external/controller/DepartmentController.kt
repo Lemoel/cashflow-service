@@ -48,12 +48,15 @@ class DepartmentController(
                 nome = nome?.takeIf { it.isNotBlank() },
                 ativo = ativo,
             )
+
         val pageResult = departmentManagement.findAll(filter, page, size)
+
         val tenantNomeMap =
             pageResult.items
                 .mapNotNull { it.tenantId }
                 .distinct()
                 .associateWith { tenantOutputPort.findById(it)?.tradeName }
+
         return DepartmentListResponse(
             items = pageResult.items.map { it.toResponse(tenantNomeMap[it.tenantId]) },
             total = pageResult.total,
@@ -72,13 +75,17 @@ class DepartmentController(
                 ?: throw BusinessException(
                     "Usuário sem igreja vinculada. Não é possível acessar o departamento.",
                 )
+
         val department =
             departmentManagement.findById(id)
                 ?: throw ResourceNotFoundException("Departamento não encontrado")
+
         if (department.tenantId != tenantId) {
             throw ResourceNotFoundException("Departamento não encontrado")
         }
+
         val tenantNome = department.tenantId?.let { tenantOutputPort.findById(it)?.tradeName }
+
         return ResponseEntity.ok(department.toResponse(tenantNome))
     }
 

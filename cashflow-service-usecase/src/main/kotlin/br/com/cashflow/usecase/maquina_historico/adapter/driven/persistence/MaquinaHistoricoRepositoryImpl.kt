@@ -52,6 +52,7 @@ class MaquinaHistoricoRepositoryImpl(
                 else -> null
             }
         }
+
         return MaquinaHistoricoItemRow(
             id = uuid(0)!!,
             maquinaId = uuid(1)!!,

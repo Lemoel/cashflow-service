@@ -13,6 +13,8 @@ class MaquinaPersistenceAdapter(
 ) : MaquinaOutputPort {
     override fun save(maquina: Maquina): Maquina = maquinaRepository.save(maquina)
 
+    override fun saveAll(maquinas: List<Maquina>): List<Maquina> = maquinaRepository.saveAll(maquinas).toList()
+
     override fun findById(id: UUID): Maquina? = maquinaRepository.findById(id).orElse(null)
 
     override fun findByNumeroSerieLeitorIn(numeroSerieLeitor: Collection<String>): List<Maquina> =
@@ -43,6 +45,7 @@ class MaquinaPersistenceAdapter(
                 page,
                 size,
             )
+
         return MaquinaPage(
             items = result.items,
             total = result.total,
@@ -66,6 +69,7 @@ class MaquinaPersistenceAdapter(
                 page,
                 size,
             )
+
         return MaquinaPage(
             items = result.items,
             total = result.total,

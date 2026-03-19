@@ -11,6 +11,7 @@ import java.util.UUID
 @Entity
 @Table(name = "congregacao")
 class Congregation(
+
     @Id
     var id: UUID? = null,
 
@@ -52,6 +53,7 @@ class Congregation(
 
     @Column(name = "ativo")
     var ativo: Boolean = true,
+
 ) : Auditable<String>() {
     @PrePersist
     fun onPrePersist() {

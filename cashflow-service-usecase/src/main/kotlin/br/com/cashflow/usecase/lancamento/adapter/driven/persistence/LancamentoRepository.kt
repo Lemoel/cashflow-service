@@ -7,7 +7,9 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import java.util.UUID
 
-interface LancamentoRepository : JpaRepository<Lancamento, UUID> {
+interface LancamentoRepository :
+    JpaRepository<Lancamento, UUID>,
+    LancamentoRepositoryCustom {
     /**
      * Inserir o lançamento só se ainda não existir uma linha com o mesmo (codigo_transacao, tipo_evento, parcela).
      * Se já existir: não fazer nada e não dar erro (idempotência).

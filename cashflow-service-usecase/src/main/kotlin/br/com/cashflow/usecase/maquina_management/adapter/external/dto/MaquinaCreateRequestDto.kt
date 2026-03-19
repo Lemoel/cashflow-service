@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size
 import java.util.UUID
 
 data class MaquinaCreateRequestDto(
+
     @field:NotBlank(message = "O ID da máquina é obrigatório")
     @field:Size(max = 20)
     val maquinaId: String,

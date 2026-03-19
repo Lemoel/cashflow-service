@@ -12,6 +12,7 @@ import java.util.UUID
 @Entity
 @Table(name = "maquina_historico")
 class MaquinaHistorico(
+
     @Id
     var id: UUID? = null,
 
@@ -29,6 +30,7 @@ class MaquinaHistorico(
 
     @Column(name = "data_fim")
     var dataFim: Instant? = null,
+
 ) : Auditable<String>() {
     @PrePersist
     fun onPrePersist() {

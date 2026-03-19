@@ -14,10 +14,10 @@ class LancamentoPersistenceAdapter(
             tid = lancamento.tid,
             codigoTransacao = lancamento.codigoTransacao,
             parcela = lancamento.parcela,
-            tipoEvento = lancamento.tipoEvento.name,
-            meioCaptura = lancamento.meioCaptura.name,
+            tipoEvento = lancamento.tipoEvento.code,
+            meioCaptura = lancamento.meioCaptura.code,
             valorParcela = lancamento.valorParcela,
-            meioPagamento = lancamento.meioPagamento.name,
+            meioPagamento = lancamento.meioPagamento.code,
             estabelecimento = lancamento.estabelecimento,
             pagamentoPrazo = lancamento.pagamentoPrazo,
             taxaIntermediacao = lancamento.taxaIntermediacao,
@@ -34,5 +34,13 @@ class LancamentoPersistenceAdapter(
             createdBy = lancamento.createdBy ?: "system",
             lastModifiedBy = lancamento.lastModifiedBy ?: lancamento.createdBy ?: "system",
         )
+    }
+
+    override fun batchInsertIgnorandoDuplicatas(lancamentos: List<Lancamento>) {
+        if (lancamentos.isEmpty()) return
+        val batchSize = 500
+        lancamentos.chunked(batchSize).forEach { chunk ->
+            lancamentoRepository.batchInsertIgnorandoDuplicatas(chunk)
+        }
     }
 }

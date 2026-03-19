@@ -8,6 +8,8 @@ import java.util.UUID
 interface MaquinaOutputPort {
     fun save(maquina: Maquina): Maquina
 
+    fun saveAll(maquinas: List<Maquina>): List<Maquina>
+
     fun findById(id: UUID): Maquina?
 
     fun findByNumeroSerieLeitorIn(numeroSerieLeitor: Collection<String>): List<Maquina>

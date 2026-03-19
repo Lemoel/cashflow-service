@@ -100,4 +100,84 @@ class LancamentoPersistenceAdapterTest {
             )
         }
     }
+
+    @Test
+    fun `insertIgnorandoDuplicata passes enum code not name to repository`() {
+        val lancamento =
+            Lancamento(
+                parcela = "01",
+                tipoEvento = TipoEventoEnum.VENDA_OU_PAGAMENTO,
+                meioCaptura = MeioCapturaEnum.CHIP,
+                meioPagamento = MeioPagamentoEnum.PIX,
+                valorParcela = BigDecimal.TEN,
+                estabelecimento = "",
+                pagamentoPrazo = "S",
+                taxaIntermediacao = BigDecimal.ONE,
+                valorTotalTransacao = BigDecimal.TEN,
+                dataInicialTransacao = LocalDate.now(),
+                horaInicialTransacao = "12:00:00",
+                dataPrevistaPagamento = LocalDate.now(),
+                valorLiquidoTransacao = BigDecimal.TEN,
+                valorOriginalTransacao = BigDecimal.TEN,
+            )
+        lancamento.createdBy = "BOT"
+        lancamento.lastModifiedBy = "BOT"
+        justRun {
+            lancamentoRepository.insertIgnorandoDuplicata(
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+            )
+        }
+
+        adapter.insertIgnorandoDuplicata(lancamento)
+
+        verify(exactly = 1) {
+            lancamentoRepository.insertIgnorandoDuplicata(
+                nsu = any(),
+                tid = any(),
+                codigoTransacao = any(),
+                parcela = "01",
+                tipoEvento = "1",
+                meioCaptura = "1",
+                valorParcela = any(),
+                meioPagamento = "11",
+                estabelecimento = "",
+                pagamentoPrazo = "S",
+                taxaIntermediacao = any(),
+                numeroSerieLeitor = any(),
+                valorTotalTransacao = any(),
+                dataInicialTransacao = any(),
+                horaInicialTransacao = "12:00:00",
+                dataPrevistaPagamento = any(),
+                valorLiquidoTransacao = any(),
+                valorOriginalTransacao = any(),
+                maquinaId = any(),
+                congregacaoId = any(),
+                departamentoId = any(),
+                createdBy = "BOT",
+                lastModifiedBy = "BOT",
+            )
+        }
+    }
 }

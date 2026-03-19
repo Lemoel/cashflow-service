@@ -41,6 +41,7 @@ class BootstrapService(
         if (secret.isBlank() || secret != configuredSecret) {
             throw InvalidBootstrapSecretException()
         }
+
         try {
             val adminEmail =
                 command.adminUser.email
@@ -48,25 +49,24 @@ class BootstrapService(
                     .lowercase()
             val tenant = buildTenant(command)
             requireCnpjLength(tenant.cnpj)
+
             if (tenantOutputPort.existsByCnpjExcludingId(tenant.cnpj, null)) {
                 throw ConflictException("CNPJ already registered")
             }
-            // Chamar via proxy (self) para que REQUIRES_NEW seja aplicado; chamada direta no mesmo bean ignora o proxy.
+
             val savedTenant = self.saveTenantAndCommit(tenant)
             tenantSchemaProvisioner.provision(savedTenant.schemaName)
             TenantContext.setSchema(savedTenant.schemaName)
-            // Nova transação para obter conexão com search_path já definido (conexão da transação atual foi obtida antes do setSchema).
+
             return self.saveCongregationAndUser(command, savedTenant, adminEmail)
         } finally {
             TenantContext.clear()
         }
     }
 
-    /** Persiste o tenant e comita em transação separada para que o Flyway (provision) não dispute lock em core.tenants. */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     fun saveTenantAndCommit(tenant: Tenant): Tenant = tenantOutputPort.save(tenant)
 
-    /** Nova transação para que a conexão seja obtida com TenantContext já definido (search_path do tenant). */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     fun saveCongregationAndUser(
         command: BootstrapCommand,
@@ -76,12 +76,14 @@ class BootstrapService(
         val congregation = buildCongregation(command, savedTenant.id!!)
         validateCongregationRequiredFields(congregation)
         val cnpjDigits = congregation.cnpj
+
         if (!cnpjDigits.isNullOrBlank()) {
             requireValidCnpjDigits(cnpjDigits)
             if (congregationOutputPort.existsByCnpjExcludingId(cnpjDigits, null)) {
                 throw ConflictException("Já existe uma congregação com este CNPJ")
             }
         }
+
         val savedCongregation = congregationOutputPort.save(congregation)
         val userResult =
             userManagementInputPort.create(
@@ -97,6 +99,7 @@ class BootstrapService(
                     ativo = true,
                 ),
             )
+
         return BootstrapResult(
             tenantId = savedTenant.id!!,
             tenantSchemaName = savedTenant.schemaName,

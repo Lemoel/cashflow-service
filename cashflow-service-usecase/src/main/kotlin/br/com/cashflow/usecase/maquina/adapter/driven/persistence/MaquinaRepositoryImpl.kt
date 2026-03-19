@@ -36,6 +36,7 @@ class MaquinaRepositoryImpl(
 
         @Suppress("UNCHECKED_CAST")
         val rows = query.resultList as List<Array<Any?>>
+
         return rows.firstOrNull()?.let { mapRowToMaquinaComCongregacao(it) }
     }
 
@@ -49,22 +50,27 @@ class MaquinaRepositoryImpl(
     ): MaquinaQueryResult {
         val conditions = mutableListOf<String>()
         val params = mutableMapOf<String, Any?>()
+
         if (!maquinaId.isNullOrBlank()) {
             conditions.add("(m.numero_serie_leitor ILIKE :maquinaId)")
             params["maquinaId"] = "%$maquinaId%"
         }
+
         if (!congregacao.isNullOrBlank()) {
             conditions.add("(c.nome ILIKE :congregacao)")
             params["congregacao"] = "%$congregacao%"
         }
+
         if (!banco.isNullOrBlank()) {
             conditions.add("(b.nome ILIKE :banco)")
             params["banco"] = "%$banco%"
         }
+
         if (departamentoId != null) {
             conditions.add("m.departamento_id = :departamentoId")
             params["departamentoId"] = departamentoId
         }
+
         return findMaquinaComCongregacaoPaginated(conditions, params, page, size)
     }
 
@@ -77,18 +83,22 @@ class MaquinaRepositoryImpl(
     ): MaquinaQueryResult {
         val conditions = mutableListOf<String>()
         val params = mutableMapOf<String, Any?>()
+
         if (tenantId != null) {
             conditions.add("c.tenant_id = :tenantId")
             params["tenantId"] = tenantId
         }
+
         if (congregacaoId != null) {
             conditions.add("m.congregacao_id = :congregacaoId")
             params["congregacaoId"] = congregacaoId
         }
+
         if (!numeroSerieLeitor.isNullOrBlank()) {
             conditions.add("(m.numero_serie_leitor ILIKE :numeroSerieLeitor)")
             params["numeroSerieLeitor"] = "%$numeroSerieLeitor%"
         }
+
         return findMaquinaComCongregacaoPaginated(conditions, params, page, size)
     }
 
@@ -114,13 +124,18 @@ class MaquinaRepositoryImpl(
             ORDER BY m.numero_serie_leitor
             LIMIT :limit OFFSET :offset
             """.trimIndent()
+
         val selectQuery = entityManager.createNativeQuery(selectSql)
+
         params.forEach { (k, v) -> if (v != null) selectQuery.setParameter(k, v) }
+
         selectQuery.setParameter("limit", size)
         selectQuery.setParameter("offset", page * size)
+
         @Suppress("UNCHECKED_CAST")
         val rows = selectQuery.resultList as List<Array<Any?>>
         val items = rows.map { mapRowToMaquinaComCongregacao(it) }
+
         return MaquinaQueryResult(items = items, total = total)
     }
 
@@ -142,6 +157,7 @@ class MaquinaRepositoryImpl(
                 else -> null
             }
         }
+
         return MaquinaComCongregacao(
             id = uuid(0)!!,
             maquinaId = row.getOrNull(1)?.toString() ?: "",
@@ -162,6 +178,7 @@ class MaquinaRepositoryImpl(
         val needsCongregacao = conditions.any { it.contains("c.") }
         val needsBanco = conditions.any { it.contains("b.") }
         val needsDepartamento = conditions.any { it.contains("d.") }
+
         return buildString {
             append("FROM maquina m")
             if (needsCongregacao) append(" LEFT JOIN congregacao c ON m.congregacao_id = c.id")

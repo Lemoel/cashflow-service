@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
 
 data class DepartmentCreateRequestDto(
+
     @field:NotBlank(message = "Nome do departamento é obrigatório")
     @field:Size(max = 255)
     val nome: String,

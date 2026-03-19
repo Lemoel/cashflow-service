@@ -6,8 +6,6 @@ import br.com.cashflow.usecase.lancamento.enum.MeioPagamentoEnum
 import br.com.cashflow.usecase.lancamento.enum.TipoEventoEnum
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import java.math.BigDecimal
@@ -17,6 +15,7 @@ import java.util.UUID
 @Entity
 @Table(name = "lancamento")
 class Lancamento(
+
     @Id
     var id: UUID? = null,
 
@@ -33,18 +32,15 @@ class Lancamento(
     val parcela: String = "",
 
     @Column(name = "tipo_evento")
-    @Enumerated(EnumType.STRING)
     val tipoEvento: TipoEventoEnum = TipoEventoEnum.DESCONHECIDO,
 
     @Column(name = "meio_captura")
-    @Enumerated(EnumType.STRING)
     val meioCaptura: MeioCapturaEnum = MeioCapturaEnum.OUTRO,
 
     @Column(name = "valor_parcela")
     val valorParcela: BigDecimal = BigDecimal.ZERO,
 
     @Column(name = "meio_pagamento")
-    @Enumerated(EnumType.STRING)
     val meioPagamento: MeioPagamentoEnum = MeioPagamentoEnum.OUTRO,
 
     @Column(name = "estabelecimento")

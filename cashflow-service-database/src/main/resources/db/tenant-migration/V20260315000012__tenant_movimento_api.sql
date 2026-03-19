@@ -16,3 +16,4 @@ CREATE TABLE movimento_api (
 );
 
 CREATE INDEX idx_movimento_api_status ON movimento_api(status);
+CREATE INDEX idx_movimento_api_data_leitura_desc ON movimento_api(data_leitura DESC);

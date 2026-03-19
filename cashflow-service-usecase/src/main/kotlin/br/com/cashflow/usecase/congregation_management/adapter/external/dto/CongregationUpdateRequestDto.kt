@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Size
 import java.util.UUID
 
 data class CongregationUpdateRequestDto(
+
     val setorialId: UUID? = null,
 
     @field:NotBlank(message = "O nome é obrigatório")

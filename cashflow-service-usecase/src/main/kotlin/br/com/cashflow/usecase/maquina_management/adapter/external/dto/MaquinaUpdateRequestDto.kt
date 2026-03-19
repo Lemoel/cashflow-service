@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotNull
 import java.util.UUID
 
 data class MaquinaUpdateRequestDto(
+
     @field:NotNull(message = "É necessário selecionar uma congregação")
     val congregacaoId: UUID,
 

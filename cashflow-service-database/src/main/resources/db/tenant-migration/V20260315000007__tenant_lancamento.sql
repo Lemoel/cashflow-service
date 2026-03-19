@@ -29,7 +29,8 @@ CREATE TABLE lancamento (
     dti_last_modified_date TIMESTAMP NOT NULL,
     FOREIGN KEY (maquina_id) REFERENCES maquina(id) ON DELETE SET NULL,
     FOREIGN KEY (congregacao_id) REFERENCES congregacao(id) ON DELETE SET NULL,
-    FOREIGN KEY (departamento_id) REFERENCES departamento(id) ON DELETE SET NULL
+    FOREIGN KEY (departamento_id) REFERENCES departamento(id) ON DELETE SET NULL,
+    CONSTRAINT uk_lancamento_transacao UNIQUE (codigo_transacao, tipo_evento, parcela)
 );
 
 CREATE INDEX idx_lancamento_numero_serie_leitor ON lancamento(numero_serie_leitor) WHERE numero_serie_leitor IS NOT NULL AND numero_serie_leitor != '';
