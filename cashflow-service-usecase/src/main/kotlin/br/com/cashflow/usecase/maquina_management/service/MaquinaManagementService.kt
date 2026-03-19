@@ -39,9 +39,11 @@ class MaquinaManagementService(
         validarMaquinaIdObrigatorio(request.maquinaId)
         val refs = validateAndLoadReferences(request.congregacaoId, request.bancoId, request.departamentoId)
         val numeroSerieNormalizado = request.maquinaId.trim().uppercase(Locale.ROOT)
+
         if (maquinaOutputPort.existsByNumeroSerieLeitor(numeroSerieNormalizado)) {
             throw ConflictException("Já existe uma máquina com este ID")
         }
+
         val entity =
             Maquina(
                 numeroSerieLeitor = numeroSerieNormalizado,
@@ -50,12 +52,15 @@ class MaquinaManagementService(
                 departamentoId = request.departamentoId,
                 ativo = request.ativo,
             )
+
         val saved = maquinaOutputPort.save(entity)
+
         maquinaHistoricoOutputPort.inserirPeriodo(
             saved.id!!,
             saved.congregacaoId,
             saved.departamentoId,
         )
+
         return buildMaquinaComCongregacao(saved, refs.congregation, refs.bank, refs.department)
     }
 

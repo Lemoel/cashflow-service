@@ -49,15 +49,15 @@ class LancamentoProcessingService(
                         }
                     }.toSet()
             val maquinasPorSerie = buscarOuCriarMaquinas(seriesLeitor, pagBank)
-
-            for (detalhe in detalhes) {
-                val maquina =
-                    detalhe.numeroSerieLeitor
-                        ?.takeIf {
-                            it.isNotBlank()
-                        }?.let { maquinasPorSerie[it] }
-                lancamentoOutputPort.insertIgnorandoDuplicata(detalhe.toModel(maquina))
-            }
+            val lancamentos =
+                detalhes.map { detalhe ->
+                    val maquina =
+                        detalhe.numeroSerieLeitor
+                            ?.takeIf { it.isNotBlank() }
+                            ?.let { maquinasPorSerie[it] }
+                    detalhe.toModel(maquina)
+                }
+            lancamentoOutputPort.batchInsertIgnorandoDuplicatas(lancamentos)
 
             atualizarStatusMovimento(movimentoApi, StatusProcessamentoEnum.PROCESSADA)
         } catch (error: Exception) {
@@ -89,18 +89,20 @@ class LancamentoProcessingService(
                 }.toMap()
                 .toMutableMap()
         val faltantes = numeroSeries - mapa.keys
+        if (faltantes.isEmpty()) return mapa
 
-        for (serie in faltantes) {
-            val novaMaquina =
+        val novasMaquinas =
+            faltantes.map { serie ->
                 Maquina(
                     numeroSerieLeitor = serie,
                     bancoId = pagBank.id!!,
                     ativo = true,
                 )
-            val salva = maquinaOutputPort.save(novaMaquina)
-            salva.numeroSerieLeitor?.let { mapa[it] = salva }
+            }
+        val salvas = maquinaOutputPort.saveAll(novasMaquinas)
+        salvas.forEach { maquina ->
+            maquina.numeroSerieLeitor?.let { mapa[it] = maquina }
         }
-
         return mapa
     }
 

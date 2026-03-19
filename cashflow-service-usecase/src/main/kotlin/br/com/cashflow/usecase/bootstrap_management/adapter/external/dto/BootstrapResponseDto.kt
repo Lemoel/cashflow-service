@@ -19,6 +19,7 @@ data class BootstrapLinkDto(
 fun BootstrapResult.toResponseDto(baseUrl: String): BootstrapResponseDto {
     val tenantsPath = "$baseUrl/api/v1/tenants"
     val tenantUrl = "$tenantsPath/$tenantId"
+
     return BootstrapResponseDto(
         tenantId = tenantId.toString(),
         tenantSchemaName = tenantSchemaName,

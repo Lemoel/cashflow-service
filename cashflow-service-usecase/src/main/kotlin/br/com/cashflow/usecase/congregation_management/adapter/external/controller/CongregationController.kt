@@ -48,7 +48,9 @@ class CongregationController(
                 cnpj = cnpj?.takeIf { it.isNotBlank() },
                 ativo = ativo,
             )
+
         val pageResult = congregationManagement.findAll(filter, page, size)
+
         return CongregationListResponse(
             items = pageResult.items.map { it.toResponse() },
             total = pageResult.total,

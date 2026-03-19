@@ -9,6 +9,7 @@ import jakarta.validation.Valid
 import jakarta.validation.constraints.NotNull
 
 data class BootstrapRequestDto(
+
     @field:NotNull(message = "Dados do tenant são obrigatórios")
     @field:Valid
     val tenant: TenantCreateRequestDto,

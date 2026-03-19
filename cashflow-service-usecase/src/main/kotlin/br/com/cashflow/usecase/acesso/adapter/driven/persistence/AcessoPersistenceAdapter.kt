@@ -49,6 +49,7 @@ class AcessoPersistenceAdapter(
         val pageable = PageRequest.of(page, size)
         val total = acessoRepository.countFiltered(filter)
         val items = acessoRepository.findFiltered(filter, pageable)
+
         return AcessoPage(
             items = items,
             total = total,
@@ -69,6 +70,7 @@ class AcessoPersistenceAdapter(
             .createNativeQuery("DELETE FROM acesso_congregacao WHERE email = :email")
             .setParameter("email", email)
             .executeUpdate()
+
         entityManager
             .createNativeQuery(
                 "INSERT INTO acesso_congregacao (email, congregacao_id) VALUES (:email, :congregacaoId)",
@@ -79,6 +81,7 @@ class AcessoPersistenceAdapter(
 
     override fun findListItemByEmail(email: String): AcessoListItem? {
         val proj = acessoRepository.findListItemByEmail(email) ?: return null
+
         return AcessoListItem(
             email = proj.getEmail(),
             nome = proj.getNome(),
@@ -98,6 +101,7 @@ class AcessoPersistenceAdapter(
     ) {
         val auditUser =
             SecurityContextHolder.getContext().authentication?.name ?: "system"
+
         entityManager
             .createNativeQuery(
                 """

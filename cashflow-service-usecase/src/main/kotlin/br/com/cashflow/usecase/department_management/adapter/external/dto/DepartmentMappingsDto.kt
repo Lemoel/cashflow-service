@@ -6,6 +6,7 @@ private fun normalizeNome(value: String): String = value.trim().uppercase()
 
 fun DepartmentCreateRequestDto.toEntity(tenantId: java.util.UUID): Department {
     require(nome.isNotBlank()) { "Nome do departamento é obrigatório." }
+
     return Department(
         tenantId = tenantId,
         nome = normalizeNome(nome.trim()),

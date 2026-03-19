@@ -28,7 +28,9 @@ class DepartmentManagementService(
         if (request.nome.isBlank()) {
             throw BusinessException("Nome do departamento é obrigatório.")
         }
+
         val entity = request.toEntity(tenantId)
+
         return try {
             departmentOutputPort.save(entity)
         } catch (error: DataIntegrityViolationException) {

@@ -13,7 +13,7 @@ interface AcessoRepository :
         value =
             """
             SELECT c.tenant_id FROM acesso_congregacao ac
-            INNER JOIN congregacao c ON c.id = ac.congregacao_id
+                INNER JOIN congregacao c ON c.id = ac.congregacao_id
             WHERE ac.email = :email
             LIMIT 1
             """,

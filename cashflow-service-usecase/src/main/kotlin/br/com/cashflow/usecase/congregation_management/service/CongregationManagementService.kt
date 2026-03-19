@@ -57,13 +57,16 @@ class CongregationManagementService(
                 ?: throw ResourceNotFoundException("Congregação não encontrada")
         request.applyTo(existing)
         validateRequiredFields(existing)
+
         val cnpjDigits = existing.cnpj
+
         if (!cnpjDigits.isNullOrBlank()) {
             requireValidCnpjDigits(cnpjDigits)
             if (congregationOutputPort.existsByCnpjExcludingId(cnpjDigits, id)) {
                 throw ConflictException("Já existe uma congregação com este CNPJ")
             }
         }
+
         try {
             return congregationOutputPort.save(existing)
         } catch (error: DataIntegrityViolationException) {
@@ -92,6 +95,7 @@ class CongregationManagementService(
         if (congregationOutputPort.findById(id) == null) {
             throw ResourceNotFoundException("Congregação não encontrada")
         }
+
         try {
             congregationOutputPort.deleteById(id)
         } catch (error: DataIntegrityViolationException) {
@@ -113,15 +117,19 @@ class CongregationManagementService(
 
     private fun requireValidCnpjDigits(cnpj: String): String {
         val digits = CnpjValidator.clean(cnpj)
+
         if (digits.isBlank()) {
             throw BusinessException("CNPJ é inválido.")
         }
+
         if (digits.length != CNPJ_DIGITS_LENGTH) {
             throw BusinessException("CNPJ deve ter exatamente 14 dígitos numéricos")
         }
+
         if (!CnpjValidator.isValid(digits)) {
             throw BusinessException("CNPJ inválido: dígitos verificadores não conferem")
         }
+
         return digits
     }
 }

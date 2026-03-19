@@ -5,6 +5,7 @@ import br.com.cashflow.usecase.congregation.entity.Congregation
 
 fun CongregationCreateRequestDto.toEntity(): Congregation {
     val cnpjDigits = cnpj?.let { CnpjValidator.clean(it).takeIf { d -> d.isNotBlank() } }
+
     return Congregation(
         tenantId = tenantId,
         setorialId = setorialId,
