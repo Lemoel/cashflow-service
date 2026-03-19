@@ -84,8 +84,8 @@ fun Congregation.toResponse(): CongregationResponse =
         email = email,
         telefone = telefone,
         ativo = ativo,
-        createdAt = createdAt?.toString() ?: "",
-        updatedAt = updatedAt?.toString(),
+        createdAt = createdDate?.toString() ?: "",
+        updatedAt = lastModifiedDate?.toString(),
     )
 
 fun Congregation.toListOption(): CongregationListOption =

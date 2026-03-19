@@ -1,18 +1,21 @@
 package br.com.cashflow.usecase.maquina_historico.adapter.driven.persistence
 
 import br.com.cashflow.usecase.maquina_historico.entity.MaquinaHistorico
-import org.springframework.data.jdbc.repository.query.Modifying
-import org.springframework.data.jdbc.repository.query.Query
-import org.springframework.data.repository.CrudRepository
+import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
+import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import java.util.UUID
 
 interface MaquinaHistoricoRepository :
-    CrudRepository<MaquinaHistorico, UUID>,
+    JpaRepository<MaquinaHistorico, UUID>,
     MaquinaHistoricoRepositoryCustom {
+    fun deleteByMaquinaId(maquinaId: UUID)
+
     @Modifying
     @Query(
-        "UPDATE maquina_historico SET data_fim = CURRENT_TIMESTAMP WHERE maquina_id = :maquinaId AND data_fim IS NULL",
+        value = "UPDATE maquina_historico SET data_fim = CURRENT_TIMESTAMP WHERE maquina_id = :maquinaId AND data_fim IS NULL",
+        nativeQuery = true,
     )
     fun fecharPeriodoAtual(
         @Param("maquinaId") maquinaId: UUID,

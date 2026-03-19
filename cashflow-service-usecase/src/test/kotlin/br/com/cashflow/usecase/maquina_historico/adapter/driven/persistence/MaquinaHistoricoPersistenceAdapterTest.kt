@@ -61,6 +61,16 @@ class MaquinaHistoricoPersistenceAdapterTest {
     }
 
     @Test
+    fun `deletarPorMaquinaId delegates to repository`() {
+        val maquinaId = UUID.randomUUID()
+        every { maquinaHistoricoRepository.deleteByMaquinaId(maquinaId) } just runs
+
+        adapter.deletarPorMaquinaId(maquinaId)
+
+        verify(exactly = 1) { maquinaHistoricoRepository.deleteByMaquinaId(maquinaId) }
+    }
+
+    @Test
     fun `fecharPeriodoAtual delegates to repository`() {
         val maquinaId = UUID.randomUUID()
         every { maquinaHistoricoRepository.fecharPeriodoAtual(maquinaId) } just runs
@@ -81,7 +91,7 @@ class MaquinaHistoricoPersistenceAdapterTest {
         adapter.inserirPeriodo(maquinaId, congregacaoId, departamentoId)
 
         val saved = entitySlot.captured
-        assertThat(saved.id).isNotNull()
+        assertThat(saved.id).isNull()
         assertThat(saved.maquinaId).isEqualTo(maquinaId)
         assertThat(saved.congregacaoId).isEqualTo(congregacaoId)
         assertThat(saved.departamentoId).isEqualTo(departamentoId)

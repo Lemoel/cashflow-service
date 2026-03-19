@@ -1,44 +1,43 @@
 package br.com.cashflow.usecase.movimento_api.entity
 
-import org.springframework.data.annotation.Id
-import org.springframework.data.relational.core.mapping.Column
-import org.springframework.data.relational.core.mapping.Table
-import java.time.Instant
+import br.com.cashflow.commons.audit.Auditable
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
+import jakarta.persistence.Id
+import jakarta.persistence.PrePersist
+import jakarta.persistence.Table
 import java.time.LocalDate
 import java.util.UUID
 
-@Table("movimento_api")
+@Entity
+@Table(name = "movimento_api")
 class MovimentoApi(
     @Id
     var id: UUID? = null,
 
-    @Column("payload")
+    @Column(name = "payload")
     val payload: String? = null,
 
-    @Column("status")
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
     var status: StatusProcessamentoEnum = StatusProcessamentoEnum.RECEBIDO,
 
-    @Column("pagina")
+    @Column(name = "pagina")
     val pagina: Int = 1,
 
-    @Column("total_elementos")
+    @Column(name = "total_elementos")
     val totalElementos: Int = 0,
 
-    @Column("total_paginas")
+    @Column(name = "total_paginas")
     val totalPaginas: Int = 1,
 
-    @Column("data_leitura")
+    @Column(name = "data_leitura")
     val dataLeitura: LocalDate? = null,
-
-    @Column("created_at")
-    var createdAt: Instant? = null,
-
-    @Column("updated_at")
-    var updatedAt: Instant? = null,
-
-    @Column("creation_user_id")
-    val creationUserId: String = "",
-
-    @Column("mod_user_id")
-    val modUserId: String? = null,
-)
+) : Auditable<String>() {
+    @PrePersist
+    fun onPrePersist() {
+        if (id == null) id = UUID.randomUUID()
+    }
+}

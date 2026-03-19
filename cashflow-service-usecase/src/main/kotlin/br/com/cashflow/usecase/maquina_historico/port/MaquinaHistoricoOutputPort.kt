@@ -6,6 +6,8 @@ import java.util.UUID
 interface MaquinaHistoricoOutputPort {
     fun listarPorMaquinaId(maquinaId: UUID): List<MaquinaHistoricoItemModel>
 
+    fun deletarPorMaquinaId(maquinaId: UUID)
+
     fun fecharPeriodoAtual(maquinaId: UUID)
 
     fun inserirPeriodo(

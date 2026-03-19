@@ -1,16 +1,13 @@
 package br.com.cashflow.usecase.user_authentication.adapter.external.dto
 
-import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
 
 data class ChangePasswordRequestDto(
-    @param:JsonProperty("senhaAtual")
-    @field:NotBlank(message = "Senha atual é obrigatória.")
+    @field:NotBlank(message = "Senha atual é obrigatória")
     val currentPassword: String,
 
-    @param:JsonProperty("novaSenha")
-    @field:NotBlank(message = "Nova senha é obrigatória.")
-    @field:Size(min = 6, message = "A nova senha deve ter no mínimo 6 caracteres.")
+    @field:NotBlank(message = "Nova senha é obrigatória")
+    @field:Size(min = 6, message = "A nova senha deve ter pelo menos 6 caracteres")
     val newPassword: String,
 )

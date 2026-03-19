@@ -4,6 +4,8 @@ import br.com.cashflow.usecase.congregation.entity.Congregation
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.util.UUID
 
 class CongregationResponseTest {
@@ -30,11 +32,11 @@ class CongregationResponseTest {
                 email = "a@b.com",
                 telefone = "11999999999",
                 ativo = true,
-                creationUserId = "user1",
-                modUserId = "user2",
-                createdAt = createdAt,
-                updatedAt = updatedAt,
             )
+        congregation.createdBy = "user1"
+        congregation.lastModifiedBy = "user2"
+        congregation.createdDate = LocalDateTime.ofInstant(createdAt, ZoneOffset.UTC)
+        congregation.lastModifiedDate = LocalDateTime.ofInstant(updatedAt, ZoneOffset.UTC)
 
         val result = congregation.toResponse()
 
@@ -52,8 +54,8 @@ class CongregationResponseTest {
         assertThat(result.email).isEqualTo("a@b.com")
         assertThat(result.telefone).isEqualTo("11999999999")
         assertThat(result.ativo).isTrue()
-        assertThat(result.createdAt).isEqualTo(createdAt.toString())
-        assertThat(result.updatedAt).isEqualTo(updatedAt.toString())
+        assertThat(result.createdAt).isEqualTo(congregation.createdDate.toString())
+        assertThat(result.updatedAt).isEqualTo(congregation.lastModifiedDate.toString())
     }
 
     @Test

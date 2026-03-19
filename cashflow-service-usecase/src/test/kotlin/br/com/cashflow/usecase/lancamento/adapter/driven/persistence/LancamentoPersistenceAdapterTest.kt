@@ -39,12 +39,65 @@ class LancamentoPersistenceAdapterTest {
                 dataPrevistaPagamento = LocalDate.now(),
                 valorLiquidoTransacao = BigDecimal.TEN,
                 valorOriginalTransacao = BigDecimal.TEN,
-                creationUserId = "BOT",
             )
-        justRun { lancamentoRepository.insertIgnorandoDuplicata(any()) }
+        lancamento.createdBy = "BOT"
+        lancamento.lastModifiedBy = "BOT"
+        justRun {
+            lancamentoRepository.insertIgnorandoDuplicata(
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+            )
+        }
 
         adapter.insertIgnorandoDuplicata(lancamento)
 
-        verify(exactly = 1) { lancamentoRepository.insertIgnorandoDuplicata(lancamento) }
+        verify(exactly = 1) {
+            lancamentoRepository.insertIgnorandoDuplicata(
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+            )
+        }
     }
 }

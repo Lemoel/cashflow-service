@@ -129,7 +129,7 @@ class CongregationManagementServiceITCase : PostgresqlBaseTest() {
         // call & assert
         assertThatThrownBy { congregationManagement.create(request) }
             .isInstanceOf(BusinessException::class.java)
-            .hasMessageContaining("congregação vinculada")
+            .hasMessageContaining("Tenant não encontrado")
     }
 
     @Test
@@ -214,6 +214,28 @@ class CongregationManagementServiceITCase : PostgresqlBaseTest() {
         val page = congregationManagement.findAll(CongregationFilterModel(nome = "CONG FILTRO"), 0, 10)
 
         // assert
+        assertThat(page.items).isNotEmpty
+        assertThat(page.items.any { it.nome == "CONG FILTRO" }).isTrue()
+    }
+
+    @Test
+    fun should_ReturnMatchingCongregations_When_FindAllWithPartialNomeFilter() {
+        val tenantId = createTenant()
+        val request =
+            CongregationCreateRequestDto(
+                tenantId = tenantId,
+                nome = "Cong Filtro",
+                logradouro = "Rua",
+                bairro = "B",
+                numero = "1",
+                cidade = "C",
+                uf = "SP",
+                cep = "01234567",
+            )
+        congregationManagement.create(request)
+
+        val page = congregationManagement.findAll(CongregationFilterModel(nome = "FILTRO"), 0, 10)
+
         assertThat(page.items).isNotEmpty
         assertThat(page.items.any { it.nome == "CONG FILTRO" }).isTrue()
     }

@@ -16,7 +16,7 @@ interface ParametroOutputPort {
         size: Int,
     ): ParametroPageModel
 
-    fun findAllOrderByChave(): List<Parametro>
+    fun findAllChaveOrderByChave(): List<String>
 
     fun existsByChave(chave: String): Boolean
 
@@ -24,6 +24,8 @@ interface ParametroOutputPort {
         chave: String,
         excludeId: UUID?,
     ): Boolean
+
+    fun existsById(id: UUID): Boolean
 
     fun deleteById(id: UUID)
 }

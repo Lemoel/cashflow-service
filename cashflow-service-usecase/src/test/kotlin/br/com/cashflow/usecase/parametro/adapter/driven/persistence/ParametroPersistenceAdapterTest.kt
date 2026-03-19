@@ -107,23 +107,25 @@ class ParametroPersistenceAdapterTest {
     }
 
     @Test
-    fun `findAllOrderByChave delegates to findAllByOrderByChaveAsc`() {
-        val list =
-            listOf(
-                Parametro(
-                    id = UUID.randomUUID(),
-                    chave = "A",
-                    valorTexto = "1",
-                    tipo = "STRING",
-                    ativo = true,
-                ),
-            )
-        every { parametroRepository.findAllByOrderByChaveAsc() } returns list
+    fun `findAllChaveOrderByChave delegates to findAllChaveOrderByChaveAsc`() {
+        val chaves = listOf("A", "B")
+        every { parametroRepository.findAllChaveOrderByChaveAsc() } returns chaves
 
-        val result = adapter.findAllOrderByChave()
+        val result = adapter.findAllChaveOrderByChave()
 
-        assertThat(result).isEqualTo(list)
-        verify(exactly = 1) { parametroRepository.findAllByOrderByChaveAsc() }
+        assertThat(result).isEqualTo(chaves)
+        verify(exactly = 1) { parametroRepository.findAllChaveOrderByChaveAsc() }
+    }
+
+    @Test
+    fun `existsById delegates to repository`() {
+        val id = UUID.randomUUID()
+        every { parametroRepository.existsById(id) } returns true
+
+        val result = adapter.existsById(id)
+
+        assertThat(result).isTrue()
+        verify(exactly = 1) { parametroRepository.existsById(id) }
     }
 
     @Test

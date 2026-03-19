@@ -31,9 +31,11 @@ class CongregationPersistenceAdapter(
         )
     }
 
-    override fun findAllOrderByNome(): List<Congregation> = congregationRepository.findAllByOrderByNomeAsc()
+    override fun findAllOrderByNome(): List<Pair<UUID, String>> =
+        congregationRepository.findAllProjectedByOrderByNomeAsc().map { it.getId() to it.getNome() }
 
-    override fun findSetoriais(): List<Congregation> = congregationRepository.findBySetorialIdIsNullAndAtivoTrueOrderByNomeAsc()
+    override fun findSetoriais(): List<Pair<UUID, String>> =
+        congregationRepository.findProjectedBySetorialIdIsNullAndAtivoTrueOrderByNomeAsc().map { it.getId() to it.getNome() }
 
     override fun existsByCnpjExcludingId(
         cnpj: String,

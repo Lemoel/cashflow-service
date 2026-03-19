@@ -1,93 +1,88 @@
 package br.com.cashflow.usecase.lancamento.entity
 
+import br.com.cashflow.commons.audit.Auditable
 import br.com.cashflow.usecase.lancamento.enum.MeioCapturaEnum
 import br.com.cashflow.usecase.lancamento.enum.MeioPagamentoEnum
 import br.com.cashflow.usecase.lancamento.enum.TipoEventoEnum
-import org.springframework.data.annotation.Id
-import org.springframework.data.relational.core.mapping.Column
-import org.springframework.data.relational.core.mapping.Table
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
+import jakarta.persistence.Id
+import jakarta.persistence.Table
 import java.math.BigDecimal
-import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
-@Table("lancamento")
+@Entity
+@Table(name = "lancamento")
 class Lancamento(
     @Id
     var id: UUID? = null,
 
-    @Column("nsu")
+    @Column(name = "nsu")
     val nsu: String? = null,
 
-    @Column("tid")
+    @Column(name = "tid")
     val tid: String? = null,
 
-    @Column("codigo_transacao")
+    @Column(name = "codigo_transacao")
     val codigoTransacao: String? = null,
 
-    @Column("parcela")
+    @Column(name = "parcela")
     val parcela: String = "",
 
-    @Column("tipo_evento")
+    @Column(name = "tipo_evento")
+    @Enumerated(EnumType.STRING)
     val tipoEvento: TipoEventoEnum = TipoEventoEnum.DESCONHECIDO,
 
-    @Column("meio_captura")
+    @Column(name = "meio_captura")
+    @Enumerated(EnumType.STRING)
     val meioCaptura: MeioCapturaEnum = MeioCapturaEnum.OUTRO,
 
-    @Column("valor_parcela")
+    @Column(name = "valor_parcela")
     val valorParcela: BigDecimal = BigDecimal.ZERO,
 
-    @Column("meio_pagamento")
+    @Column(name = "meio_pagamento")
+    @Enumerated(EnumType.STRING)
     val meioPagamento: MeioPagamentoEnum = MeioPagamentoEnum.OUTRO,
 
-    @Column("estabelecimento")
+    @Column(name = "estabelecimento")
     val estabelecimento: String = "",
 
-    @Column("pagamento_prazo")
+    @Column(name = "pagamento_prazo")
     val pagamentoPrazo: String = "",
 
-    @Column("taxa_intermediacao")
+    @Column(name = "taxa_intermediacao")
     val taxaIntermediacao: BigDecimal = BigDecimal.ZERO,
 
-    @Column("numero_serie_leitor")
+    @Column(name = "numero_serie_leitor")
     val numeroSerieLeitor: String? = null,
 
-    @Column("valor_total_transacao")
+    @Column(name = "valor_total_transacao")
     val valorTotalTransacao: BigDecimal = BigDecimal.ZERO,
 
-    @Column("data_inicial_transacao")
+    @Column(name = "data_inicial_transacao")
     val dataInicialTransacao: LocalDate? = null,
 
-    @Column("hora_inicial_transacao")
+    @Column(name = "hora_inicial_transacao")
     val horaInicialTransacao: String = "",
 
-    @Column("data_prevista_pagamento")
+    @Column(name = "data_prevista_pagamento")
     val dataPrevistaPagamento: LocalDate? = null,
 
-    @Column("valor_liquido_transacao")
+    @Column(name = "valor_liquido_transacao")
     val valorLiquidoTransacao: BigDecimal = BigDecimal.ZERO,
 
-    @Column("valor_original_transacao")
+    @Column(name = "valor_original_transacao")
     val valorOriginalTransacao: BigDecimal = BigDecimal.ZERO,
 
-    @Column("maquina_id")
+    @Column(name = "maquina_id")
     val maquinaId: UUID? = null,
 
-    @Column("congregacao_id")
+    @Column(name = "congregacao_id")
     val congregacaoId: UUID? = null,
 
-    @Column("departamento_id")
+    @Column(name = "departamento_id")
     val departamentoId: UUID? = null,
-
-    @Column("creation_user_id")
-    val creationUserId: String = "",
-
-    @Column("created_at")
-    var createdAt: Instant? = null,
-
-    @Column("updated_at")
-    var updatedAt: Instant? = null,
-
-    @Column("mod_user_id")
-    val modUserId: String? = null,
-)
+) : Auditable<String>()

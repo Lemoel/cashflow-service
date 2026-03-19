@@ -7,3 +7,5 @@ CREATE TABLE acesso_congregacao (
     CONSTRAINT fk_acesso_cong_acesso FOREIGN KEY (email) REFERENCES acesso(email) ON DELETE RESTRICT,
     CONSTRAINT fk_acesso_cong_congregacao FOREIGN KEY (congregacao_id) REFERENCES congregacao(id) ON DELETE RESTRICT
 );
+
+CREATE INDEX idx_acesso_congregacao_congregacao_id ON acesso_congregacao(congregacao_id);

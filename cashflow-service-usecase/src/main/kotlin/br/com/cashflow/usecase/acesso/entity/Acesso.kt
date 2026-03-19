@@ -1,36 +1,43 @@
 package br.com.cashflow.usecase.acesso.entity
 
-import org.springframework.data.annotation.Id
-import org.springframework.data.relational.core.mapping.Column
-import org.springframework.data.relational.core.mapping.Table
-import java.time.Instant
+import br.com.cashflow.commons.audit.Auditable
+import br.com.cashflow.usecase.congregation.entity.Congregation
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.JoinTable
+import jakarta.persistence.ManyToMany
+import jakarta.persistence.Table
 
-@Table("acesso")
+@Entity
+@Table(name = "acesso")
 class Acesso(
     @Id
     var email: String? = null,
 
-    @Column("password")
+    @Column(name = "password")
     var password: String = "",
 
-    @Column("data")
-    var data: Instant? = null,
-
-    @Column("mod_date_time")
-    var modDateTime: Instant? = null,
-
-    @Column("nome")
+    @Column(name = "nome")
     var nome: String? = null,
 
-    @Column("telefone")
+    @Column(name = "telefone")
     var telefone: String? = null,
 
-    @Column("ativo")
+    @Column(name = "ativo")
     var ativo: Boolean = true,
 
-    @Column("tipo_acesso")
+    @Column(name = "tipo_acesso")
     var tipoAcesso: String = PerfilUsuario.USER.name,
 
-) {
+    @ManyToMany
+    @JoinTable(
+        name = "acesso_congregacao",
+        joinColumns = [JoinColumn(name = "email")],
+        inverseJoinColumns = [JoinColumn(name = "congregacao_id")],
+    )
+    var congregacoes: MutableSet<Congregation> = mutableSetOf(),
+) : Auditable<String>() {
     fun perfil(): PerfilUsuario = PerfilUsuario.entries.find { it.name == tipoAcesso } ?: PerfilUsuario.USER
 }

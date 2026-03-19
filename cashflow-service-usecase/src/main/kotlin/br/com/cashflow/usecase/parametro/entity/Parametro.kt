@@ -1,43 +1,40 @@
 package br.com.cashflow.usecase.parametro.entity
 
-import org.springframework.data.annotation.Id
-import org.springframework.data.relational.core.mapping.Column
-import org.springframework.data.relational.core.mapping.Table
-import java.time.Instant
+import br.com.cashflow.commons.audit.Auditable
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.Id
+import jakarta.persistence.PrePersist
+import jakarta.persistence.Table
+import java.math.BigDecimal
 import java.util.UUID
 
-@Table("parametro")
+@Entity
+@Table(name = "parametro")
 class Parametro(
     @Id
     var id: UUID? = null,
 
-    @Column("chave")
+    @Column(name = "chave")
     var chave: String = "",
 
-    @Column("valor_texto")
+    @Column(name = "valor_texto")
     var valorTexto: String? = null,
 
-    @Column("valor_inteiro")
+    @Column(name = "valor_inteiro")
     var valorInteiro: Long? = null,
 
-    @Column("valor_decimal")
-    var valorDecimal: Double? = null,
+    @Column(name = "valor_decimal", precision = 15, scale = 4)
+    var valorDecimal: BigDecimal? = null,
 
-    @Column("tipo")
+    @Column(name = "tipo")
     var tipo: String = "",
 
-    @Column("ativo")
+    @Column(name = "ativo")
     var ativo: Boolean = true,
-
-    @Column("creation_user_id")
-    var creationUserId: String = "",
-
-    @Column("mod_user_id")
-    var modUserId: String? = null,
-
-    @Column("created_at")
-    var createdAt: Instant? = null,
-
-    @Column("updated_at")
-    var updatedAt: Instant? = null,
-)
+) : Auditable<String>() {
+    @PrePersist
+    fun onPrePersist() {
+        if (id == null) id = UUID.randomUUID()
+    }
+}

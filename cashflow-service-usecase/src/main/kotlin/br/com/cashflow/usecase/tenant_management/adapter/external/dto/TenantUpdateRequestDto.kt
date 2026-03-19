@@ -12,10 +12,6 @@ data class TenantUpdateRequestDto(
     @field:Size(max = 150)
     val companyName: String? = null,
 
-    @field:NotBlank(message = "cnpj is required")
-    @field:Size(max = 18)
-    val cnpj: String,
-
     @field:NotBlank(message = "street is required")
     @field:Size(max = 100)
     val street: String,

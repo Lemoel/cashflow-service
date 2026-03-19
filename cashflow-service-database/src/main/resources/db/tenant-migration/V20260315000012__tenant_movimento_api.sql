@@ -8,10 +8,10 @@ CREATE TABLE movimento_api (
     total_elementos NUMERIC(4),
     total_paginas NUMERIC(4),
     data_leitura DATE NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    creation_user_id VARCHAR(255) NOT NULL,
-    mod_user_id VARCHAR(255),
+    created_by_id VARCHAR(113) NOT NULL,
+    dti_created_date TIMESTAMP NOT NULL,
+    last_modified_by_id VARCHAR(113) NOT NULL,
+    dti_last_modified_date TIMESTAMP NOT NULL,
     CONSTRAINT uk_movimento_data_pagina UNIQUE (data_leitura, pagina)
 );
 

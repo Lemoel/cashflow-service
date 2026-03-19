@@ -16,6 +16,10 @@ class MaquinaHistoricoPersistenceAdapter(
             .findByMaquinaIdOrderByDataInicioDesc(maquinaId)
             .map { it.toItem() }
 
+    override fun deletarPorMaquinaId(maquinaId: UUID) {
+        maquinaHistoricoRepository.deleteByMaquinaId(maquinaId)
+    }
+
     override fun fecharPeriodoAtual(maquinaId: UUID) {
         maquinaHistoricoRepository.fecharPeriodoAtual(maquinaId)
     }
@@ -27,7 +31,6 @@ class MaquinaHistoricoPersistenceAdapter(
     ) {
         val entity =
             MaquinaHistorico(
-                id = UUID.randomUUID(),
                 maquinaId = maquinaId,
                 congregacaoId = congregacaoId,
                 departamentoId = departamentoId,

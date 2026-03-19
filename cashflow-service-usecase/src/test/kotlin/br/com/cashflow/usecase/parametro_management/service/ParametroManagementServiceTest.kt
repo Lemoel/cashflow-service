@@ -18,6 +18,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.math.BigDecimal
 import java.util.UUID
 
 class ParametroManagementServiceTest {
@@ -161,12 +162,14 @@ class ParametroManagementServiceTest {
             Parametro(
                 id = UUID.randomUUID(),
                 chave = "K",
-                valorDecimal = 3.14,
+                valorDecimal = BigDecimal("3.14"),
                 tipo = "DOUBLE",
                 ativo = true,
             )
         every { parametroOutputPort.existsByChave("K") } returns false
-        every { parametroOutputPort.save(match { it.valorDecimal == 3.14 }) } returns saved
+        every {
+            parametroOutputPort.save(match { it.valorDecimal == BigDecimal("3.14") })
+        } returns saved
 
         val result = service.create(request)
 
@@ -265,24 +268,7 @@ class ParametroManagementServiceTest {
 
     @Test
     fun `findChavesForDropdown returns pairs chave chave`() {
-        val list =
-            listOf(
-                Parametro(
-                    id = UUID.randomUUID(),
-                    chave = "A",
-                    valorTexto = "1",
-                    tipo = "STRING",
-                    ativo = true,
-                ),
-                Parametro(
-                    id = UUID.randomUUID(),
-                    chave = "B",
-                    valorTexto = "2",
-                    tipo = "STRING",
-                    ativo = true,
-                ),
-            )
-        every { parametroOutputPort.findAllOrderByChave() } returns list
+        every { parametroOutputPort.findAllChaveOrderByChave() } returns listOf("A", "B")
 
         val result = service.findChavesForDropdown()
 
@@ -292,7 +278,7 @@ class ParametroManagementServiceTest {
     @Test
     fun `delete throws ResourceNotFoundException when not found`() {
         val id = UUID.randomUUID()
-        every { parametroOutputPort.findById(id) } returns null
+        every { parametroOutputPort.existsById(id) } returns false
 
         assertThatThrownBy { service.delete(id) }
             .isInstanceOf(ResourceNotFoundException::class.java)
@@ -303,8 +289,7 @@ class ParametroManagementServiceTest {
     @Test
     fun `delete calls deleteById when parametro exists`() {
         val id = UUID.randomUUID()
-        val p = Parametro(id = id, chave = "K", valorTexto = "v", tipo = "STRING", ativo = true)
-        every { parametroOutputPort.findById(id) } returns p
+        every { parametroOutputPort.existsById(id) } returns true
         every { parametroOutputPort.deleteById(id) } just runs
 
         service.delete(id)
@@ -315,8 +300,7 @@ class ParametroManagementServiceTest {
     @Test
     fun `delete throws BusinessException when DataIntegrityViolationException`() {
         val id = UUID.randomUUID()
-        val p = Parametro(id = id, chave = "K", valorTexto = "v", tipo = "STRING", ativo = true)
-        every { parametroOutputPort.findById(id) } returns p
+        every { parametroOutputPort.existsById(id) } returns true
         every { parametroOutputPort.deleteById(id) } throws
             org.springframework.dao.DataIntegrityViolationException("fk")
 

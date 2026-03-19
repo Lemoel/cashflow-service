@@ -2,6 +2,7 @@ package br.com.cashflow.usecase.tenant.port
 
 import br.com.cashflow.usecase.tenant.entity.Tenant
 import br.com.cashflow.usecase.tenant.model.TenantFilter
+import br.com.cashflow.usecase.tenant.model.TenantIdName
 import br.com.cashflow.usecase.tenant.model.TenantPage
 import br.com.cashflow.usecase.tenant.model.TenantSchemaInfo
 import java.util.UUID
@@ -22,7 +23,7 @@ interface TenantOutputPort {
         excludeId: UUID?,
     ): Boolean
 
-    fun findActiveOrderByTradeName(): List<Tenant>
+    fun findActiveOrderByTradeName(): List<TenantIdName>
 
     fun deleteById(id: UUID)
 

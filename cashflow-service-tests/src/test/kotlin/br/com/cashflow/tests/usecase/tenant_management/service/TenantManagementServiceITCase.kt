@@ -105,7 +105,6 @@ class TenantManagementServiceITCase : PostgresqlBaseTest() {
             TenantUpdateRequestDto(
                 tradeName = "Church CRUD Updated",
                 companyName = "Company Updated",
-                cnpj = "11111111000191",
                 street = "New Street",
                 number = "2",
                 complement = null,
@@ -189,7 +188,6 @@ class TenantManagementServiceITCase : PostgresqlBaseTest() {
         val request =
             TenantUpdateRequestDto(
                 tradeName = "A",
-                cnpj = "12345678000190",
                 street = "S",
                 number = "1",
                 city = "C",
@@ -244,7 +242,7 @@ class TenantManagementServiceITCase : PostgresqlBaseTest() {
 
         // assert
         assertThat(list).isNotEmpty
-        val names = list.map { it.tradeName }
+        val names = list.map { it.name }
         assertThat(names.indexOf("ALPHA CHURCH")).isLessThan(names.indexOf("ZEBRA CHURCH"))
     }
 

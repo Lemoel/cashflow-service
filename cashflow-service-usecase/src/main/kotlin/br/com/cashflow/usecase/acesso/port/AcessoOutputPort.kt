@@ -9,6 +9,8 @@ import java.util.UUID
 interface AcessoOutputPort {
     fun findByEmail(email: String): Acesso?
 
+    fun existsByEmail(email: String): Boolean
+
     fun updatePassword(
         email: String,
         passwordHash: String,

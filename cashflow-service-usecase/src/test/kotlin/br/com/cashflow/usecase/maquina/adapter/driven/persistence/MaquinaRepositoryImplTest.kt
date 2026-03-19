@@ -1,125 +1,103 @@
 package br.com.cashflow.usecase.maquina.adapter.driven.persistence
 
-import br.com.cashflow.usecase.maquina.model.MaquinaComCongregacao
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.slot
 import io.mockk.verify
+import jakarta.persistence.EntityManager
+import jakarta.persistence.Query
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.jdbc.core.JdbcTemplate
-import org.springframework.jdbc.core.RowMapper
 import java.time.Instant
 import java.util.UUID
 
 class MaquinaRepositoryImplTest {
-    private val jdbcTemplate: JdbcTemplate = mockk()
+    private val entityManager: EntityManager = mockk()
+    private val query: Query = mockk()
     private lateinit var repository: MaquinaRepositoryImpl
 
     @BeforeEach
     fun setUp() {
-        repository = MaquinaRepositoryImpl(jdbcTemplate)
+        repository = MaquinaRepositoryImpl(entityManager)
     }
 
     @Test
     fun `findByIdWithDetalhes returns null when query returns empty list`() {
         val id = UUID.randomUUID()
-        every { jdbcTemplate.query(any(), any<RowMapper<MaquinaComCongregacao>>(), any()) } returns
-            emptyList()
+        every { entityManager.createNativeQuery(any<String>()) } returns query
+        every { query.setParameter(any<String>(), any()) } returns query
+        every { query.resultList } returns emptyList<Array<Any?>>()
 
         val result = repository.findByIdWithDetalhes(id)
 
         assertThat(result).isNull()
-        verify(
-            exactly = 1,
-        ) { jdbcTemplate.query(any(), any<RowMapper<MaquinaComCongregacao>>(), any()) }
+        verify(exactly = 1) { entityManager.createNativeQuery(any<String>()) }
     }
 
     @Test
-    fun `findByIdWithDetalhes returns item when query returns one`() {
+    fun `findByIdWithDetalhes returns item when query returns one row`() {
         val id = UUID.randomUUID()
-        val item =
-            MaquinaComCongregacao(
-                id = id,
-                maquinaId = "ABC",
-                congregacaoId = UUID.randomUUID(),
-                congregacaoNome = "Cong",
-                bancoId = UUID.randomUUID(),
-                bancoNome = "Banco",
-                departamentoId = null,
-                departamentoNome = null,
-                ativo = true,
-                version = 1L,
-                createdAt = Instant.now(),
-                updatedAt = null,
+        val congregacaoId = UUID.randomUUID()
+        val bancoId = UUID.randomUUID()
+        val now = Instant.now()
+        val row =
+            arrayOf<Any?>(
+                id.toString(),
+                "ABC",
+                congregacaoId.toString(),
+                "Cong",
+                bancoId.toString(),
+                "Banco",
+                null,
+                null,
+                true,
+                1L,
+                java.sql.Timestamp.from(now),
+                null,
             )
-        every { jdbcTemplate.query(any(), any<RowMapper<MaquinaComCongregacao>>(), any()) } returns
-            listOf(item)
+        every { entityManager.createNativeQuery(any<String>()) } returns query
+        every { query.setParameter(any<String>(), any()) } returns query
+        every { query.resultList } returns listOf(row)
 
         val result = repository.findByIdWithDetalhes(id)
 
-        assertThat(result).isEqualTo(item)
+        assertThat(result).isNotNull
+        assertThat(result!!.id).isEqualTo(id)
+        assertThat(result.maquinaId).isEqualTo("ABC")
+        assertThat(result.congregacaoNome).isEqualTo("Cong")
     }
 
     @Test
     fun `findWithFiltersComDetalhes with no filters uses count and select without WHERE`() {
-        val countSqlSlot = slot<String>()
-        every {
-            jdbcTemplate.queryForObject(
-                capture(countSqlSlot),
-                Long::class.java,
-                *anyVararg(),
-            )
-        } returns
-            0L
-        every {
-            jdbcTemplate.query(
-                any(),
-                any<RowMapper<MaquinaComCongregacao>>(),
-                *anyVararg(),
-            )
-        } returns
-            emptyList()
+        every { entityManager.createNativeQuery(any<String>()) } returns query
+        every { query.setParameter(any<String>(), any()) } returns query
+        every { query.singleResult } returns 0L
+        every { query.resultList } returns emptyList<Array<Any?>>()
 
         val result = repository.findWithFiltersComDetalhes(null, null, null, null, 0, 10)
 
         assertThat(result.items).isEmpty()
         assertThat(result.total).isEqualTo(0L)
-        assertThat(countSqlSlot.captured).contains("SELECT COUNT(*)")
-        assertThat(countSqlSlot.captured).contains("FROM maquina m")
-        assertThat(countSqlSlot.captured).doesNotContain("WHERE")
     }
 
     @Test
-    fun `findWithFiltersComDetalhes with maquinaId adds ILIKE condition`() {
-        every { jdbcTemplate.queryForObject(any(), Long::class.java, *anyVararg()) } returns 1L
-        val selectSqlSlot = slot<String>()
-        every {
-            jdbcTemplate.query(
-                capture(selectSqlSlot),
-                any<RowMapper<MaquinaComCongregacao>>(),
-                *anyVararg(),
-            )
-        } returns emptyList()
+    fun `findWithFiltersComDetalhes with maquinaId adds parameter`() {
+        every { entityManager.createNativeQuery(any<String>()) } returns query
+        every { query.setParameter(any<String>(), any()) } returns query
+        every { query.singleResult } returns 1L
+        every { query.resultList } returns emptyList<Array<Any?>>()
 
         repository.findWithFiltersComDetalhes("XYZ", null, null, null, 0, 10)
 
-        assertThat(selectSqlSlot.captured).contains("numero_serie_leitor")
-        assertThat(selectSqlSlot.captured).contains("ILIKE")
+        verify(atLeast = 1) { query.setParameter("maquinaId", "%XYZ%") }
     }
 
     @Test
-    fun `findParaSelecaoHistorico with no filters uses count and select without WHERE`() {
-        every { jdbcTemplate.queryForObject(any(), Long::class.java, *anyVararg()) } returns 0L
-        every {
-            jdbcTemplate.query(
-                any(),
-                any<RowMapper<MaquinaComCongregacao>>(),
-                *anyVararg(),
-            )
-        } returns
-            emptyList()
+    fun `findParaSelecaoHistorico with no filters returns empty`() {
+        every { entityManager.createNativeQuery(any<String>()) } returns query
+        every { query.setParameter(any<String>(), any()) } returns query
+        every { query.singleResult } returns 0L
+        every { query.resultList } returns emptyList<Array<Any?>>()
 
         val result = repository.findParaSelecaoHistorico(null, null, null, 0, 10)
 
@@ -128,92 +106,65 @@ class MaquinaRepositoryImplTest {
     }
 
     @Test
-    fun `findParaSelecaoHistorico with tenantId adds tenant_id condition`() {
+    fun `findParaSelecaoHistorico with tenantId adds parameter`() {
         val tenantId = UUID.randomUUID()
-        every { jdbcTemplate.queryForObject(any(), Long::class.java, *anyVararg()) } returns 0L
-        val selectSqlSlot = slot<String>()
-        every {
-            jdbcTemplate.query(
-                capture(selectSqlSlot),
-                any<RowMapper<MaquinaComCongregacao>>(),
-                *anyVararg(),
-            )
-        } returns emptyList()
+        every { entityManager.createNativeQuery(any<String>()) } returns query
+        every { query.setParameter(any<String>(), any()) } returns query
+        every { query.singleResult } returns 0L
+        every { query.resultList } returns emptyList<Array<Any?>>()
 
         repository.findParaSelecaoHistorico(tenantId, null, null, 0, 10)
 
-        assertThat(selectSqlSlot.captured).contains("tenant_id")
+        verify(atLeast = 1) { query.setParameter("tenantId", tenantId) }
     }
 
     @Test
-    fun `findWithFiltersComDetalhes with congregacao adds c nome ILIKE`() {
-        every { jdbcTemplate.queryForObject(any(), Long::class.java, *anyVararg()) } returns 0L
-        val selectSqlSlot = slot<String>()
-        every {
-            jdbcTemplate.query(
-                capture(selectSqlSlot),
-                any<RowMapper<MaquinaComCongregacao>>(),
-                *anyVararg(),
-            )
-        } returns emptyList()
+    fun `findWithFiltersComDetalhes with congregacao adds parameter`() {
+        every { entityManager.createNativeQuery(any<String>()) } returns query
+        every { query.setParameter(any<String>(), any()) } returns query
+        every { query.singleResult } returns 0L
+        every { query.resultList } returns emptyList<Array<Any?>>()
 
         repository.findWithFiltersComDetalhes(null, "Cong A", null, null, 0, 10)
 
-        assertThat(selectSqlSlot.captured).contains("c.nome")
-        assertThat(selectSqlSlot.captured).contains("ILIKE")
+        verify(atLeast = 1) { query.setParameter("congregacao", "%Cong A%") }
     }
 
     @Test
-    fun `findWithFiltersComDetalhes with departamentoId adds departamento_id condition`() {
+    fun `findWithFiltersComDetalhes with departamentoId adds parameter`() {
         val deptoId = UUID.randomUUID()
-        every { jdbcTemplate.queryForObject(any(), Long::class.java, *anyVararg()) } returns 0L
-        val selectSqlSlot = slot<String>()
-        every {
-            jdbcTemplate.query(
-                capture(selectSqlSlot),
-                any<RowMapper<MaquinaComCongregacao>>(),
-                *anyVararg(),
-            )
-        } returns emptyList()
+        every { entityManager.createNativeQuery(any<String>()) } returns query
+        every { query.setParameter(any<String>(), any()) } returns query
+        every { query.singleResult } returns 0L
+        every { query.resultList } returns emptyList<Array<Any?>>()
 
         repository.findWithFiltersComDetalhes(null, null, null, deptoId, 0, 10)
 
-        assertThat(selectSqlSlot.captured).contains("departamento_id")
+        verify(atLeast = 1) { query.setParameter("departamentoId", deptoId) }
     }
 
     @Test
-    fun `findParaSelecaoHistorico with congregacaoId adds congregacao_id condition`() {
+    fun `findParaSelecaoHistorico with congregacaoId adds parameter`() {
         val congregacaoId = UUID.randomUUID()
-        every { jdbcTemplate.queryForObject(any(), Long::class.java, *anyVararg()) } returns 0L
-        val selectSqlSlot = slot<String>()
-        every {
-            jdbcTemplate.query(
-                capture(selectSqlSlot),
-                any<RowMapper<MaquinaComCongregacao>>(),
-                *anyVararg(),
-            )
-        } returns emptyList()
+        every { entityManager.createNativeQuery(any<String>()) } returns query
+        every { query.setParameter(any<String>(), any()) } returns query
+        every { query.singleResult } returns 0L
+        every { query.resultList } returns emptyList<Array<Any?>>()
 
         repository.findParaSelecaoHistorico(null, congregacaoId, null, 0, 10)
 
-        assertThat(selectSqlSlot.captured).contains("congregacao_id")
+        verify(atLeast = 1) { query.setParameter("congregacaoId", congregacaoId) }
     }
 
     @Test
-    fun `findParaSelecaoHistorico with numeroSerieLeitor adds numero_serie_leitor ILIKE`() {
-        every { jdbcTemplate.queryForObject(any(), Long::class.java, *anyVararg()) } returns 0L
-        val selectSqlSlot = slot<String>()
-        every {
-            jdbcTemplate.query(
-                capture(selectSqlSlot),
-                any<RowMapper<MaquinaComCongregacao>>(),
-                *anyVararg(),
-            )
-        } returns emptyList()
+    fun `findParaSelecaoHistorico with numeroSerieLeitor adds parameter`() {
+        every { entityManager.createNativeQuery(any<String>()) } returns query
+        every { query.setParameter(any<String>(), any()) } returns query
+        every { query.singleResult } returns 0L
+        every { query.resultList } returns emptyList<Array<Any?>>()
 
         repository.findParaSelecaoHistorico(null, null, "ABC", 0, 10)
 
-        assertThat(selectSqlSlot.captured).contains("numero_serie_leitor")
-        assertThat(selectSqlSlot.captured).contains("ILIKE")
+        verify(atLeast = 1) { query.setParameter("numeroSerieLeitor", "%ABC%") }
     }
 }

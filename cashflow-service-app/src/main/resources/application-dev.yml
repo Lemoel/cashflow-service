@@ -1,8 +1,6 @@
 app:
   bootstrap:
     secret: ${BOOTSTRAP_SECRET:dev-bootstrap-secret}
-  security:
-    enabled: ${APP_SECURITY_ENABLED:false}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:8080}
   jwt:
@@ -14,6 +12,8 @@ server:
   port: ${SERVER_PORT:8081}
 
 spring:
+  jpa:
+    show-sql: true
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/cashflowdb}
     username: ${DB_USER:admin}

@@ -1,8 +1,10 @@
 package br.com.cashflow.usecase.tenant_management.service
 
+import br.com.cashflow.commons.exception.BusinessException
 import br.com.cashflow.commons.exception.ConflictException
 import br.com.cashflow.commons.exception.ResourceNotFoundException
 import br.com.cashflow.usecase.tenant.entity.Tenant
+import br.com.cashflow.usecase.tenant.model.TenantIdName
 import br.com.cashflow.usecase.tenant.model.TenantPage
 import br.com.cashflow.usecase.tenant.port.TenantOutputPort
 import br.com.cashflow.usecase.tenant_management.adapter.external.dto.TenantCreateRequestDto
@@ -17,6 +19,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.dao.DataIntegrityViolationException
 import java.util.UUID
 
 class TenantManagementServiceTest {
@@ -120,7 +123,6 @@ class TenantManagementServiceTest {
         val request =
             TenantUpdateRequestDto(
                 tradeName = "New Name",
-                cnpj = "12345678000190",
                 street = "Street",
                 number = "1",
                 city = "City",
@@ -128,7 +130,6 @@ class TenantManagementServiceTest {
                 zipCode = "01234567",
             )
         every { tenantOutputPort.findById(id) } returns existing
-        every { tenantOutputPort.existsByCnpjExcludingId("12345678000190", id) } returns false
         every { tenantOutputPort.save(match { true }) } answers { firstArg() }
 
         val result = service.update(id, request)
@@ -147,7 +148,6 @@ class TenantManagementServiceTest {
                 id,
                 TenantUpdateRequestDto(
                     tradeName = "A",
-                    cnpj = "12345678000190",
                     street = "S",
                     number = "1",
                     city = "C",
@@ -157,40 +157,6 @@ class TenantManagementServiceTest {
             )
         }.isInstanceOf(ResourceNotFoundException::class.java)
             .hasMessageContaining("not found")
-    }
-
-    @Test
-    fun `update throws ConflictException when CNPJ belongs to another tenant`() {
-        val id = UUID.randomUUID()
-        val existing =
-            Tenant(
-                id = id,
-                cnpj = "11111111111111",
-                tradeName = "A",
-                street = "S",
-                number = "1",
-                city = "C",
-                state = "SP",
-                zipCode = "01234567",
-            )
-        every { tenantOutputPort.findById(id) } returns existing
-        every { tenantOutputPort.existsByCnpjExcludingId("12345678000190", id) } returns true
-
-        assertThatThrownBy {
-            service.update(
-                id,
-                TenantUpdateRequestDto(
-                    tradeName = "A",
-                    cnpj = "12.345.678/0001-90",
-                    street = "S",
-                    number = "1",
-                    city = "C",
-                    state = "SP",
-                    zipCode = "01234567",
-                ),
-            )
-        }.isInstanceOf(ConflictException::class.java)
-            .hasMessageContaining("CNPJ already registered")
     }
 
     @Test
@@ -239,16 +205,7 @@ class TenantManagementServiceTest {
     fun `findActiveForList delegates to output port`() {
         val list =
             listOf(
-                Tenant(
-                    id = UUID.randomUUID(),
-                    cnpj = "1",
-                    tradeName = "A",
-                    street = "S",
-                    number = "1",
-                    city = "C",
-                    state = "SP",
-                    zipCode = "01234567",
-                ),
+                TenantIdName(id = UUID.randomUUID(), name = "A"),
             )
         every { tenantOutputPort.findActiveOrderByTradeName() } returns list
 
@@ -286,6 +243,64 @@ class TenantManagementServiceTest {
         service.delete(id)
 
         verify(exactly = 1) { tenantOutputPort.deleteById(id) }
+    }
+
+    @Test
+    fun `delete throws ConflictException when DataIntegrityViolationException`() {
+        val id = UUID.randomUUID()
+        val tenant =
+            Tenant(
+                id = id,
+                cnpj = "1",
+                tradeName = "A",
+                street = "S",
+                number = "1",
+                city = "C",
+                state = "SP",
+                zipCode = "01234567",
+            )
+        every { tenantOutputPort.findById(id) } returns tenant
+        every { tenantOutputPort.deleteById(id) } throws DataIntegrityViolationException("FK constraint")
+
+        assertThatThrownBy { service.delete(id) }
+            .isInstanceOf(ConflictException::class.java)
+            .hasMessageContaining("dependent")
+    }
+
+    @Test
+    fun `create throws BusinessException and deletes tenant when provisioning fails`() {
+        val request =
+            TenantCreateRequestDto(
+                tradeName = "Church A",
+                cnpj = "12345678000190",
+                street = "Street",
+                number = "1",
+                city = "City",
+                state = "SP",
+                zipCode = "01234567",
+            )
+        val saved =
+            Tenant(
+                id = UUID.randomUUID(),
+                cnpj = "12345678000190",
+                tradeName = "CHURCH A",
+                street = "STREET",
+                number = "1",
+                city = "CITY",
+                state = "SP",
+                zipCode = "01234567",
+                schemaName = "tenant_12345678000190",
+            )
+        every { tenantOutputPort.existsByCnpjExcludingId("12345678000190", null) } returns false
+        every { tenantOutputPort.save(match { true }) } returns saved
+        every { tenantSchemaProvisioner.provision("tenant_12345678000190") } throws RuntimeException("Flyway failed")
+        every { tenantOutputPort.deleteById(saved.id!!) } just runs
+
+        assertThatThrownBy { service.create(request) }
+            .isInstanceOf(BusinessException::class.java)
+            .hasMessageContaining("Falha ao provisionar")
+
+        verify(exactly = 1) { tenantOutputPort.deleteById(saved.id!!) }
     }
 
     @Test

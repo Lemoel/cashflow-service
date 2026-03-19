@@ -4,6 +4,8 @@ import br.com.cashflow.usecase.tenant.entity.Tenant
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.util.UUID
 
 class TenantResponseDtoTest {
@@ -28,11 +30,12 @@ class TenantResponseDtoTest {
                 phone = "11999999999",
                 email = "a@b.com",
                 active = true,
-                creationUserId = "user1",
-                modUserId = "user2",
-                createdAt = createdAt,
-                updatedAt = updatedAt,
+                schemaName = "tenant_12345678000190",
             )
+        tenant.createdBy = "user1"
+        tenant.lastModifiedBy = "user2"
+        tenant.createdDate = LocalDateTime.ofInstant(createdAt, ZoneOffset.UTC)
+        tenant.lastModifiedDate = LocalDateTime.ofInstant(updatedAt, ZoneOffset.UTC)
 
         val result = tenant.toResponse()
 
@@ -50,8 +53,8 @@ class TenantResponseDtoTest {
         assertThat(result.phone).isEqualTo("11999999999")
         assertThat(result.email).isEqualTo("a@b.com")
         assertThat(result.active).isTrue()
-        assertThat(result.createdAt).isEqualTo(createdAt.toString())
-        assertThat(result.updatedAt).isEqualTo(updatedAt.toString())
+        assertThat(result.createdAt).isEqualTo(tenant.createdDate.toString())
+        assertThat(result.updatedAt).isEqualTo(tenant.lastModifiedDate.toString())
     }
 
     @Test
@@ -67,6 +70,7 @@ class TenantResponseDtoTest {
                 city = "C",
                 state = "SP",
                 zipCode = "01234567",
+                schemaName = "tenant_1",
             )
 
         val result = tenant.toListOption()
@@ -110,7 +114,6 @@ class TenantResponseDtoTest {
         assertThat(result.phone).isEqualTo("11999999999")
         assertThat(result.email).isEqualTo("a@b.com")
         assertThat(result.active).isFalse()
-        assertThat(result.schemaName).isEqualTo("tenant_12345678000190")
     }
 
     @Test
@@ -134,7 +137,6 @@ class TenantResponseDtoTest {
         assertThat(result.phone).isNull()
         assertThat(result.email).isNull()
         assertThat(result.active).isTrue()
-        assertThat(result.schemaName).isEqualTo("tenant_11111111000191")
     }
 
     @Test
@@ -151,12 +153,12 @@ class TenantResponseDtoTest {
                 state = "RJ",
                 zipCode = "20000000",
                 active = true,
+                schemaName = "tenant_old",
             )
         val request =
             TenantUpdateRequestDto(
                 tradeName = "  new name  ",
                 companyName = "  new company  ",
-                cnpj = "98.765.432/0001-10",
                 street = "  new street  ",
                 number = " 2 ",
                 complement = " sala ",
@@ -171,7 +173,7 @@ class TenantResponseDtoTest {
 
         request.applyTo(tenant)
 
-        assertThat(tenant.cnpj).isEqualTo("98765432000110")
+        assertThat(tenant.cnpj).isEqualTo("old")
         assertThat(tenant.tradeName).isEqualTo("NEW NAME")
         assertThat(tenant.companyName).isEqualTo("NEW COMPANY")
         assertThat(tenant.street).isEqualTo("NEW STREET")

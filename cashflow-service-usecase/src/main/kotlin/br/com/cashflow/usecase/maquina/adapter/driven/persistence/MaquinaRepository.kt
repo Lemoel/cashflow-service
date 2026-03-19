@@ -2,11 +2,11 @@ package br.com.cashflow.usecase.maquina.adapter.driven.persistence
 
 import br.com.cashflow.usecase.maquina.entity.Maquina
 import br.com.cashflow.usecase.maquina.model.MaquinaComCongregacao
-import org.springframework.data.repository.CrudRepository
+import org.springframework.data.jpa.repository.JpaRepository
 import java.util.UUID
 
 interface MaquinaRepository :
-    CrudRepository<Maquina, UUID>,
+    JpaRepository<Maquina, UUID>,
     MaquinaRepositoryCustom {
     fun existsByNumeroSerieLeitor(numeroSerieLeitor: String): Boolean
 

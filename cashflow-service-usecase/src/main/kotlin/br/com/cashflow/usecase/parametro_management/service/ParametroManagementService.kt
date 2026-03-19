@@ -20,6 +20,7 @@ import java.util.UUID
 class ParametroManagementService(
     private val parametroOutputPort: ParametroOutputPort,
 ) : ParametroManagementInputPort {
+    @Transactional
     override fun create(request: ParametroCreateRequestDto): Parametro {
         validateChave(request.chave)
         validateValor(request.valor)
@@ -37,6 +38,7 @@ class ParametroManagementService(
         return parametroOutputPort.save(entity)
     }
 
+    @Transactional
     override fun update(
         id: UUID,
         request: ParametroUpdateRequestDto,
@@ -74,17 +76,13 @@ class ParametroManagementService(
         size: Int,
     ): ParametroPageModel = parametroOutputPort.findWithFilters(filter, page, size)
 
-    override fun findChavesForDropdown(): List<Pair<String, String>> =
-        parametroOutputPort.findAllOrderByChave().map {
-            it.chave to
-                it.chave
-        }
+    override fun findChavesForDropdown(): List<Pair<String, String>> = parametroOutputPort.findAllChaveOrderByChave().map { it to it }
 
     @Transactional
     override fun delete(id: UUID) {
-        val existing =
-            parametroOutputPort.findById(id)
-                ?: throw ResourceNotFoundException("Parâmetro não encontrado")
+        if (!parametroOutputPort.existsById(id)) {
+            throw ResourceNotFoundException("Parâmetro não encontrado")
+        }
         try {
             parametroOutputPort.deleteById(id)
         } catch (error: DataIntegrityViolationException) {
@@ -95,13 +93,13 @@ class ParametroManagementService(
     }
 
     private fun validateChave(chave: String) {
-        if (!chave.isNotBlank()) {
+        if (chave.isBlank()) {
             throw BusinessException("A chave é obrigatória")
         }
     }
 
     private fun validateValor(valor: String) {
-        if (!valor.isNotBlank()) {
+        if (valor.isBlank()) {
             throw BusinessException("O valor é obrigatório")
         }
     }
@@ -137,7 +135,7 @@ class ParametroManagementService(
             }
             EnumTipoParametro.DECIMAL -> {
                 val parsed =
-                    valor.trim().replace(',', '.').toDoubleOrNull()
+                    valor.trim().replace(',', '.').toBigDecimalOrNull()
                         ?: throw BusinessException("Valor deve ser numérico para o tipo informado")
                 entity.valorTexto = null
                 entity.valorInteiro = null

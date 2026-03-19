@@ -46,7 +46,7 @@ class BootstrapService(
                 command.adminUser.email
                     .trim()
                     .lowercase()
-            val tenant = buildTenant(command, adminEmail)
+            val tenant = buildTenant(command)
             requireCnpjLength(tenant.cnpj)
             if (tenantOutputPort.existsByCnpjExcludingId(tenant.cnpj, null)) {
                 throw ConflictException("CNPJ already registered")
@@ -73,7 +73,7 @@ class BootstrapService(
         savedTenant: Tenant,
         adminEmail: String,
     ): BootstrapResult {
-        val congregation = buildCongregation(command, savedTenant.id!!, adminEmail)
+        val congregation = buildCongregation(command, savedTenant.id!!)
         validateCongregationRequiredFields(congregation)
         val cnpjDigits = congregation.cnpj
         if (!cnpjDigits.isNullOrBlank()) {
@@ -106,10 +106,7 @@ class BootstrapService(
         )
     }
 
-    private fun buildTenant(
-        command: BootstrapCommand,
-        creationUserId: String,
-    ): Tenant {
+    private fun buildTenant(command: BootstrapCommand): Tenant {
         val t = command.tenant
         val digitsOnly = t.cnpj.filter { it.isDigit() }
         return Tenant(
@@ -126,7 +123,6 @@ class BootstrapService(
             phone = t.phone?.trim(),
             email = t.email?.trim()?.lowercase(),
             active = t.active,
-            creationUserId = creationUserId,
             schemaName = "tenant_$digitsOnly",
         )
     }
@@ -134,7 +130,6 @@ class BootstrapService(
     private fun buildCongregation(
         command: BootstrapCommand,
         tenantId: UUID,
-        creationUserId: String,
     ): Congregation {
         val c = command.firstCongregation
         val cnpjDigits = c.cnpj?.let { CnpjValidator.clean(it).takeIf { d -> d.isNotBlank() } }
@@ -152,7 +147,6 @@ class BootstrapService(
             email = c.email?.trim()?.lowercase(),
             telefone = c.telefone?.trim(),
             ativo = c.ativo,
-            creationUserId = creationUserId,
         )
     }
 

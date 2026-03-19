@@ -1,65 +1,60 @@
 package br.com.cashflow.usecase.congregation.entity
 
-import org.springframework.data.annotation.Id
-import org.springframework.data.relational.core.mapping.Column
-import org.springframework.data.relational.core.mapping.Table
-import java.time.Instant
+import br.com.cashflow.commons.audit.Auditable
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.Id
+import jakarta.persistence.PrePersist
+import jakarta.persistence.Table
 import java.util.UUID
 
-@Table("congregacao")
+@Entity
+@Table(name = "congregacao")
 class Congregation(
-
     @Id
     var id: UUID? = null,
 
-    @Column("tenant_id")
+    @Column(name = "tenant_id")
     var tenantId: UUID? = null,
 
-    @Column("setorial_id")
+    @Column(name = "setorial_id")
     var setorialId: UUID? = null,
 
-    @Column("nome")
+    @Column(name = "nome")
     var nome: String = "",
 
-    @Column("cnpj")
+    @Column(name = "cnpj")
     var cnpj: String? = null,
 
-    @Column("logradouro")
+    @Column(name = "logradouro")
     var logradouro: String = "",
 
-    @Column("bairro")
+    @Column(name = "bairro")
     var bairro: String = "",
 
-    @Column("numero")
+    @Column(name = "numero")
     var numero: String = "",
 
-    @Column("cidade")
+    @Column(name = "cidade")
     var cidade: String = "",
 
-    @Column("uf")
+    @Column(name = "uf")
     var uf: String = "",
 
-    @Column("cep")
+    @Column(name = "cep")
     var cep: String = "",
 
-    @Column("email")
+    @Column(name = "email")
     var email: String? = null,
 
-    @Column("telefone")
+    @Column(name = "telefone")
     var telefone: String? = null,
 
-    @Column("ativo")
+    @Column(name = "ativo")
     var ativo: Boolean = true,
-
-    @Column("creation_user_id")
-    var creationUserId: String = "",
-
-    @Column("mod_user_id")
-    var modUserId: String? = null,
-
-    @Column("created_at")
-    var createdAt: Instant? = null,
-
-    @Column("updated_at")
-    var updatedAt: Instant? = null,
-)
+) : Auditable<String>() {
+    @PrePersist
+    fun onPrePersist() {
+        if (id == null) id = UUID.randomUUID()
+    }
+}

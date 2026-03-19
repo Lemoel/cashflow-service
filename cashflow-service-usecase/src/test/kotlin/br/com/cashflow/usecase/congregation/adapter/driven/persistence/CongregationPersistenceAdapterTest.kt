@@ -135,52 +135,35 @@ class CongregationPersistenceAdapterTest {
     }
 
     @Test
-    fun `findAllOrderByNome delegates to findAllByOrderByNomeAsc`() {
-        val list =
-            listOf(
-                Congregation(
-                    id = UUID.randomUUID(),
-                    nome = "Cong A",
-                    logradouro = "Rua X",
-                    bairro = "Centro",
-                    numero = "1",
-                    cidade = "SP",
-                    uf = "SP",
-                    cep = "01234567",
-                ),
-            )
-        every { congregationRepository.findAllByOrderByNomeAsc() } returns list
+    fun `findAllOrderByNome delegates to findAllProjectedByOrderByNomeAsc and maps to pairs`() {
+        val id = UUID.randomUUID()
+        val projection = mockk<CongregationIdNameProjection>()
+        every { projection.getId() } returns id
+        every { projection.getNome() } returns "Cong A"
+        every { congregationRepository.findAllProjectedByOrderByNomeAsc() } returns listOf(projection)
 
         val result = adapter.findAllOrderByNome()
 
-        assertThat(result).isEqualTo(list)
-        verify(exactly = 1) { congregationRepository.findAllByOrderByNomeAsc() }
+        assertThat(result).containsExactly(id to "Cong A")
+        verify(exactly = 1) { congregationRepository.findAllProjectedByOrderByNomeAsc() }
     }
 
     @Test
-    fun `findSetoriais delegates to findBySetorialIdIsNullAndAtivoTrueOrderByNomeAsc`() {
-        val list =
-            listOf(
-                Congregation(
-                    id = UUID.randomUUID(),
-                    nome = "Setorial",
-                    logradouro = "Rua X",
-                    bairro = "Centro",
-                    numero = "1",
-                    cidade = "SP",
-                    uf = "SP",
-                    cep = "01234567",
-                ),
-            )
-        every { congregationRepository.findBySetorialIdIsNullAndAtivoTrueOrderByNomeAsc() } returns
-            list
+    fun `findSetoriais delegates to findProjectedBySetorialIdIsNullAndAtivoTrueOrderByNomeAsc and maps to pairs`() {
+        val id = UUID.randomUUID()
+        val projection = mockk<CongregationIdNameProjection>()
+        every { projection.getId() } returns id
+        every { projection.getNome() } returns "Setorial"
+        every {
+            congregationRepository.findProjectedBySetorialIdIsNullAndAtivoTrueOrderByNomeAsc()
+        } returns listOf(projection)
 
         val result = adapter.findSetoriais()
 
-        assertThat(result).isEqualTo(list)
-        verify(
-            exactly = 1,
-        ) { congregationRepository.findBySetorialIdIsNullAndAtivoTrueOrderByNomeAsc() }
+        assertThat(result).containsExactly(id to "Setorial")
+        verify(exactly = 1) {
+            congregationRepository.findProjectedBySetorialIdIsNullAndAtivoTrueOrderByNomeAsc()
+        }
     }
 
     @Test

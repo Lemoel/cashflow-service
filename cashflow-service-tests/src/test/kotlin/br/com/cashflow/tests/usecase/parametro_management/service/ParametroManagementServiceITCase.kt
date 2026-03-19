@@ -14,6 +14,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import java.math.BigDecimal
 import java.util.UUID
 
 @SqlTearDown(value = ["/db/scripts/parametro/teardown.sql"])
@@ -121,11 +122,11 @@ class ParametroManagementServiceITCase : PostgresqlBaseTest() {
                 ativo = true,
             )
         val created = parametroManagement.create(request)
-        assertThat(created.valorDecimal).isEqualTo(10.5)
+        assertThat(created.valorDecimal).isEqualByComparingTo(BigDecimal("10.5"))
         assertThat(created.tipo).isEqualTo("DOUBLE")
 
         val found = parametroManagement.findById(created.id!!)
-        assertThat(found!!.valorDecimal).isEqualTo(10.5)
+        assertThat(found!!.valorDecimal).isEqualByComparingTo(BigDecimal("10.5"))
     }
 
     @Test

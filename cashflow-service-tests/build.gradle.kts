@@ -9,7 +9,7 @@ tasks.withType<Test>().configureEach {
 dependencies {
     testImplementation(project(":cashflow-service-app"))
     testImplementation(project(":cashflow-service-usecase"))
-    testImplementation("org.springframework.boot:spring-boot-starter-jdbc")
+    testImplementation("org.springframework.boot:spring-boot-starter-data-jpa")
     testImplementation("org.flywaydb:flyway-core")
     testImplementation("org.flywaydb:flyway-database-postgresql")
     testImplementation(project(":cashflow-service-commons"))

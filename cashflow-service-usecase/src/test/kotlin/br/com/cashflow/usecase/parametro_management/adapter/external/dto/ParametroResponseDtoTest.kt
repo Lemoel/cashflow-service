@@ -3,14 +3,15 @@ package br.com.cashflow.usecase.parametro_management.adapter.external.dto
 import br.com.cashflow.usecase.parametro.entity.Parametro
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import java.time.Instant
+import java.math.BigDecimal
+import java.time.LocalDateTime
 import java.util.UUID
 
 class ParametroResponseDtoTest {
     @Test
     fun `toResponse maps STRING tipo and valorTexto`() {
         val id = UUID.randomUUID()
-        val createdAt = Instant.now()
+        val createdAt = LocalDateTime.now()
         val parametro =
             Parametro(
                 id = id,
@@ -20,9 +21,11 @@ class ParametroResponseDtoTest {
                 valorDecimal = null,
                 tipo = "STRING",
                 ativo = true,
-                creationUserId = "user1",
-                createdAt = createdAt,
             )
+        parametro.createdBy = "user1"
+        parametro.createdDate = createdAt
+        val updatedAt = LocalDateTime.now().plusHours(1)
+        parametro.lastModifiedDate = updatedAt
 
         val result = parametro.toResponse()
 
@@ -33,6 +36,7 @@ class ParametroResponseDtoTest {
         assertThat(result.ativo).isTrue()
         assertThat(result.creationUserId).isEqualTo("user1")
         assertThat(result.createdAt).isEqualTo(createdAt.toString())
+        assertThat(result.updatedAt).isEqualTo(updatedAt.toString())
     }
 
     @Test
@@ -47,8 +51,8 @@ class ParametroResponseDtoTest {
                 valorDecimal = null,
                 tipo = "INTEGER",
                 ativo = false,
-                creationUserId = "u",
             )
+        parametro.createdBy = "u"
 
         val result = parametro.toResponse()
 
@@ -66,11 +70,11 @@ class ParametroResponseDtoTest {
                 chave = "K",
                 valorTexto = null,
                 valorInteiro = null,
-                valorDecimal = 3.14,
+                valorDecimal = BigDecimal("3.14"),
                 tipo = "DOUBLE",
                 ativo = true,
-                creationUserId = "u",
             )
+        parametro.createdBy = "u"
 
         val result = parametro.toResponse()
 
@@ -88,8 +92,8 @@ class ParametroResponseDtoTest {
                 valorTexto = "x",
                 tipo = "UNKNOWN",
                 ativo = true,
-                creationUserId = "u",
             )
+        parametro.createdBy = "u"
 
         val result = parametro.toResponse()
 

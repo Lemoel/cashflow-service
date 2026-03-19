@@ -5,6 +5,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.util.UUID
 
 class DepartmentResponseTest {
@@ -20,9 +22,9 @@ class DepartmentResponseTest {
                 tenantId = tenantId,
                 nome = "TI",
                 ativo = true,
-                createdAt = createdAt,
-                updatedAt = updatedAt,
             )
+        department.createdDate = LocalDateTime.ofInstant(createdAt, ZoneOffset.UTC)
+        department.lastModifiedDate = LocalDateTime.ofInstant(updatedAt, ZoneOffset.UTC)
 
         val result = department.toResponse(tenantNome = "Igreja Central")
 
@@ -31,8 +33,8 @@ class DepartmentResponseTest {
         assertThat(result.tenantNome).isEqualTo("Igreja Central")
         assertThat(result.nome).isEqualTo("TI")
         assertThat(result.ativo).isTrue()
-        assertThat(result.createdAt).isEqualTo(createdAt.toString())
-        assertThat(result.updatedAt).isEqualTo(updatedAt.toString())
+        assertThat(result.createdAt).isEqualTo(department.createdDate.toString())
+        assertThat(result.updatedAt).isEqualTo(department.lastModifiedDate.toString())
     }
 
     @Test

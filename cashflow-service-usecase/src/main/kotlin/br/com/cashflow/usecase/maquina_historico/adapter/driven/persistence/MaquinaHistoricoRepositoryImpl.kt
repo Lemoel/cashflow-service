@@ -1,17 +1,13 @@
 package br.com.cashflow.usecase.maquina_historico.adapter.driven.persistence
 
-import org.springframework.jdbc.core.JdbcTemplate
-import org.springframework.jdbc.core.PreparedStatementSetter
-import org.springframework.jdbc.core.RowMapper
+import jakarta.persistence.EntityManager
 import org.springframework.stereotype.Repository
-import java.sql.ResultSet
-import java.sql.Types
 import java.time.Instant
 import java.util.UUID
 
 @Repository
 class MaquinaHistoricoRepositoryImpl(
-    private val jdbcTemplate: JdbcTemplate,
+    private val entityManager: EntityManager,
 ) : MaquinaHistoricoRepositoryCustom {
     override fun findByMaquinaIdOrderByDataInicioDesc(maquinaId: UUID): List<MaquinaHistoricoItemRow> {
         val sql =
@@ -28,36 +24,19 @@ class MaquinaHistoricoRepositoryImpl(
             FROM maquina_historico h
             LEFT JOIN congregacao c ON h.congregacao_id = c.id
             LEFT JOIN departamento d ON h.departamento_id = d.id
-            WHERE h.maquina_id = ?
+            WHERE h.maquina_id = :maquinaId
             ORDER BY h.data_inicio DESC
             """.trimIndent()
-        return jdbcTemplate.query(
-            sql,
-            PreparedStatementSetter { ps -> ps.setObject(1, maquinaId, Types.OTHER) },
-            MAQUINA_HISTORICO_ROW_MAPPER,
-        )
+        val query = entityManager.createNativeQuery(sql).setParameter("maquinaId", maquinaId)
+
+        @Suppress("UNCHECKED_CAST")
+        val rows = query.resultList as List<Array<Any?>>
+        return rows.map { mapRowToItem(it) }
     }
 
-    companion object {
-        private val MAQUINA_HISTORICO_ROW_MAPPER =
-            RowMapper<MaquinaHistoricoItemRow> { rs: ResultSet, _: Int ->
-                MaquinaHistoricoItemRow(
-                    id = uuid(rs, "id")!!,
-                    maquinaId = uuid(rs, "maquina_id")!!,
-                    congregacaoId = uuid(rs, "congregacao_id"),
-                    congregacaoNome = rs.getString("congregacao_nome"),
-                    departamentoId = uuid(rs, "departamento_id"),
-                    departamentoNome = rs.getString("departamento_nome"),
-                    dataInicio = instant(rs, "data_inicio")!!,
-                    dataFim = instant(rs, "data_fim"),
-                )
-            }
-
-        private fun uuid(
-            rs: ResultSet,
-            column: String,
-        ): UUID? {
-            val s = rs.getString(column) ?: return null
+    private fun mapRowToItem(row: Array<Any?>): MaquinaHistoricoItemRow {
+        fun uuid(i: Int): UUID? {
+            val s = row.getOrNull(i)?.toString() ?: return null
             return try {
                 UUID.fromString(s)
             } catch (_: IllegalArgumentException) {
@@ -65,12 +44,23 @@ class MaquinaHistoricoRepositoryImpl(
             }
         }
 
-        private fun instant(
-            rs: ResultSet,
-            column: String,
-        ): Instant? {
-            val ts = rs.getTimestamp(column) ?: return null
-            return ts.toInstant()
+        fun instant(i: Int): Instant? {
+            val v = row.getOrNull(i) ?: return null
+            return when (v) {
+                is java.sql.Timestamp -> v.toInstant()
+                is Instant -> v
+                else -> null
+            }
         }
+        return MaquinaHistoricoItemRow(
+            id = uuid(0)!!,
+            maquinaId = uuid(1)!!,
+            congregacaoId = uuid(2),
+            congregacaoNome = row.getOrNull(3)?.toString(),
+            departamentoId = uuid(4),
+            departamentoNome = row.getOrNull(5)?.toString(),
+            dataInicio = instant(6)!!,
+            dataFim = instant(7),
+        )
     }
 }

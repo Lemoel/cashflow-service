@@ -94,9 +94,8 @@ class LancamentoProcessingService(
             val novaMaquina =
                 Maquina(
                     numeroSerieLeitor = serie,
-                    bancoId = pagBank.id,
+                    bancoId = pagBank.id!!,
                     ativo = true,
-                    creationUserId = CREATION_USER_BOT,
                 )
             val salva = maquinaOutputPort.save(novaMaquina)
             salva.numeroSerieLeitor?.let { mapa[it] = salva }
@@ -107,32 +106,35 @@ class LancamentoProcessingService(
 
     companion object {
         private val log = LoggerFactory.getLogger(LancamentoProcessingService::class.java)
-        private const val CREATION_USER_BOT = "BOT"
     }
 }
 
-fun LancamentoDetalhe.toModel(maquina: Maquina?): Lancamento =
-    Lancamento(
-        nsu = nsu,
-        tid = tid,
-        codigoTransacao = codigoTransacao,
-        parcela = parcela,
-        tipoEvento = tipoEvento,
-        meioCaptura = meioCaptura,
-        valorParcela = valorParcela,
-        meioPagamento = meioPagamento,
-        estabelecimento = estabelecimento,
-        pagamentoPrazo = pagamentoPrazo,
-        taxaIntermediacao = taxaIntermediacao,
-        numeroSerieLeitor = numeroSerieLeitor,
-        valorTotalTransacao = valorTotalTransacao,
-        dataInicialTransacao = dataInicialTransacao,
-        horaInicialTransacao = horaInicialTransacao,
-        dataPrevistaPagamento = dataPrevistaPagamento,
-        valorLiquidoTransacao = valorLiquidoTransacao,
-        valorOriginalTransacao = valorOriginalTransacao,
-        maquinaId = maquina?.id,
-        congregacaoId = maquina?.congregacaoId,
-        departamentoId = maquina?.departamentoId,
-        creationUserId = "BOT",
-    )
+fun LancamentoDetalhe.toModel(maquina: Maquina?): Lancamento {
+    val lancamento =
+        Lancamento(
+            nsu = nsu,
+            tid = tid,
+            codigoTransacao = codigoTransacao,
+            parcela = parcela,
+            tipoEvento = tipoEvento,
+            meioCaptura = meioCaptura,
+            valorParcela = valorParcela,
+            meioPagamento = meioPagamento,
+            estabelecimento = estabelecimento,
+            pagamentoPrazo = pagamentoPrazo,
+            taxaIntermediacao = taxaIntermediacao,
+            numeroSerieLeitor = numeroSerieLeitor,
+            valorTotalTransacao = valorTotalTransacao,
+            dataInicialTransacao = dataInicialTransacao,
+            horaInicialTransacao = horaInicialTransacao,
+            dataPrevistaPagamento = dataPrevistaPagamento,
+            valorLiquidoTransacao = valorLiquidoTransacao,
+            valorOriginalTransacao = valorOriginalTransacao,
+            maquinaId = maquina?.id,
+            congregacaoId = maquina?.congregacaoId,
+            departamentoId = maquina?.departamentoId,
+        )
+    lancamento.createdBy = "BOT"
+    lancamento.lastModifiedBy = "BOT"
+    return lancamento
+}

@@ -31,7 +31,7 @@ class ParametroPersistenceAdapter(
         )
     }
 
-    override fun findAllOrderByChave(): List<Parametro> = parametroRepository.findAllByOrderByChaveAsc()
+    override fun findAllChaveOrderByChave(): List<String> = parametroRepository.findAllChaveOrderByChaveAsc()
 
     override fun existsByChave(chave: String): Boolean = parametroRepository.existsByChave(chave)
 
@@ -44,6 +44,8 @@ class ParametroPersistenceAdapter(
         } else {
             parametroRepository.existsByChave(chave)
         }
+
+    override fun existsById(id: UUID): Boolean = parametroRepository.existsById(id)
 
     override fun deleteById(id: UUID) {
         parametroRepository.deleteById(id)
