@@ -146,7 +146,9 @@ class AuthServiceTest {
     fun `login with SHA-256 triggers migration to BCrypt`() {
         val email = "migrate@test.com"
         val senha = "admin"
-        every { tenantOutputPort.findTenantSchemaByEmail(email) } returns TenantSchemaInfo(UUID.randomUUID(), "tenant_xxx")
+        val tenantId = UUID.randomUUID()
+        every { tenantOutputPort.findTenantSchemaByEmail(email) } returns TenantSchemaInfo(tenantId, "tenant_xxx")
+        every { tenantOutputPort.findById(tenantId) } returns null
         val sha256Hash = "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918"
         val acesso =
             Acesso(
@@ -161,8 +163,8 @@ class AuthServiceTest {
         every { passwordEncoder.encode(senha) } returns newBcryptHash
         every { acessoOutputPort.updatePassword(email, any()) } returns Unit
         every { acessoOutputPort.findTenantIdByEmail(email) } returns null
-        every { tokenProvider.generateToken(acesso, null) } returns "jwt"
-        every { tokenProvider.generateRefreshToken(acesso, null) } returns "refresh"
+        every { tokenProvider.generateToken(acesso, tenantId) } returns "jwt"
+        every { tokenProvider.generateRefreshToken(acesso, tenantId) } returns "refresh"
 
         service.login(email, senha)
 
@@ -219,6 +221,7 @@ class AuthServiceTest {
             )
         every { tokenProvider.validateRefreshToken("valid-refresh") } returns claims
         every { acessoOutputPort.findByEmail(email) } returns acesso
+        every { tenantOutputPort.findTenantSchemaByEmail(email) } returns null
         every { acessoOutputPort.findTenantIdByEmail(email) } returns null
         every { tokenProvider.generateToken(acesso, null) } returns "new-token"
         every { tokenProvider.generateRefreshToken(acesso, null) } returns "new-refresh"
@@ -266,6 +269,7 @@ class AuthServiceTest {
                 tipoAcesso = PerfilUsuario.FISCAL.name,
             )
         every { acessoOutputPort.findByEmail(email) } returns acesso
+        every { tenantOutputPort.findTenantSchemaByEmail(email) } returns null
         every { acessoOutputPort.findTenantIdByEmail(email) } returns null
 
         val result = service.getCurrentUser(email)
@@ -347,6 +351,18 @@ class AuthServiceTest {
 
         assertThatThrownBy { service.changePassword("unknown@test.com", "current", "newpass123") }
             .isInstanceOf(ResourceNotFoundException::class.java)
+    }
+
+    @Test
+    fun `changePassword throws BusinessException when new password equals current password`() {
+        val email = "user@test.com"
+        val samePassword = "samePass123"
+
+        assertThatThrownBy { service.changePassword(email, samePassword, samePassword) }
+            .isInstanceOf(BusinessException::class.java)
+            .hasMessage(AuthService.MSG_NEW_PASSWORD_MUST_DIFFER)
+        verify(exactly = 0) { acessoOutputPort.findByEmail(any()) }
+        verify(exactly = 0) { acessoOutputPort.updatePassword(any(), any()) }
     }
 
     @Test

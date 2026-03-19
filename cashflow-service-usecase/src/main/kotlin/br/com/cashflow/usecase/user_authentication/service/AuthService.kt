@@ -74,6 +74,9 @@ class AuthService(
         currentPassword: String,
         newPassword: String,
     ) {
+        if (currentPassword == newPassword) {
+            throw BusinessException(MSG_NEW_PASSWORD_MUST_DIFFER)
+        }
         if (newPassword.length < 6) {
             throw BusinessException(MSG_NEW_PASSWORD_MIN_LENGTH)
         }
@@ -81,7 +84,7 @@ class AuthService(
             acessoOutputPort.findByEmail(email)
                 ?: throw ResourceNotFoundException("User not found")
         if (!passwordMatches(currentPassword, acesso.password)) {
-            throw WrongPasswordException()
+            throw WrongPasswordException(MSG_CURRENT_PASSWORD_INCORRECT)
         }
         val hash =
             requireNotNull(passwordEncoder.encode(newPassword)) { "Password encoding failed" }
@@ -89,7 +92,9 @@ class AuthService(
     }
 
     companion object {
-        const val MSG_NEW_PASSWORD_MIN_LENGTH = "A nova senha deve ter no mínimo 6 caracteres."
+        const val MSG_NEW_PASSWORD_MIN_LENGTH = "A nova senha deve ter pelo menos 6 caracteres"
+        const val MSG_NEW_PASSWORD_MUST_DIFFER = "A nova senha deve ser diferente da atual"
+        const val MSG_CURRENT_PASSWORD_INCORRECT = "Senha atual incorreta"
     }
 
     private fun getTenantInfo(email: String): Pair<UUID?, String?> {

@@ -44,16 +44,16 @@ class AuthController(
         return ResponseEntity.ok(response)
     }
 
-    @PutMapping("/alterar-senha")
-    fun alterarSenha(
+    @PutMapping("/password")
+    fun changePassword(
         @AuthenticationPrincipal currentUser: CurrentUser,
         @Valid @RequestBody request: ChangePasswordRequestDto,
-    ): ResponseEntity<*> {
+    ): ResponseEntity<Void> {
         authInputPort.changePassword(
             currentUser.email,
             request.currentPassword,
             request.newPassword,
         )
-        return ResponseEntity.ok(mapOf("message" to "Senha alterada com sucesso."))
+        return ResponseEntity.noContent().build()
     }
 }
