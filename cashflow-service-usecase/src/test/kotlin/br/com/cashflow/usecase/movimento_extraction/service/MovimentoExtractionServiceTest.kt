@@ -1,5 +1,6 @@
 package br.com.cashflow.usecase.movimento_extraction.service
 
+import br.com.cashflow.commons.tenant.TenantContext
 import br.com.cashflow.usecase.bank.entity.Bank
 import br.com.cashflow.usecase.bank.port.BankOutputPort
 import br.com.cashflow.usecase.lancamento.service.LancamentoProcessingService
@@ -9,10 +10,14 @@ import br.com.cashflow.usecase.pagbank.client.LancamentoDetalhe
 import br.com.cashflow.usecase.pagbank.config.PagBankApiProperties
 import br.com.cashflow.usecase.pagbank.port.PagBankOutputPort
 import br.com.cashflow.usecase.pagbank.port.RespostaMovimento
+import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -37,8 +42,23 @@ class MovimentoExtractionServiceTest {
             pagBankApiProperties = pagBankApiProperties,
         )
 
+    @BeforeEach
+    fun resetMocks() {
+        clearMocks(
+            movimentoApiOutputPort,
+            bankOutputPort,
+            pagBankOutputPort,
+            lancamentoProcessingService,
+        )
+    }
+
+    @AfterEach
+    fun clearTenantContext() {
+        TenantContext.clear()
+    }
+
     @Test
-    fun `extrairDia throws when PagBank not found`() {
+    fun should_ThrowIllegalState_When_ExtrairDiaAndPagBankNotFound() {
         every { bankOutputPort.findByCodigo("290") } returns null
 
         assertThatThrownBy { service.extrairDia(LocalDate.of(2025, 1, 15)) }
@@ -47,7 +67,7 @@ class MovimentoExtractionServiceTest {
     }
 
     @Test
-    fun `extrairTodosDiasPendentes throws when PagBank not found`() {
+    fun should_ThrowIllegalState_When_ExtrairTodosDiasPendentesAndPagBankNotFound() {
         every { bankOutputPort.findByCodigo("290") } returns null
         every { movimentoApiOutputPort.findFirstByOrderByDataLeituraDesc() } returns null
 
@@ -57,7 +77,7 @@ class MovimentoExtractionServiceTest {
     }
 
     @Test
-    fun `extrairTodosDiasPendentes nao chama pagbank quando nao ha dias pendentes`() {
+    fun should_NotCallPagBank_When_NoPendingDays() {
         val pagBank =
             Bank(
                 id = UUID.randomUUID(),
@@ -81,7 +101,7 @@ class MovimentoExtractionServiceTest {
     }
 
     @Test
-    fun `extrairDia ignores response when validado header is not true`() {
+    fun should_IgnoreResponse_When_ValidadoHeaderNotTrue() {
         val pagBank =
             Bank(
                 id = UUID.randomUUID(),
@@ -98,7 +118,7 @@ class MovimentoExtractionServiceTest {
     }
 
     @Test
-    fun `extrairTodosDiasPendentes usa pagina inicial apenas para o primeiro dia`() {
+    fun should_UseInitialPageOnlyForFirstDay_When_MultiplePendingDays() {
         val pagBank =
             Bank(
                 id = UUID.randomUUID(),
@@ -128,7 +148,7 @@ class MovimentoExtractionServiceTest {
     }
 
     @Test
-    fun `extrairDia agrega paginas e delega processamento de lancamentos`() {
+    fun should_AggregatePagesAndDelegateLancamentos_When_ExtrairDiaWithMultiplePages() {
         val data = LocalDate.of(2025, 1, 20)
         val pagBank =
             Bank(
@@ -169,5 +189,40 @@ class MovimentoExtractionServiceTest {
                 pagBank,
             )
         }
+    }
+
+    @Test
+    fun should_KeepTenantSchemaOnAsyncWorker_When_ExtrairTodosDiasPendentesPersistsMovimento() {
+        TenantContext.setSchema("tenant_unit_under_test")
+        val pagBank =
+            Bank(
+                id = UUID.randomUUID(),
+                codigo = "290",
+                enderecoCompleto = "",
+                tipoIntegracao = "API",
+                ativo = true,
+            )
+        val hoje = LocalDate.now()
+        val primeiroDiaPendente = hoje.minusDays(2)
+        val ultimo =
+            MovimentoApi(
+                dataLeitura = hoje.minusDays(3),
+                pagina = 1,
+            )
+        every { bankOutputPort.findByCodigo("290") } returns pagBank
+        every { movimentoApiOutputPort.findFirstByOrderByDataLeituraDesc() } returns ultimo
+        every { pagBankOutputPort.buscarMovimentos(any(), any()) } returns
+            RespostaMovimento.ErroDesserializacao("it-test")
+
+        val schemasObservedOnSave = mutableListOf<String?>()
+        every { movimentoApiOutputPort.save(any()) } answers {
+            schemasObservedOnSave.add(TenantContext.getSchema())
+            invocation.args[0] as MovimentoApi
+        }
+
+        service.extrairTodosDiasPendentes()
+
+        assertThat(schemasObservedOnSave).isNotEmpty
+        assertThat(schemasObservedOnSave).containsOnly("tenant_unit_under_test")
     }
 }

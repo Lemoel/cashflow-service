@@ -40,11 +40,40 @@ class MaquinaPersistenceAdapterTest {
                 bancoId = maquina.bancoId,
             )
         every { maquinaRepository.save(maquina) } returns saved
+        every { maquinaRepository.flush() } just runs
 
         val result = adapter.save(maquina)
 
         assertThat(result).isEqualTo(saved)
         verify(exactly = 1) { maquinaRepository.save(maquina) }
+        verify(exactly = 1) { maquinaRepository.flush() }
+    }
+
+    @Test
+    fun `saveAll returns empty without save or flush when list is empty`() {
+        val result = adapter.saveAll(emptyList())
+
+        assertThat(result).isEmpty()
+        verify(exactly = 0) { maquinaRepository.saveAll(match<List<Maquina>> { true }) }
+        verify(exactly = 0) { maquinaRepository.flush() }
+    }
+
+    @Test
+    fun `saveAll flushes after persisting maquinas`() {
+        val m =
+            Maquina(
+                id = UUID.randomUUID(),
+                numeroSerieLeitor = "S1",
+                bancoId = UUID.randomUUID(),
+            )
+        every { maquinaRepository.saveAll(listOf(m)) } returns listOf(m)
+        every { maquinaRepository.flush() } just runs
+
+        val result = adapter.saveAll(listOf(m))
+
+        assertThat(result).containsExactly(m)
+        verify(exactly = 1) { maquinaRepository.saveAll(listOf(m)) }
+        verify(exactly = 1) { maquinaRepository.flush() }
     }
 
     @Test

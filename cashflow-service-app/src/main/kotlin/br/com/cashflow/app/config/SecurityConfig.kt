@@ -1,13 +1,11 @@
 package br.com.cashflow.app.config
 
 import br.com.cashflow.app.filter.TenantContextFilter
-import br.com.cashflow.app.security.ApiKeyAuthFilter
 import br.com.cashflow.app.security.JwtAuthenticationFilter
 import br.com.cashflow.usecase.acesso.port.AcessoOutputPort
 import br.com.cashflow.usecase.user_authentication.port.TokenProvider
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -43,8 +41,6 @@ class SecurityConfig(
     private val jsonMapper: JsonMapper,
     private val tokenProvider: TokenProvider,
     private val acessoOutputPort: AcessoOutputPort,
-    @param:Value("\${pagbank.api-key:}")
-    private val pagbankApiKey: String,
 ) {
     @Bean
     fun tenantContextFilter(): TenantContextFilter = TenantContextFilter()
@@ -54,15 +50,11 @@ class SecurityConfig(
         JwtAuthenticationFilter(tokenProvider, acessoOutputPort, tenantSchemaResolver, jsonMapper)
 
     @Bean
-    fun apiKeyAuthFilter(): ApiKeyAuthFilter = ApiKeyAuthFilter(pagbankApiKey)
-
-    @Bean
     fun securityFilterChain(
         http: HttpSecurity,
         securityContextRepository: SecurityContextRepository,
         tenantContextFilter: TenantContextFilter,
         jwtAuthenticationFilter: JwtAuthenticationFilter,
-        apiKeyAuthFilter: ApiKeyAuthFilter,
     ): SecurityFilterChain {
         http.csrf { it.disable() }
         http.cors { it.configurationSource(corsConfigurationSource) }
@@ -95,7 +87,6 @@ class SecurityConfig(
                 ).permitAll()
             it.anyRequest().authenticated()
         }
-        http.addFilterAfter(apiKeyAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
         http.exceptionHandling {
             it.authenticationEntryPoint(json401EntryPoint())
         }
@@ -109,10 +100,6 @@ class SecurityConfig(
 
     @Bean
     fun jwtAuthenticationFilterRegistration(filter: JwtAuthenticationFilter): FilterRegistrationBean<JwtAuthenticationFilter> =
-        FilterRegistrationBean(filter).apply { isEnabled = false }
-
-    @Bean
-    fun apiKeyAuthFilterRegistration(filter: ApiKeyAuthFilter): FilterRegistrationBean<ApiKeyAuthFilter> =
         FilterRegistrationBean(filter).apply { isEnabled = false }
 
     @Bean

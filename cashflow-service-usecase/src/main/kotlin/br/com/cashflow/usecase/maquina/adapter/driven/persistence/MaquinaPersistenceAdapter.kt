@@ -11,9 +11,18 @@ import java.util.UUID
 class MaquinaPersistenceAdapter(
     private val maquinaRepository: MaquinaRepository,
 ) : MaquinaOutputPort {
-    override fun save(maquina: Maquina): Maquina = maquinaRepository.save(maquina)
+    override fun save(maquina: Maquina): Maquina {
+        val saved = maquinaRepository.save(maquina)
+        maquinaRepository.flush()
+        return saved
+    }
 
-    override fun saveAll(maquinas: List<Maquina>): List<Maquina> = maquinaRepository.saveAll(maquinas).toList()
+    override fun saveAll(maquinas: List<Maquina>): List<Maquina> {
+        if (maquinas.isEmpty()) return emptyList()
+        val saved = maquinaRepository.saveAll(maquinas).toList()
+        maquinaRepository.flush()
+        return saved
+    }
 
     override fun findById(id: UUID): Maquina? = maquinaRepository.findById(id).orElse(null)
 

@@ -43,18 +43,13 @@ class LancamentoProcessingService(
         try {
             val seriesLeitor =
                 detalhes
-                    .mapNotNull {
-                        it.numeroSerieLeitor?.takeIf { serie ->
-                            serie.isNotBlank()
-                        }
-                    }.toSet()
+                    .mapNotNull { canonSerie(it.numeroSerieLeitor) }
+                    .toSet()
             val maquinasPorSerie = buscarOuCriarMaquinas(seriesLeitor, pagBank)
             val lancamentos =
                 detalhes.map { detalhe ->
                     val maquina =
-                        detalhe.numeroSerieLeitor
-                            ?.takeIf { it.isNotBlank() }
-                            ?.let { maquinasPorSerie[it] }
+                        canonSerie(detalhe.numeroSerieLeitor)?.let { maquinasPorSerie[it] }
                     detalhe.toModel(maquina)
                 }
             lancamentoOutputPort.batchInsertIgnorandoDuplicatas(lancamentos)
@@ -66,6 +61,8 @@ class LancamentoProcessingService(
             throw error
         }
     }
+
+    private fun canonSerie(numeroSerieLeitor: String?): String? = numeroSerieLeitor?.trim()?.takeIf { it.isNotBlank() }
 
     private fun atualizarStatusMovimento(
         movimentoApi: MovimentoApi,
@@ -85,7 +82,7 @@ class LancamentoProcessingService(
         val mapa =
             existentes
                 .mapNotNull { maquina ->
-                    maquina.numeroSerieLeitor?.let { it to maquina }
+                    canonSerie(maquina.numeroSerieLeitor)?.let { it to maquina }
                 }.toMap()
                 .toMutableMap()
         val faltantes = numeroSeries - mapa.keys
@@ -101,7 +98,7 @@ class LancamentoProcessingService(
             }
         val salvas = maquinaOutputPort.saveAll(novasMaquinas)
         salvas.forEach { maquina ->
-            maquina.numeroSerieLeitor?.let { mapa[it] = maquina }
+            canonSerie(maquina.numeroSerieLeitor)?.let { mapa[it] = maquina }
         }
         return mapa
     }

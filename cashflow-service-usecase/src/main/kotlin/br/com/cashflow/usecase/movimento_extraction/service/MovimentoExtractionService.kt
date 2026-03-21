@@ -1,5 +1,6 @@
 package br.com.cashflow.usecase.movimento_extraction.service
 
+import br.com.cashflow.commons.tenant.tenantCoroutineContext
 import br.com.cashflow.usecase.bank.entity.Bank
 import br.com.cashflow.usecase.bank.port.BankOutputPort
 import br.com.cashflow.usecase.lancamento.service.LancamentoProcessingService
@@ -55,7 +56,7 @@ class MovimentoExtractionService(
 
         val semaphore = Semaphore(3)
 
-        runBlocking(Dispatchers.IO) {
+        runBlocking(Dispatchers.IO + tenantCoroutineContext()) {
             datasPendentes
                 .mapIndexed { index, data ->
                     async {
