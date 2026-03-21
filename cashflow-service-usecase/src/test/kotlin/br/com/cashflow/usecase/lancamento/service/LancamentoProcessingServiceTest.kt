@@ -74,6 +74,34 @@ class LancamentoProcessingServiceTest {
     }
 
     @Test
+    fun `processarLancamentos normaliza serie com trim ao buscar maquinas`() {
+        val data = LocalDate.of(2025, 1, 16)
+        val bancoId = UUID.randomUUID()
+        val maquinaId = UUID.randomUUID()
+        val movimentoApi =
+            MovimentoApi(dataLeitura = data, pagina = 1, status = StatusProcessamentoEnum.RECEBIDO)
+        val banco = Bank(id = bancoId, codigo = "290")
+        val detalhe =
+            LancamentoDetalhe(codigoTransacao = "TX_TRIM", numeroSerieLeitor = "  SERIE123  ")
+        val maquinaSalva = Maquina(id = maquinaId, numeroSerieLeitor = "SERIE123", bancoId = bancoId)
+
+        every { movimentoApiOutputPort.findByDataLeituraAndPagina(data, 1) } returns movimentoApi
+        every { maquinaOutputPort.findByNumeroSerieLeitorIn(setOf("SERIE123")) } returns emptyList()
+        every { maquinaOutputPort.saveAll(any()) } returns listOf(maquinaSalva)
+
+        service.processarLancamentos(data, listOf(detalhe), banco)
+
+        verify(exactly = 1) { maquinaOutputPort.findByNumeroSerieLeitorIn(setOf("SERIE123")) }
+        verify(exactly = 1) {
+            lancamentoOutputPort.batchInsertIgnorandoDuplicatas(
+                match {
+                    it.size == 1 && it[0].codigoTransacao == "TX_TRIM" && it[0].maquinaId == maquinaId
+                },
+            )
+        }
+    }
+
+    @Test
     fun `processarLancamentos usa maquina existente e nao cria nova`() {
         val data = LocalDate.of(2025, 1, 12)
         val bancoId = UUID.randomUUID()

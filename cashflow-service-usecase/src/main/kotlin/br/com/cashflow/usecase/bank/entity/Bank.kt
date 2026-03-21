@@ -10,6 +10,7 @@ import java.util.UUID
 @Entity
 @Table(name = "banco")
 class Bank(
+
     @Id
     var id: UUID? = null,
 
@@ -27,4 +28,5 @@ class Bank(
 
     @Column(name = "ativo")
     var ativo: Boolean = true,
+
 ) : Auditable<String>()
